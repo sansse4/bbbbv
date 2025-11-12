@@ -7,8 +7,8 @@ import {
   Phone,
   FileText,
   BarChart3,
-  Building2,
 } from "lucide-react";
+import roayaLogo from "@/assets/roaya-logo.png";
 
 import {
   Sidebar,
@@ -46,15 +46,11 @@ export function AppSidebar() {
       <SidebarContent>
         <div className="p-4 border-b border-sidebar-border">
           <div className="flex items-center gap-2">
-            <div className="h-10 w-10 rounded-lg bg-primary flex items-center justify-center">
-              <Building2 className="h-6 w-6 text-primary-foreground" />
-            </div>
-            {open && (
-              <div>
-                <h2 className="font-semibold text-sidebar-foreground">EstateEase</h2>
-                <p className="text-xs text-muted-foreground">Operations Hub</p>
-              </div>
-            )}
+            <img 
+              src={roayaLogo} 
+              alt="Roaya Real Estate" 
+              className={open ? "h-12 w-auto" : "h-10 w-10 object-contain"}
+            />
           </div>
         </div>
 
