@@ -36,7 +36,7 @@ const monthlyData = [
 ];
 
 const conversionData = [
-  { name: "Inquiries", value: 450 },
+  { name: "Ads", value: 450 },
   { name: "Site Visits", value: 280 },
   { name: "Proposals", value: 165 },
   { name: "Contracts", value: 98 },
