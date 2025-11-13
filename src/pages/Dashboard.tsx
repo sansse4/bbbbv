@@ -65,7 +65,7 @@ const Dashboard = () => {
         />
         <MetricCard
           title="Active Contracts"
-          value="342"
+          value="128"
           change="+8.3%"
           trend="up"
           icon={FileText}
