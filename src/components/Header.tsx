@@ -1,10 +1,30 @@
-import { Search, Bell, Settings, User } from "lucide-react";
+import { Search, Bell, Settings, User, LogOut } from "lucide-react";
 import { SidebarTrigger } from "@/components/ui/sidebar";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import { useAuth } from "@/contexts/AuthContext";
 
 export function Header() {
+  const { profile, role, signOut } = useAuth();
+  
+  const getInitials = (name: string) => {
+    return name
+      .split(' ')
+      .map(n => n[0])
+      .join('')
+      .toUpperCase()
+      .slice(0, 2);
+  };
+
   return (
     <header className="h-16 border-b border-border bg-card flex items-center justify-between px-4 gap-4">
       <div className="flex items-center gap-4 flex-1">
@@ -26,11 +46,31 @@ export function Header() {
         <Button variant="ghost" size="icon">
           <Settings className="h-5 w-5" />
         </Button>
-        <Avatar className="h-8 w-8 cursor-pointer">
-          <AvatarFallback className="bg-primary text-primary-foreground">
-            <User className="h-4 w-4" />
-          </AvatarFallback>
-        </Avatar>
+        
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <Avatar className="h-8 w-8 cursor-pointer">
+              <AvatarFallback className="bg-primary text-primary-foreground">
+                {profile ? getInitials(profile.full_name) : <User className="h-4 w-4" />}
+              </AvatarFallback>
+            </Avatar>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align="end" className="w-56">
+            <DropdownMenuLabel>
+              <div className="flex flex-col space-y-1">
+                <p className="text-sm font-medium">{profile?.full_name}</p>
+                <p className="text-xs text-muted-foreground">
+                  {role?.role === 'admin' ? 'Administrator' : profile?.department}
+                </p>
+              </div>
+            </DropdownMenuLabel>
+            <DropdownMenuSeparator />
+            <DropdownMenuItem onClick={signOut} className="cursor-pointer">
+              <LogOut className="mr-2 h-4 w-4" />
+              <span>Logout</span>
+            </DropdownMenuItem>
+          </DropdownMenuContent>
+        </DropdownMenu>
       </div>
     </header>
   );
