@@ -1,6 +1,6 @@
 import { NavLink } from "@/components/NavLink";
 import { useLocation } from "react-router-dom";
-import { LayoutDashboard, Image, TrendingUp, Phone, FileText, BarChart3 } from "lucide-react";
+import { LayoutDashboard, Image, TrendingUp, Phone, FileText, BarChart3, Users } from "lucide-react";
 import roayaLogo from "@/assets/roaya-logo.png";
 import { Sidebar, SidebarContent, SidebarGroup, SidebarGroupContent, SidebarGroupLabel, SidebarMenu, SidebarMenuButton, SidebarMenuItem, useSidebar } from "@/components/ui/sidebar";
 import { useAuth } from "@/contexts/AuthContext";
@@ -28,6 +28,10 @@ const menuItems = [{
   title: "Growth Analytics",
   url: "/analytics",
   icon: BarChart3
+}, {
+  title: "User Management",
+  url: "/users",
+  icon: Users
 }];
 export function AppSidebar() {
   const {
@@ -50,7 +54,7 @@ export function AppSidebar() {
       return menuItems;
     }
     
-    // For employees, show Dashboard and their department only
+    // For employees, show Dashboard and their department only (exclude User Management)
     const departmentPaths: { [key: string]: string } = {
       'Media': '/media',
       'Sales': '/sales',
@@ -63,7 +67,7 @@ export function AppSidebar() {
     const userDepartmentPath = profile?.department ? departmentPaths[profile.department] : null;
     
     return menuItems.filter(item => 
-      item.url === '/' || item.url === userDepartmentPath
+      (item.url === '/' || item.url === userDepartmentPath) && item.url !== '/users'
     );
   };
 

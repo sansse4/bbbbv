@@ -15,6 +15,7 @@ import CallCenter from "./pages/CallCenter";
 import Contracts from "./pages/Contracts";
 import Analytics from "./pages/Analytics";
 import Login from "./pages/Login";
+import UserManagement from "./pages/UserManagement";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -45,6 +46,7 @@ const App = () => (
                             <Route path="/call-center" element={<CallCenter />} />
                             <Route path="/contracts" element={<Contracts />} />
                             <Route path="/analytics" element={<Analytics />} />
+                            <Route path="/users" element={<UserManagement />} />
                             <Route path="*" element={<NotFound />} />
                           </Routes>
                         </main>
