@@ -1,0 +1,7 @@
+project_id = "xtxxgjrkggnjdbjnjskm"
+
+[functions.seed-demo-users]
+verify_jwt = false
+
+[functions.login-by-username]
+verify_jwt = false

@@ -3,6 +3,7 @@ import { useLocation } from "react-router-dom";
 import { LayoutDashboard, Image, TrendingUp, Phone, FileText, BarChart3 } from "lucide-react";
 import roayaLogo from "@/assets/roaya-logo.png";
 import { Sidebar, SidebarContent, SidebarGroup, SidebarGroupContent, SidebarGroupLabel, SidebarMenu, SidebarMenuButton, SidebarMenuItem, useSidebar } from "@/components/ui/sidebar";
+import { useAuth } from "@/contexts/AuthContext";
 const menuItems = [{
   title: "Dashboard",
   url: "/",
@@ -34,10 +35,39 @@ export function AppSidebar() {
   } = useSidebar();
   const location = useLocation();
   const currentPath = location.pathname;
+  const { role, profile } = useAuth();
+  
   const isActive = (path: string) => {
     if (path === "/") return currentPath === "/";
     return currentPath.startsWith(path);
   };
+
+  // Filter menu items based on role and department
+  const getVisibleMenuItems = () => {
+    if (!role) return [];
+    
+    if (role.role === 'admin') {
+      return menuItems;
+    }
+    
+    // For employees, show Dashboard and their department only
+    const departmentPaths: { [key: string]: string } = {
+      'Media': '/media',
+      'Sales': '/sales',
+      'Call Center': '/call-center',
+      'Contract Registration': '/contracts',
+      'Growth Analytics': '/analytics',
+      'Reception': '/reception',
+    };
+    
+    const userDepartmentPath = profile?.department ? departmentPaths[profile.department] : null;
+    
+    return menuItems.filter(item => 
+      item.url === '/' || item.url === userDepartmentPath
+    );
+  };
+
+  const visibleMenuItems = getVisibleMenuItems();
   return <Sidebar className={open ? "w-64" : "w-16"} collapsible="icon">
       <SidebarContent className="bg-slate-50">
         <div className="p-4 border-b border-sidebar-border">
@@ -50,7 +80,7 @@ export function AppSidebar() {
           <SidebarGroupLabel>Main Menu</SidebarGroupLabel>
           <SidebarGroupContent>
             <SidebarMenu>
-              {menuItems.map(item => <SidebarMenuItem key={item.title}>
+              {visibleMenuItems.map(item => <SidebarMenuItem key={item.title}>
                   <SidebarMenuButton asChild>
                     <NavLink to={item.url} end={item.url === "/"} className="hover:bg-sidebar-accent" activeClassName="bg-sidebar-accent text-sidebar-primary font-medium">
                       <item.icon className="h-5 w-5" />
