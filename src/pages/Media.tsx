@@ -1,8 +1,76 @@
-import { Card, CardContent } from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { useToast } from "@/hooks/use-toast";
 import { Image, Upload, Folder, Grid3x3 } from "lucide-react";
+import { useState, useRef } from "react";
 
 const Media = () => {
+  const [formData, setFormData] = useState({
+    name: "",
+    phone: "",
+    note: "",
+  });
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const { toast } = useToast();
+  const nameRef = useRef<HTMLInputElement>(null);
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+
+    if (!formData.name || !formData.phone) {
+      toast({
+        title: "خطأ",
+        description: "يرجى ملء جميع الحقول المطلوبة",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    setIsSubmitting(true);
+
+    try {
+      const params = new URLSearchParams({
+        name: formData.name,
+        phone: formData.phone,
+        note: formData.note || "",
+      });
+
+      const response = await fetch(
+        `https://script.google.com/macros/s/AKfycbwZHXewTjf7S5uXYT8whn1naGQ--v4dzsHOZBkQ_KsXMG6NuGrkZoMBMLHuPPq86raPgg/exec?${params}`
+      );
+
+      if (response.ok) {
+        toast({
+          title: "نجح",
+          description: "تم الحفظ بنجاح",
+        });
+
+        setFormData({
+          name: "",
+          phone: "",
+          note: "",
+        });
+
+        setTimeout(() => {
+          nameRef.current?.focus();
+        }, 100);
+      } else {
+        throw new Error("Failed to save");
+      }
+    } catch (error) {
+      toast({
+        title: "خطأ",
+        description: "فشل الإرسال، حاول مرة أخرى",
+        variant: "destructive",
+      });
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
   const mediaItems = [
     { id: 1, type: "image", name: "Property Exterior", category: "Residential" },
     { id: 2, type: "image", name: "Interior Living Room", category: "Residential" },
@@ -14,6 +82,76 @@ const Media = () => {
 
   return (
     <div className="space-y-6">
+      <Card>
+        <CardHeader>
+          <CardTitle>تسجيل الميديا</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <form onSubmit={handleSubmit} className="space-y-4">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              <div className="space-y-2">
+                <Label htmlFor="name">
+                  الاسم <span className="text-destructive">*</span>
+                </Label>
+                <Input
+                  id="name"
+                  ref={nameRef}
+                  type="text"
+                  value={formData.name}
+                  onChange={(e) =>
+                    setFormData({ ...formData, name: e.target.value })
+                  }
+                  placeholder="أدخل الاسم"
+                  required
+                  dir="rtl"
+                />
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="phone">
+                  رقم الهاتف <span className="text-destructive">*</span>
+                </Label>
+                <Input
+                  id="phone"
+                  type="text"
+                  value={formData.phone}
+                  onChange={(e) =>
+                    setFormData({ ...formData, phone: e.target.value })
+                  }
+                  placeholder="أدخل رقم الهاتف"
+                  required
+                  dir="rtl"
+                />
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="note">ملاحظات</Label>
+                <Select
+                  value={formData.note}
+                  onValueChange={(value) =>
+                    setFormData({ ...formData, note: value })
+                  }
+                >
+                  <SelectTrigger id="note" dir="rtl">
+                    <SelectValue placeholder="اختر حالة" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="مهتم">مهتم</SelectItem>
+                    <SelectItem value="غير مهتم">غير مهتم</SelectItem>
+                    <SelectItem value="يحتاج متابعة">يحتاج متابعة</SelectItem>
+                    <SelectItem value="أخرى">أخرى</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+            </div>
+
+            <Button type="submit" disabled={isSubmitting}>
+              {isSubmitting ? "جاري الحفظ..." : "حفظ"}
+            </Button>
+          </form>
+        </CardContent>
+      </Card>
+
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-3xl font-bold text-foreground">Media Gallery</h1>
