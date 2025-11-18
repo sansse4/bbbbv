@@ -64,6 +64,17 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      create_demo_user: {
+        Args: {
+          p_department?: Database["public"]["Enums"]["department_type"]
+          p_email: string
+          p_full_name: string
+          p_password: string
+          p_role: Database["public"]["Enums"]["app_role"]
+          p_username: string
+        }
+        Returns: string
+      }
       has_role: {
         Args: {
           _role: Database["public"]["Enums"]["app_role"]

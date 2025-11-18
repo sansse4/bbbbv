@@ -27,7 +27,7 @@ const Login = () => {
     setError('');
     setLoading(true);
 
-    const { error } = await signIn(username, password);
+    const { error } = await signIn(username.trim(), password.trim());
 
     if (error) {
       setError(error.message);
