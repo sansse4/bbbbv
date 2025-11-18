@@ -10,19 +10,19 @@ const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxIDrDCDW3jJJ
 
 export default function Reception() {
   const [formData, setFormData] = useState({
-    fullName: "",
+    name: "",
     phone: "",
     address: "",
     source: "",
   });
   const [isSubmitting, setIsSubmitting] = useState(false);
   const { toast } = useToast();
-  const fullNameRef = useRef<HTMLInputElement>(null);
+  const nameRef = useRef<HTMLInputElement>(null);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    if (!formData.fullName || !formData.phone || !formData.address) {
+    if (!formData.name || !formData.phone || !formData.address) {
       toast({
         title: "Error",
         description: "Please fill in all required fields",
@@ -35,7 +35,7 @@ export default function Reception() {
 
     try {
       const params = new URLSearchParams({
-        name: formData.fullName,
+        name: formData.name,
         phone: formData.phone,
         address: formData.address,
         source: formData.source || "",
@@ -54,14 +54,14 @@ export default function Reception() {
 
       // Clear form and focus back to first field
       setFormData({
-        fullName: "",
+        name: "",
         phone: "",
         address: "",
         source: "",
       });
       
       setTimeout(() => {
-        fullNameRef.current?.focus();
+        nameRef.current?.focus();
       }, 100);
     } catch (error) {
       toast({
@@ -83,18 +83,18 @@ export default function Reception() {
         <CardContent>
           <form onSubmit={handleSubmit} className="space-y-6">
             <div className="space-y-2">
-              <Label htmlFor="fullName">
-                Full Name <span className="text-destructive">*</span>
+              <Label htmlFor="name">
+                Name <span className="text-destructive">*</span>
               </Label>
               <Input
-                id="fullName"
-                ref={fullNameRef}
+                id="name"
+                ref={nameRef}
                 type="text"
-                value={formData.fullName}
+                value={formData.name}
                 onChange={(e) =>
-                  setFormData({ ...formData, fullName: e.target.value })
+                  setFormData({ ...formData, name: e.target.value })
                 }
-                placeholder="Enter full name"
+                placeholder="Enter name"
                 required
               />
             </div>
@@ -126,7 +126,7 @@ export default function Reception() {
                 onChange={(e) =>
                   setFormData({ ...formData, address: e.target.value })
                 }
-                placeholder="e.g. City / Area"
+                placeholder="City / Area"
                 required
               />
             </div>
