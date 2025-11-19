@@ -87,6 +87,11 @@ const Dashboard = () => {
         />
       </div>
 
+      {/* Interactive Site Plan - Prominent Display */}
+      <div className="my-8">
+        <InteractiveSitePlan />
+      </div>
+
       {/* Charts Row 1 */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         <Card>
@@ -227,9 +232,6 @@ const Dashboard = () => {
           </CardContent>
         </Card>
       </div>
-
-      {/* Interactive Site Plan */}
-      <InteractiveSitePlan />
     </div>
   );
 };

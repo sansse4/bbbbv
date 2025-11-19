@@ -214,15 +214,15 @@ export function InteractiveSitePlan() {
   return (
     <Card className="w-full">
       <CardHeader>
-        <CardTitle className="flex items-center gap-2">
-          <Home className="h-5 w-5 text-primary" />
+        <CardTitle className="flex items-center gap-2 text-2xl">
+          <Home className="h-6 w-6 text-primary" />
           Interactive Site Plan
         </CardTitle>
       </CardHeader>
       <CardContent>
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-          {/* Map Container */}
-          <div className="relative w-full">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+          {/* Map Container - Takes 2/3 of the space */}
+          <div className="relative w-full lg:col-span-2">
             <div className="relative aspect-[4/3] bg-muted rounded-lg overflow-hidden border">
               {/* Site plan image */}
               <img 
@@ -268,8 +268,8 @@ export function InteractiveSitePlan() {
             </p>
           </div>
 
-          {/* Info Panel */}
-          <div className="flex flex-col">
+          {/* Info Panel - Takes 1/3 of the space */}
+          <div className="flex flex-col lg:col-span-1">
             {selectedBlock ? (
               <div className="space-y-4">
                 <div>
