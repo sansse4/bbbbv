@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import {
@@ -11,8 +12,15 @@ import {
 import { Badge } from "@/components/ui/badge";
 import { TrendingUp, DollarSign, Target, Award } from "lucide-react";
 import { MetricCard } from "@/components/MetricCard";
+import { SalesForm } from "@/components/SalesForm";
+import { SalesRecentList } from "@/components/SalesRecentList";
 
 const Sales = () => {
+  const [recentSales, setRecentSales] = useState<any[]>([]);
+
+  const handleSaleAdded = (sale: any) => {
+    setRecentSales((prev) => [sale, ...prev]);
+  };
   const salesData = [
     { id: 1, property: "Luxury Villa #401", client: "Ahmed Hassan", amount: "$450,000", status: "closed", date: "2024-03-15" },
     { id: 2, property: "Downtown Apartment", client: "Sara Mohammed", amount: "$280,000", status: "pending", date: "2024-03-14" },
@@ -80,7 +88,11 @@ const Sales = () => {
         />
       </div>
 
-      <Card>
+      <SalesForm onSaleAdded={handleSaleAdded} />
+
+      {recentSales.length > 0 && <SalesRecentList sales={recentSales} />}
+
+      <Card className="mt-6">
         <CardHeader>
           <CardTitle>Recent Sales Activity</CardTitle>
         </CardHeader>
