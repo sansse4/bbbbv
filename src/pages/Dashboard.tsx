@@ -1,4 +1,5 @@
 import { MetricCard } from "@/components/MetricCard";
+import { InteractiveSitePlan } from "@/components/InteractiveSitePlan";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
   Users,
@@ -226,6 +227,9 @@ const Dashboard = () => {
           </CardContent>
         </Card>
       </div>
+
+      {/* Interactive Site Plan */}
+      <InteractiveSitePlan />
     </div>
   );
 };
