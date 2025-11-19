@@ -220,15 +220,15 @@ export function InteractiveSitePlan() {
         </CardTitle>
       </CardHeader>
       <CardContent>
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-          {/* Map Container - Takes 2/3 of the space */}
-          <div className="relative w-full lg:col-span-2">
-            <div className="relative aspect-[4/3] bg-muted rounded-lg overflow-hidden border">
+        <div className="grid grid-cols-1 lg:grid-cols-5 gap-6">
+          {/* Map Container - Takes 3/5 of the space */}
+          <div className="relative w-full lg:col-span-3">
+            <div className="relative min-h-[600px] lg:min-h-[700px] bg-muted rounded-lg overflow-hidden border">
               {/* Site plan image */}
               <img 
                 src={sitePlanImage} 
                 alt="Interactive Site Plan" 
-                className="w-full h-full object-contain"
+                className="w-full h-full object-cover"
               />
 
               {/* Block Hotspots */}
@@ -268,8 +268,8 @@ export function InteractiveSitePlan() {
             </p>
           </div>
 
-          {/* Info Panel - Takes 1/3 of the space */}
-          <div className="flex flex-col lg:col-span-1">
+          {/* Info Panel - Takes 2/5 of the space */}
+          <div className="flex flex-col lg:col-span-2">
             {selectedBlock ? (
               <div className="space-y-4">
                 <div>
