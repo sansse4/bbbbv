@@ -3,6 +3,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Phone, Home, Ruler } from "lucide-react";
 import { cn } from "@/lib/utils";
+import sitePlanImage from "@/assets/site-plan.png";
 
 interface Block {
   id: string;
@@ -223,21 +224,12 @@ export function InteractiveSitePlan() {
           {/* Map Container */}
           <div className="relative w-full">
             <div className="relative aspect-[4/3] bg-muted rounded-lg overflow-hidden border">
-              {/* Placeholder for site plan image */}
-              <div className="absolute inset-0 flex items-center justify-center text-muted-foreground">
-                <div className="text-center p-4">
-                  <Home className="h-16 w-16 mx-auto mb-2 opacity-20" />
-                  <p className="text-sm">Site Plan Image</p>
-                  <p className="text-xs mt-1">Replace with actual site plan</p>
-                </div>
-              </div>
-
-              {/* TODO: Replace with actual image */}
-              {/* <img 
-                src="/path-to-site-plan.png" 
-                alt="Site Plan" 
+              {/* Site plan image */}
+              <img 
+                src={sitePlanImage} 
+                alt="Interactive Site Plan" 
                 className="w-full h-full object-contain"
-              /> */}
+              />
 
               {/* Block Hotspots */}
               {blocks.map((block) => (
