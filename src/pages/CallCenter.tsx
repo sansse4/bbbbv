@@ -1,10 +1,42 @@
+import { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
 import { Phone, PhoneCall, PhoneIncoming, PhoneMissed } from "lucide-react";
 import { MetricCard } from "@/components/MetricCard";
+import { CallCenterForm } from "@/components/CallCenterForm";
+import { CallCenterRecentList } from "@/components/CallCenterRecentList";
+
 const CallCenter = () => {
+  const [recentCalls, setRecentCalls] = useState<Array<{
+    name: string;
+    phone: string;
+    appointment: string;
+    status: string;
+    notes?: string;
+    timestamp: string;
+  }>>([]);
+
+  const handleCallAdded = (call: {
+    name: string;
+    phone: string;
+    appointment: string;
+    status: string;
+    notes?: string;
+  }) => {
+    const newCall = {
+      ...call,
+      timestamp: new Date().toLocaleString("ar-IQ", {
+        year: "numeric",
+        month: "2-digit",
+        day: "2-digit",
+        hour: "2-digit",
+        minute: "2-digit",
+      }),
+    };
+    setRecentCalls((prev) => [newCall, ...prev].slice(0, 10));
+  };
   const callLogs = [{
     id: 1,
     caller: "Ahmed Hassan",
@@ -74,6 +106,10 @@ const CallCenter = () => {
         <MetricCard title="Missed Calls" value="15" change="-3.2%" trend="down" icon={PhoneMissed} />
         <MetricCard title="Avg Duration" value="4:25" change="+5.8%" trend="up" icon={PhoneCall} />
       </div>
+
+      <CallCenterForm onCallAdded={handleCallAdded} />
+
+      <CallCenterRecentList calls={recentCalls} />
 
       <Card>
         <CardHeader>
