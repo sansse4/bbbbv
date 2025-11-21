@@ -217,7 +217,7 @@ All colors MUST be HSL.
     width: 1.2em;
     height: 1.2em;
     border-radius: 50%;
-    border: 2px dashed hsl(var(--brand-color));
+    border: 3px dotted hsl(var(--brand-color));
     box-sizing: border-box;
     margin: 0 0.05em;
     position: relative;
@@ -227,7 +227,7 @@ All colors MUST be HSL.
 
   .brand-text:hover .brand-o {
     transform: scale(1.08) rotate(0deg);
-    border-width: 2.5px;
+    border-width: 3.5px;
     box-shadow: 0 0 8px hsl(var(--brand-color) / 0.3);
   }
 }
