@@ -7,6 +7,8 @@ import { Phone, PhoneCall, PhoneIncoming, PhoneMissed } from "lucide-react";
 import { MetricCard } from "@/components/MetricCard";
 import { CallCenterForm } from "@/components/CallCenterForm";
 import { CallCenterRecentList } from "@/components/CallCenterRecentList";
+import { FloatingActionButton } from "@/components/FloatingActionButton";
+import { toast } from "sonner";
 
 const CallCenter = () => {
   const [recentCalls, setRecentCalls] = useState<Array<{
@@ -86,6 +88,13 @@ const CallCenter = () => {
   const getTypeIcon = (type: string) => {
     return type === "inbound" ? PhoneIncoming : PhoneCall;
   };
+
+  const handleQuickCall = () => {
+    toast.success("Quick call initiated", {
+      description: "Opening call interface...",
+    });
+  };
+
   return <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div>
@@ -156,6 +165,13 @@ const CallCenter = () => {
           </Table>
         </CardContent>
       </Card>
+
+      <FloatingActionButton
+        icon={Phone}
+        label="Make quick call"
+        onClick={handleQuickCall}
+        position="bottom-right"
+      />
     </div>;
 };
 export default CallCenter;
