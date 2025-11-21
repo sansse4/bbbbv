@@ -47,8 +47,10 @@ export function AppSidebar() {
   } = useSidebar();
   const location = useLocation();
   const currentPath = location.pathname;
-  const { role, profile } = useAuth();
-  
+  const {
+    role,
+    profile
+  } = useAuth();
   const isActive = (path: string) => {
     if (path === "/") return currentPath === "/";
     return currentPath.startsWith(path);
@@ -57,28 +59,24 @@ export function AppSidebar() {
   // Filter menu items based on role and department
   const getVisibleMenuItems = () => {
     if (!role) return [];
-    
     if (role.role === 'admin') {
       return menuItems;
     }
-    
+
     // For employees, show Dashboard and their department only (exclude User Management)
-    const departmentPaths: { [key: string]: string } = {
+    const departmentPaths: {
+      [key: string]: string;
+    } = {
       'Media': '/media',
       'Sales': '/sales',
       'Call Center': '/call-center',
       'Contract Registration': '/contracts',
       'Growth Analytics': '/analytics',
-      'Reception': '/reception',
+      'Reception': '/reception'
     };
-    
     const userDepartmentPath = profile?.department ? departmentPaths[profile.department] : null;
-    
-    return menuItems.filter(item => 
-      (item.url === '/' || item.url === userDepartmentPath || item.url === '/employees') && item.url !== '/users'
-    );
+    return menuItems.filter(item => (item.url === '/' || item.url === userDepartmentPath || item.url === '/employees') && item.url !== '/users');
   };
-
   const visibleMenuItems = getVisibleMenuItems();
   return <Sidebar className={open ? "w-64" : "w-16"} collapsible="icon">
       <SidebarContent className="bg-sidebar transition-all duration-300">
@@ -86,7 +84,7 @@ export function AppSidebar() {
           <div className="flex items-center gap-3">
             <img src={roayaLogo} alt="Roaya Real Estate" className={`transition-all duration-300 ${open ? "h-12 w-auto" : "h-10 w-10 object-contain"}`} />
             <span className={`text-2xl brand-text transition-all duration-300 ${open ? 'opacity-100 translate-x-0' : 'opacity-0 -translate-x-2 absolute pointer-events-none'}`}>
-              R<span className="brand-o"></span>aya
+              Raya<span className="brand-o"></span>aya
             </span>
           </div>
         </div>
