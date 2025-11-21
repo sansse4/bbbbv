@@ -8,6 +8,7 @@ import { AppSidebar } from "@/components/AppSidebar";
 import { Header } from "@/components/Header";
 import { AuthProvider } from "@/contexts/AuthContext";
 import { ProtectedRoute } from "@/components/ProtectedRoute";
+import { PageTransition } from "@/components/PageTransition";
 import Dashboard from "./pages/Dashboard";
 import Media from "./pages/Media";
 import Sales from "./pages/Sales";
@@ -40,17 +41,19 @@ const App = () => (
                       <div className="flex-1 flex flex-col">
                         <Header />
                         <main className="flex-1 p-6 overflow-auto">
-                          <Routes>
-                            <Route path="/" element={<Dashboard />} />
-                            <Route path="/media" element={<Media />} />
-                            <Route path="/sales" element={<Sales />} />
-                            <Route path="/call-center" element={<CallCenter />} />
-                            <Route path="/contracts" element={<Contracts />} />
-                            <Route path="/analytics" element={<Analytics />} />
-                            <Route path="/reception" element={<Reception />} />
-                            <Route path="/users" element={<UserManagement />} />
-                            <Route path="*" element={<NotFound />} />
-                          </Routes>
+                          <PageTransition>
+                            <Routes>
+                              <Route path="/" element={<Dashboard />} />
+                              <Route path="/media" element={<Media />} />
+                              <Route path="/sales" element={<Sales />} />
+                              <Route path="/call-center" element={<CallCenter />} />
+                              <Route path="/contracts" element={<Contracts />} />
+                              <Route path="/analytics" element={<Analytics />} />
+                              <Route path="/reception" element={<Reception />} />
+                              <Route path="/users" element={<UserManagement />} />
+                              <Route path="*" element={<NotFound />} />
+                            </Routes>
+                          </PageTransition>
                         </main>
                       </div>
                     </div>
