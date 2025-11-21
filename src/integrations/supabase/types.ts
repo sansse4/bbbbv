@@ -14,6 +14,42 @@ export type Database = {
   }
   public: {
     Tables: {
+      attendance: {
+        Row: {
+          check_in: string | null
+          check_out: string | null
+          created_at: string | null
+          date: string
+          employee_id: string
+          id: string
+          notes: string | null
+          status: string
+          updated_at: string | null
+        }
+        Insert: {
+          check_in?: string | null
+          check_out?: string | null
+          created_at?: string | null
+          date: string
+          employee_id: string
+          id?: string
+          notes?: string | null
+          status: string
+          updated_at?: string | null
+        }
+        Update: {
+          check_in?: string | null
+          check_out?: string | null
+          created_at?: string | null
+          date?: string
+          employee_id?: string
+          id?: string
+          notes?: string | null
+          status?: string
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
       call_center_interactions: {
         Row: {
           appointment_date: string | null
@@ -77,6 +113,63 @@ export type Database = {
           id?: string
           updated_at?: string | null
           username?: string
+        }
+        Relationships: []
+      }
+      sales: {
+        Row: {
+          block_number: string
+          created_at: string | null
+          created_by: string
+          customer_name: string
+          customer_phone: string | null
+          employee_id: string
+          house_number: string
+          id: string
+          notes: string | null
+          paid_amount: number
+          payment_method: string
+          remaining_amount: number
+          sale_date: string
+          status: string
+          total_amount: number | null
+          updated_at: string | null
+        }
+        Insert: {
+          block_number: string
+          created_at?: string | null
+          created_by: string
+          customer_name: string
+          customer_phone?: string | null
+          employee_id: string
+          house_number: string
+          id?: string
+          notes?: string | null
+          paid_amount?: number
+          payment_method: string
+          remaining_amount?: number
+          sale_date?: string
+          status: string
+          total_amount?: number | null
+          updated_at?: string | null
+        }
+        Update: {
+          block_number?: string
+          created_at?: string | null
+          created_by?: string
+          customer_name?: string
+          customer_phone?: string | null
+          employee_id?: string
+          house_number?: string
+          id?: string
+          notes?: string | null
+          paid_amount?: number
+          payment_method?: string
+          remaining_amount?: number
+          sale_date?: string
+          status?: string
+          total_amount?: number | null
+          updated_at?: string | null
         }
         Relationships: []
       }
