@@ -9,11 +9,11 @@ const buttonVariants = cva(
   {
     variants: {
       variant: {
-        default: "gradient-primary text-primary-foreground hover:scale-105 hover:shadow-lg shadow-primary/20 active:scale-95",
-        destructive: "bg-destructive text-destructive-foreground hover:bg-destructive/90 hover:scale-105 hover:shadow-lg active:scale-95",
-        outline: "border border-input bg-background hover:bg-accent hover:text-accent-foreground hover:border-accent hover:scale-[1.02] active:scale-95",
-        secondary: "bg-secondary text-secondary-foreground hover:bg-secondary/80 hover:scale-[1.02] hover:shadow-md active:scale-95",
-        ghost: "hover:bg-accent hover:text-accent-foreground hover:scale-[1.02] active:scale-95",
+        default: "gradient-primary text-primary-foreground hover:scale-105 hover:shadow-[0_0_30px_rgba(139,92,246,0.5)] shadow-primary/20 active:scale-95",
+        destructive: "bg-destructive text-destructive-foreground hover:bg-destructive/90 hover:scale-105 hover:shadow-[0_0_25px_rgba(239,68,68,0.4)] active:scale-95",
+        outline: "border border-input bg-background hover:bg-accent hover:text-accent-foreground hover:border-accent hover:scale-[1.02] hover:shadow-[0_0_20px_rgba(139,92,246,0.2)] active:scale-95",
+        secondary: "bg-secondary text-secondary-foreground hover:bg-secondary/80 hover:scale-[1.02] hover:shadow-[0_0_15px_rgba(139,92,246,0.15)] active:scale-95",
+        ghost: "hover:bg-accent hover:text-accent-foreground hover:scale-[1.02] hover:shadow-[0_0_15px_rgba(139,92,246,0.1)] active:scale-95",
         link: "text-primary underline-offset-4 hover:underline hover:text-primary/80",
       },
       size: {
