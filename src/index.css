@@ -8,7 +8,7 @@ All colors MUST be HSL.
 
 @layer base {
   :root {
-    --brand-color: 25 95% 53%; /* Orange from logo */
+    --brand-color: 250 40% 37%; /* #403984 */
     --background: 240 10% 98%;
     --foreground: 240 10% 10%;
 
