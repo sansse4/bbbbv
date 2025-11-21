@@ -77,7 +77,7 @@ export function AppSidebar() {
 
   const visibleMenuItems = getVisibleMenuItems();
   return <Sidebar className={open ? "w-64" : "w-16"} collapsible="icon">
-      <SidebarContent className="bg-slate-50">
+      <SidebarContent className="bg-sidebar">
         <div className="p-4 border-b border-sidebar-border">
           <div className="flex items-center gap-2">
             <img src={roayaLogo} alt="Roaya Real Estate" className={open ? "h-12 w-auto" : "h-10 w-10 object-contain"} />
