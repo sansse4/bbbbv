@@ -179,4 +179,20 @@ All colors MUST be HSL.
   [data-sidebar] * {
     transition: all 200ms cubic-bezier(0.4, 0, 0.2, 1);
   }
+
+  /* Pulse animation for FAB */
+  @keyframes pulse-soft {
+    0%, 100% {
+      transform: scale(1);
+      box-shadow: 0 20px 25px -5px rgba(139, 92, 246, 0.3), 0 8px 10px -6px rgba(139, 92, 246, 0.3);
+    }
+    50% {
+      transform: scale(1.05);
+      box-shadow: 0 25px 30px -5px rgba(139, 92, 246, 0.5), 0 10px 15px -6px rgba(139, 92, 246, 0.5);
+    }
+  }
+
+  .animate-pulse-soft {
+    animation: pulse-soft 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+  }
 }
