@@ -8,6 +8,7 @@ All colors MUST be HSL.
 
 @layer base {
   :root {
+    --brand-color: 25 95% 53%; /* Orange from logo */
     --background: 240 10% 98%;
     --foreground: 240 10% 10%;
 
@@ -194,5 +195,39 @@ All colors MUST be HSL.
 
   .animate-pulse-soft {
     animation: pulse-soft 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+  }
+
+  /* Brand "o" animation */
+  @keyframes brand-orbit {
+    from { transform: rotate(0deg); }
+    to { transform: rotate(360deg); }
+  }
+
+  .brand-text {
+    color: hsl(var(--brand-color));
+    font-weight: 700;
+    letter-spacing: 0.03em;
+    transition: all 0.3s ease;
+  }
+
+  .brand-o {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 1.2em;
+    height: 1.2em;
+    border-radius: 50%;
+    border: 2px dashed hsl(var(--brand-color));
+    box-sizing: border-box;
+    margin: 0 0.05em;
+    position: relative;
+    animation: brand-orbit 6s linear infinite;
+    transition: all 0.3s ease;
+  }
+
+  .brand-text:hover .brand-o {
+    transform: scale(1.08) rotate(0deg);
+    border-width: 2.5px;
+    box-shadow: 0 0 8px hsl(var(--brand-color) / 0.3);
   }
 }
