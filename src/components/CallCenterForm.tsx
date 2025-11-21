@@ -61,8 +61,8 @@ export const CallCenterForm = ({ onCallAdded }: CallCenterFormProps) => {
       const params = new URLSearchParams({
         name: data.name,
         phone: data.phone,
-        appointment: data.appointment,
-        status: data.status,
+        appointment: data.status,
+        status: data.appointment,
         notes: data.notes || "",
       });
 
