@@ -8,6 +8,8 @@ import { Calendar, Clock, CheckCircle2, XCircle, AlertCircle, Briefcase } from '
 import { useToast } from '@/hooks/use-toast';
 import { format, startOfMonth, endOfMonth, subMonths, startOfYear } from 'date-fns';
 import { ar } from 'date-fns/locale';
+import { AttendanceForm } from './AttendanceForm';
+import { useAuth } from '@/contexts/AuthContext';
 
 interface AttendanceRecord {
   id: string;
@@ -26,6 +28,7 @@ interface AttendanceSectionProps {
 
 export function AttendanceSection({ employeeId, dateRange, onDateRangeChange }: AttendanceSectionProps) {
   const { toast } = useToast();
+  const { role } = useAuth();
   const [records, setRecords] = useState<AttendanceRecord[]>([]);
   const [loading, setLoading] = useState(true);
   const [stats, setStats] = useState({
@@ -138,16 +141,21 @@ export function AttendanceSection({ employeeId, dateRange, onDateRangeChange }: 
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <h2 className="text-xl font-semibold">سجل الحضور</h2>
-        <Select defaultValue="this_month" onValueChange={handlePeriodChange}>
-          <SelectTrigger className="w-[180px]">
-            <SelectValue />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="this_month">هذا الشهر</SelectItem>
-            <SelectItem value="last_month">الشهر الماضي</SelectItem>
-            <SelectItem value="this_year">هذا العام</SelectItem>
-          </SelectContent>
-        </Select>
+        <div className="flex items-center gap-3">
+          <Select defaultValue="this_month" onValueChange={handlePeriodChange}>
+            <SelectTrigger className="w-[180px]">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="this_month">هذا الشهر</SelectItem>
+              <SelectItem value="last_month">الشهر الماضي</SelectItem>
+              <SelectItem value="this_year">هذا العام</SelectItem>
+            </SelectContent>
+          </Select>
+          {role?.role === 'admin' && (
+            <AttendanceForm employeeId={employeeId} onSuccess={fetchAttendance} />
+          )}
+        </div>
       </div>
 
       <div className="grid gap-4 md:grid-cols-4">
