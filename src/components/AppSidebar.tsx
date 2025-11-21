@@ -85,8 +85,8 @@ export function AppSidebar() {
         <div className="p-4 border-b border-sidebar-border transition-all duration-300">
           <div className="flex items-center gap-3">
             <img src={roayaLogo} alt="Roaya Real Estate" className={`transition-all duration-300 ${open ? "h-12 w-auto" : "h-10 w-10 object-contain"}`} />
-            <span className={`text-2xl font-bold text-primary transition-all duration-300 ${open ? 'opacity-100 translate-x-0' : 'opacity-0 -translate-x-2 absolute pointer-events-none'}`}>
-              Roaya
+            <span className={`text-2xl brand-text transition-all duration-300 ${open ? 'opacity-100 translate-x-0' : 'opacity-0 -translate-x-2 absolute pointer-events-none'}`}>
+              R<span className="brand-o"></span>aya
             </span>
           </div>
         </div>
