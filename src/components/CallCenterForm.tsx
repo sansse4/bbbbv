@@ -23,7 +23,6 @@ import {
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { toast } from "@/hooks/use-toast";
 import { Phone } from "lucide-react";
-import { supabase } from "@/integrations/supabase/client";
 
 const CALLCENTER_API_URL = "https://script.google.com/macros/s/AKfycbwReeHcC4R1E4EQivZ2HRWQ_fZtqxePjKjDh81RdwITxy6JSSWIAHwtXtzHhdWLSRP_/exec";
 
@@ -59,28 +58,6 @@ export const CallCenterForm = ({ onCallAdded }: CallCenterFormProps) => {
     setIsSubmitting(true);
 
     try {
-      // Save to Supabase
-      const { data: userData } = await supabase.auth.getUser();
-      
-      if (!userData.user) {
-        throw new Error("User not authenticated");
-      }
-
-      const { error: dbError } = await supabase
-        .from("call_center_interactions")
-        .insert({
-          customer_name: data.name,
-          customer_phone: data.phone,
-          appointment_date: data.appointment.includes("موعد") ? new Date().toISOString().split('T')[0] : null,
-          appointment_time: null,
-          status: data.status,
-          notes: data.notes || null,
-          created_by: userData.user.id,
-        });
-
-      if (dbError) throw dbError;
-
-      // Also send to Google Sheets as backup
       const params = new URLSearchParams({
         name: data.name,
         phone: data.phone,
@@ -89,9 +66,11 @@ export const CallCenterForm = ({ onCallAdded }: CallCenterFormProps) => {
         notes: data.notes || "",
       });
 
-      await fetch(`${CALLCENTER_API_URL}?${params.toString()}`).catch(() => {
-        // Ignore Google Sheets errors since Supabase is the primary storage
-      });
+      const response = await fetch(`${CALLCENTER_API_URL}?${params.toString()}`);
+      
+      if (!response.ok) {
+        throw new Error("Network error");
+      }
 
       toast({
         title: "نجح الحفظ",
@@ -129,115 +108,109 @@ export const CallCenterForm = ({ onCallAdded }: CallCenterFormProps) => {
       <CardContent>
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <FormField
-                control={form.control}
-                name="name"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel className="text-sm">الاسم</FormLabel>
-                    <FormControl>
-                      <Input
-                        placeholder="اسم الزبون"
-                        {...field}
-                        className="h-9"
-                        disabled={isSubmitting}
-                      />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-
-              <FormField
-                control={form.control}
-                name="phone"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel className="text-sm">رقم الهاتف</FormLabel>
-                    <FormControl>
-                      <Input
-                        placeholder="07XXXXXXXXX"
-                        {...field}
-                        className="h-9"
-                        disabled={isSubmitting}
-                      />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-            </div>
-
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <FormField
-                control={form.control}
-                name="appointment"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel className="text-sm">حجز موعد</FormLabel>
-                    <Select
-                      onValueChange={field.onChange}
-                      value={field.value}
+            <FormField
+              control={form.control}
+              name="name"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>الاسم</FormLabel>
+                  <FormControl>
+                    <Input
+                      placeholder="اسم الزبون"
+                      {...field}
                       disabled={isSubmitting}
-                    >
-                      <FormControl>
-                        <SelectTrigger className="h-9">
-                          <SelectValue placeholder="اختر الحالة" />
-                        </SelectTrigger>
-                      </FormControl>
-                      <SelectContent>
-                        <SelectItem value="حجز موعد">حجز موعد</SelectItem>
-                        <SelectItem value="لا يحتاج موعد">لا يحتاج موعد</SelectItem>
-                        <SelectItem value="طلب معاودة اتصال">طلب معاودة اتصال</SelectItem>
-                        <SelectItem value="تم الحضور سابقاً">تم الحضور سابقاً</SelectItem>
-                      </SelectContent>
-                    </Select>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
+                    />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
 
-              <FormField
-                control={form.control}
-                name="status"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel className="text-sm">حالة الزبون</FormLabel>
-                    <Select
-                      onValueChange={field.onChange}
-                      value={field.value}
+            <FormField
+              control={form.control}
+              name="phone"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>رقم الهاتف</FormLabel>
+                  <FormControl>
+                    <Input
+                      placeholder="07XXXXXXXXX"
+                      {...field}
                       disabled={isSubmitting}
-                    >
-                      <FormControl>
-                        <SelectTrigger className="h-9">
-                          <SelectValue placeholder="اختر الحالة" />
-                        </SelectTrigger>
-                      </FormControl>
-                      <SelectContent>
-                        <SelectItem value="مهتم جداً">مهتم جداً</SelectItem>
-                        <SelectItem value="مهتم">مهتم</SelectItem>
-                        <SelectItem value="متردد">متردد</SelectItem>
-                        <SelectItem value="غير مهتم">غير مهتم</SelectItem>
-                        <SelectItem value="رقم خاطئ">رقم خاطئ</SelectItem>
-                        <SelectItem value="لا يرد">لا يرد</SelectItem>
-                      </SelectContent>
-                    </Select>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-            </div>
+                    />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
+            <FormField
+              control={form.control}
+              name="appointment"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>حجز موعد</FormLabel>
+                  <Select
+                    onValueChange={field.onChange}
+                    value={field.value}
+                    disabled={isSubmitting}
+                  >
+                    <FormControl>
+                      <SelectTrigger>
+                        <SelectValue placeholder="اختر الحالة" />
+                      </SelectTrigger>
+                    </FormControl>
+                    <SelectContent>
+                      <SelectItem value="حجز موعد">حجز موعد</SelectItem>
+                      <SelectItem value="لا يحتاج موعد">لا يحتاج موعد</SelectItem>
+                      <SelectItem value="طلب معاودة اتصال">طلب معاودة اتصال</SelectItem>
+                      <SelectItem value="تم الحضور سابقاً">تم الحضور سابقاً</SelectItem>
+                    </SelectContent>
+                  </Select>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
+            <FormField
+              control={form.control}
+              name="status"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>حالة الزبون</FormLabel>
+                  <Select
+                    onValueChange={field.onChange}
+                    value={field.value}
+                    disabled={isSubmitting}
+                  >
+                    <FormControl>
+                      <SelectTrigger>
+                        <SelectValue placeholder="اختر الحالة" />
+                      </SelectTrigger>
+                    </FormControl>
+                    <SelectContent>
+                      <SelectItem value="مهتم جداً">مهتم جداً</SelectItem>
+                      <SelectItem value="مهتم">مهتم</SelectItem>
+                      <SelectItem value="متردد">متردد</SelectItem>
+                      <SelectItem value="غير مهتم">غير مهتم</SelectItem>
+                      <SelectItem value="رقم خاطئ">رقم خاطئ</SelectItem>
+                      <SelectItem value="لا يرد">لا يرد</SelectItem>
+                    </SelectContent>
+                  </Select>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
 
             <FormField
               control={form.control}
               name="notes"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel className="text-sm">ملاحضات</FormLabel>
+                  <FormLabel>ملاحظات</FormLabel>
                   <FormControl>
                     <Textarea
-                      placeholder="أي ملاحظات إضافية عن الزبون أو المكالمة"
+                      placeholder="أي ملاحظة عن المكالمة أو الزبون"
                       className="resize-none min-h-[80px]"
                       {...field}
                       disabled={isSubmitting}
