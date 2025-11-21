@@ -14,6 +14,45 @@ export type Database = {
   }
   public: {
     Tables: {
+      call_center_interactions: {
+        Row: {
+          appointment_date: string | null
+          appointment_time: string | null
+          created_at: string
+          created_by: string
+          customer_name: string
+          customer_phone: string
+          id: string
+          notes: string | null
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          appointment_date?: string | null
+          appointment_time?: string | null
+          created_at?: string
+          created_by: string
+          customer_name: string
+          customer_phone: string
+          id?: string
+          notes?: string | null
+          status: string
+          updated_at?: string
+        }
+        Update: {
+          appointment_date?: string | null
+          appointment_time?: string | null
+          created_at?: string
+          created_by?: string
+          customer_name?: string
+          customer_phone?: string
+          id?: string
+          notes?: string | null
+          status?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       profiles: {
         Row: {
           created_at: string | null

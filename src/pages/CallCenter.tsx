@@ -8,6 +8,7 @@ import { MetricCard } from "@/components/MetricCard";
 import { CallCenterForm } from "@/components/CallCenterForm";
 import { CallCenterRecentList } from "@/components/CallCenterRecentList";
 import { FloatingActionButton } from "@/components/FloatingActionButton";
+import { CustomerSearch } from "@/components/CustomerSearch";
 import { toast } from "sonner";
 
 const CallCenter = () => {
@@ -115,6 +116,8 @@ const CallCenter = () => {
         <MetricCard title="Missed Calls" value="15" change="-3.2%" trend="down" icon={PhoneMissed} />
         <MetricCard title="Avg Duration" value="4:25" change="+5.8%" trend="up" icon={PhoneCall} />
       </div>
+
+      <CustomerSearch />
 
       <CallCenterForm onCallAdded={handleCallAdded} />
 
