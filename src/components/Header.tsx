@@ -3,6 +3,7 @@ import { SidebarTrigger } from "@/components/ui/sidebar";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import { ThemeToggle } from "@/components/ThemeToggle";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -46,6 +47,7 @@ export function Header() {
         <Button variant="ghost" size="icon">
           <Settings className="h-5 w-5" />
         </Button>
+        <ThemeToggle />
         
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
