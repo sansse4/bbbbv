@@ -43,10 +43,8 @@ const sourceOptions = [
 
 const paymentMethodOptions = [
   { value: "cash", label: "كاش" },
-  { value: "bank_transfer", label: "تحويل بنكي" },
-  { value: "check", label: "صك" },
-  { value: "installment", label: "تقسيط" },
-  { value: "other", label: "أخرى" },
+  { value: "real_estate_bank_initiative", label: "مبادرة المصرف العقاري" },
+  { value: "installments", label: "دفعات" },
 ];
 
 export const SalesForm = ({ onSaleAdded }: SalesFormProps) => {
