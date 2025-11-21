@@ -18,6 +18,8 @@ import Analytics from "./pages/Analytics";
 import Reception from "./pages/Reception";
 import Login from "./pages/Login";
 import UserManagement from "./pages/UserManagement";
+import Employees from "./pages/Employees";
+import EmployeeProfile from "./pages/EmployeeProfile";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -51,6 +53,8 @@ const App = () => (
                               <Route path="/analytics" element={<Analytics />} />
                               <Route path="/reception" element={<Reception />} />
                               <Route path="/users" element={<UserManagement />} />
+                              <Route path="/employees" element={<Employees />} />
+                              <Route path="/employees/:employeeId" element={<EmployeeProfile />} />
                               <Route path="*" element={<NotFound />} />
                             </Routes>
                           </PageTransition>
