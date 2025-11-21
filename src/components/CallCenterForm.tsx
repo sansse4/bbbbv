@@ -182,7 +182,7 @@ export const CallCenterForm = ({ onCallAdded }: CallCenterFormProps) => {
                 name="status"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel className="text-sm">حالة الوزبون</FormLabel>
+                    <FormLabel className="text-sm">حالة الزبون</FormLabel>
                     <Select
                       onValueChange={field.onChange}
                       value={field.value}
