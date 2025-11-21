@@ -77,10 +77,10 @@ export function AppSidebar() {
 
   const visibleMenuItems = getVisibleMenuItems();
   return <Sidebar className={open ? "w-64" : "w-16"} collapsible="icon">
-      <SidebarContent className="bg-sidebar">
-        <div className="p-4 border-b border-sidebar-border">
+      <SidebarContent className="bg-sidebar transition-all duration-300">
+        <div className="p-4 border-b border-sidebar-border transition-all duration-300">
           <div className="flex items-center gap-2">
-            <img src={roayaLogo} alt="Roaya Real Estate" className={open ? "h-12 w-auto" : "h-10 w-10 object-contain"} />
+            <img src={roayaLogo} alt="Roaya Real Estate" className={`transition-all duration-300 ${open ? "h-12 w-auto" : "h-10 w-10 object-contain"}`} />
           </div>
         </div>
 
@@ -90,9 +90,9 @@ export function AppSidebar() {
             <SidebarMenu>
               {visibleMenuItems.map(item => <SidebarMenuItem key={item.title}>
                   <SidebarMenuButton asChild>
-                    <NavLink to={item.url} end={item.url === "/"} className="hover:bg-sidebar-accent" activeClassName="bg-sidebar-accent text-sidebar-primary font-medium">
-                      <item.icon className="h-5 w-5" />
-                      {open && <span>{item.title}</span>}
+                    <NavLink to={item.url} end={item.url === "/"} className="hover:bg-sidebar-accent transition-all duration-200" activeClassName="bg-sidebar-accent text-sidebar-primary font-medium">
+                      <item.icon className={`h-5 w-5 transition-all duration-300 ${!open && 'scale-110'}`} />
+                      <span className={`transition-all duration-300 ${open ? 'opacity-100 translate-x-0' : 'opacity-0 -translate-x-2 absolute'}`}>{item.title}</span>
                     </NavLink>
                   </SidebarMenuButton>
                 </SidebarMenuItem>)}
