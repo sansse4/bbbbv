@@ -62,7 +62,7 @@ export const CallCenterForm = ({ onCallAdded }: CallCenterFormProps) => {
         name: data.name,
         phone: data.phone,
         appointment: data.appointment,
-        status: data.status,
+        customerStatus: data.status,
         notes: data.notes || "",
       });
 
