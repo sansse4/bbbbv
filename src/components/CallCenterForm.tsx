@@ -23,6 +23,7 @@ import {
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { toast } from "@/hooks/use-toast";
 import { Phone } from "lucide-react";
+import { useAuth } from "@/contexts/AuthContext";
 
 const CALLCENTER_API_URL = "https://script.google.com/macros/s/AKfycbw_1JsOaf8ZtRigw8Bn6FWcolqzK9CpPB7ZxzRm9YQK6zeFJ_Nxj-yTegCc8FcKqmt5/exec";
 
@@ -42,6 +43,7 @@ interface CallCenterFormProps {
 
 export const CallCenterForm = ({ onCallAdded }: CallCenterFormProps) => {
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const { profile } = useAuth();
 
   const form = useForm<CallCenterFormValues>({
     resolver: zodResolver(callCenterFormSchema),
@@ -64,6 +66,7 @@ export const CallCenterForm = ({ onCallAdded }: CallCenterFormProps) => {
         appointment: data.appointment,
         status: data.status,
         notes: data.notes || "",
+        employeeName: profile?.full_name || "",
       });
 
       const response = await fetch(`${CALLCENTER_API_URL}?${params.toString()}`);
