@@ -24,7 +24,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { toast } from "@/hooks/use-toast";
 import { Phone } from "lucide-react";
 
-const CALLCENTER_API_URL = "https://script.google.com/macros/s/AKfycbwReeHcC4R1E4EQivZ2HRWQ_fZtqxePjKjDh81RdwITxy6JSSWIAHwtXtzHhdWLSRP_/exec";
+const CALLCENTER_API_URL = "https://script.google.com/macros/s/AKfycbw_1JsOaf8ZtRigw8Bn6FWcolqzK9CpPB7ZxzRm9YQK6zeFJ_Nxj-yTegCc8FcKqmt5/exec";
 
 const callCenterFormSchema = z.object({
   name: z.string().min(1, "الاسم مطلوب"),
