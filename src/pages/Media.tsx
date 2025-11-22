@@ -129,7 +129,7 @@ const Media = () => {
 
               <div className="space-y-2">
                 <Label htmlFor="customerStatus">
-                  حالة العميل <span className="text-destructive">*</span>
+                  حالة الزبون <span className="text-destructive">*</span>
                 </Label>
                 <Select
                   value={formData.customerStatus}
