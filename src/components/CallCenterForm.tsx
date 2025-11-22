@@ -60,13 +60,15 @@ export const CallCenterForm = ({ onCallAdded }: CallCenterFormProps) => {
     setIsSubmitting(true);
 
     try {
+      const employeeName = profile?.full_name || "غير محدد";
+      
       const params = new URLSearchParams({
         name: data.name,
         phone: data.phone,
         appointment: data.appointment,
         status: data.status,
         notes: data.notes || "",
-        employeeName: profile?.full_name || "",
+        employee: employeeName,
       });
 
       const response = await fetch(`${CALLCENTER_API_URL}?${params.toString()}`);
