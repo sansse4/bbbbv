@@ -25,7 +25,7 @@ import { toast } from "@/hooks/use-toast";
 import { Phone } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 
-const CALLCENTER_API_URL = "https://script.google.com/macros/s/AKfycbw_1JsOaf8ZtRigw8Bn6FWcolqzK9CpPB7ZxzRm9YQK6zeFJ_Nxj-yTegCc8FcKqmt5/exec";
+const CALLCENTER_API_URL = "https://script.google.com/macros/s/AKfycbyoJr4D2YxvNwsveg5giE6rAOmSSLjtnUyqBFg3MSPrAo9ov2Yu83qKEk8RkGbnR0g/exec";
 
 const callCenterFormSchema = z.object({
   name: z.string().min(1, "الاسم مطلوب"),
@@ -146,6 +146,17 @@ export const CallCenterForm = ({ onCallAdded }: CallCenterFormProps) => {
                 </FormItem>
               )}
             />
+
+            <FormItem>
+              <FormLabel>اسم الموظف</FormLabel>
+              <FormControl>
+                <Input
+                  value={profile?.full_name || ""}
+                  disabled
+                  className="bg-muted"
+                />
+              </FormControl>
+            </FormItem>
 
             <FormField
               control={form.control}
