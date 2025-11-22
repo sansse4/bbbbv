@@ -11,7 +11,8 @@ const Media = () => {
   const [formData, setFormData] = useState({
     name: "",
     phone: "",
-    note: "",
+    customerStatus: "",
+    notes: "",
   });
   const [isSubmitting, setIsSubmitting] = useState(false);
   const { toast } = useToast();
@@ -20,7 +21,7 @@ const Media = () => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    if (!formData.name || !formData.phone) {
+    if (!formData.name || !formData.phone || !formData.customerStatus) {
       toast({
         title: "خطأ",
         description: "يرجى ملء جميع الحقول المطلوبة",
@@ -35,11 +36,12 @@ const Media = () => {
       const params = new URLSearchParams({
         name: formData.name,
         phone: formData.phone,
-        note: formData.note || "",
+        customerStatus: formData.customerStatus || "",
+        notes: formData.notes || "",
       });
 
       const response = await fetch(
-        `https://script.google.com/macros/s/AKfycbwcAwdwb2UR1l3A5R-AbjAe8MQ-u6bpvSYuytpl7Ps00OTV-nYloaKi36NnjR0O1_VBIA/exec?${params}`
+        `https://script.google.com/macros/s/AKfycby_ZUUZum7NGy53xtsOBuwcSgggyZKC64r1TdOhFpAn9gmXAxU8QT764w0Vf4saEqfk/exec?${params}`
       );
 
       if (response.ok) {
@@ -51,7 +53,8 @@ const Media = () => {
         setFormData({
           name: "",
           phone: "",
-          note: "",
+          customerStatus: "",
+          notes: "",
         });
 
         setTimeout(() => {
@@ -125,15 +128,17 @@ const Media = () => {
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="note">ملاحظات</Label>
+                <Label htmlFor="customerStatus">
+                  حالة العميل <span className="text-destructive">*</span>
+                </Label>
                 <Select
-                  value={formData.note}
+                  value={formData.customerStatus}
                   onValueChange={(value) =>
-                    setFormData({ ...formData, note: value })
+                    setFormData({ ...formData, customerStatus: value })
                   }
                 >
-                  <SelectTrigger id="note" dir="rtl">
-                    <SelectValue placeholder="اختر حالة" />
+                  <SelectTrigger id="customerStatus" dir="rtl">
+                    <SelectValue placeholder="اختر حالة العميل" />
                   </SelectTrigger>
                   <SelectContent>
                     <SelectItem value="مهتم">مهتم</SelectItem>
@@ -143,6 +148,20 @@ const Media = () => {
                   </SelectContent>
                 </Select>
               </div>
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="notes">ملاحظات</Label>
+              <Input
+                id="notes"
+                type="text"
+                value={formData.notes}
+                onChange={(e) =>
+                  setFormData({ ...formData, notes: e.target.value })
+                }
+                placeholder="أدخل ملاحظات إضافية"
+                dir="rtl"
+              />
             </div>
 
             <Button type="submit" disabled={isSubmitting}>
