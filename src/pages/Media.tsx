@@ -36,7 +36,7 @@ const Media = () => {
       const params = new URLSearchParams({
         name: formData.name,
         phone: formData.phone,
-        customerStatus: formData.customerStatus || "",
+        status: formData.customerStatus || "",
         notes: formData.notes || "",
       });
 
