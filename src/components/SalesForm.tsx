@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
@@ -9,6 +9,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { toast } from "@/hooks/use-toast";
 import { Loader2 } from "lucide-react";
+import { useAuth } from "@/contexts/AuthContext";
 
 const saleSchema = z.object({
   sales_agent: z.string().min(1, "اسم موظف المبيعات مطلوب"),
@@ -50,6 +51,7 @@ const paymentMethodOptions = [
 export const SalesForm = ({ onSaleAdded }: SalesFormProps) => {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [showSourceOther, setShowSourceOther] = useState(false);
+  const { profile } = useAuth();
 
   const form = useForm<SaleFormData>({
     resolver: zodResolver(saleSchema),
@@ -67,6 +69,13 @@ export const SalesForm = ({ onSaleAdded }: SalesFormProps) => {
       remaining_amount: 0,
     },
   });
+
+  // Auto-fill employee name from profile
+  useEffect(() => {
+    if (profile?.full_name) {
+      form.setValue("sales_agent", profile.full_name);
+    }
+  }, [profile, form]);
 
   const onSubmit = async (data: SaleFormData) => {
     setIsSubmitting(true);
@@ -258,6 +267,8 @@ export const SalesForm = ({ onSaleAdded }: SalesFormProps) => {
                   {...form.register("sales_agent")}
                   placeholder="اسم الموظف"
                   className="h-9"
+                  disabled
+                  readOnly
                 />
                 {form.formState.errors.sales_agent && (
                   <p className="text-xs text-destructive">{form.formState.errors.sales_agent.message}</p>
