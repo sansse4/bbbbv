@@ -91,10 +91,10 @@ export const SalesForm = ({ onSaleAdded }: SalesFormProps) => {
       )?.label || data.payment_method;
 
       const params = new URLSearchParams({
-        sales_agent: data.sales_agent,
+        employee_name: data.sales_agent,
         customer_name: data.customer_name,
         mobile: data.mobile,
-        location: data.location,
+        city: data.location,
         source: sourceValue,
         block_number: data.block_number,
         house_number: data.house_number,
