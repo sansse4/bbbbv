@@ -91,7 +91,7 @@ export const SalesForm = ({ onSaleAdded }: SalesFormProps) => {
       )?.label || data.payment_method;
 
       const params = new URLSearchParams({
-        employee_name: data.sales_agent,
+        "اسم موظف المبيعات": data.sales_agent,
         customer_name: data.customer_name,
         mobile: data.mobile,
         city: data.location,
