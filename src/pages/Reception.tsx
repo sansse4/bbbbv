@@ -6,7 +6,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
 
-const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxIDrDCDW3jJJvLNQ-yS1ZDFkBwYgy67pdDaw4GxNXOIahTkj9rxzodr2axHUgS1rmq/exec";
+const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbzZbK7_1q7oI6dckHQvR5aeeB3cj21BYI_v5pDDoHqdNnjxycK7Swvw1jR2uYCdvZIN/exec";
 
 export default function Reception() {
   const [formData, setFormData] = useState({
