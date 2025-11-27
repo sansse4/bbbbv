@@ -12,7 +12,6 @@ import { CustomerSearch } from "@/components/CustomerSearch";
 import { toast } from "sonner";
 import { useImportedCalls, ImportedCall } from "@/hooks/useImportedCalls";
 import { CallStatusDialog } from "@/components/CallStatusDialog";
-
 const CallCenter = () => {
   const [recentCalls, setRecentCalls] = useState<Array<{
     name: string;
@@ -22,12 +21,14 @@ const CallCenter = () => {
     notes?: string;
     timestamp: string;
   }>>([]);
-  
   const [selectedCall, setSelectedCall] = useState<ImportedCall | null>(null);
   const [dialogOpen, setDialogOpen] = useState(false);
-  
-  const { calls: importedCalls, isLoading, error, updateCallStatus } = useImportedCalls();
-
+  const {
+    calls: importedCalls,
+    isLoading,
+    error,
+    updateCallStatus
+  } = useImportedCalls();
   const handleCallAdded = (call: {
     name: string;
     phone: string;
@@ -42,17 +43,15 @@ const CallCenter = () => {
         month: "2-digit",
         day: "2-digit",
         hour: "2-digit",
-        minute: "2-digit",
-      }),
+        minute: "2-digit"
+      })
     };
-    setRecentCalls((prev) => [newCall, ...prev].slice(0, 10));
+    setRecentCalls(prev => [newCall, ...prev].slice(0, 10));
   };
-
   const handleCallClick = (call: ImportedCall) => {
     setSelectedCall(call);
     setDialogOpen(true);
   };
-
   const handleStatusUpdate = (status: "contacted" | "no-answer" | "wrong-number") => {
     if (selectedCall) {
       updateCallStatus(selectedCall.phone, status);
@@ -72,7 +71,6 @@ const CallCenter = () => {
         return "bg-secondary text-secondary-foreground";
     }
   };
-
   const getStatusLabel = (status: ImportedCall["status"]) => {
     switch (status) {
       case "contacted":
@@ -87,13 +85,11 @@ const CallCenter = () => {
         return status;
     }
   };
-
   const handleQuickCall = () => {
     toast.success("Quick call initiated", {
-      description: "Opening call interface...",
+      description: "Opening call interface..."
     });
   };
-
   return <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div>
@@ -123,21 +119,14 @@ const CallCenter = () => {
 
       <Card>
         <CardHeader>
-          <CardTitle>المكالمات المستوردة من Google Sheet</CardTitle>
+          <CardTitle>المكالمات   </CardTitle>
         </CardHeader>
         <CardContent>
-          {isLoading ? (
-            <div className="flex items-center justify-center py-8">
+          {isLoading ? <div className="flex items-center justify-center py-8">
               <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
-            </div>
-          ) : error ? (
-            <div className="text-center py-8 text-destructive">{error}</div>
-          ) : importedCalls.length === 0 ? (
-            <div className="text-center py-8 text-muted-foreground">
+            </div> : error ? <div className="text-center py-8 text-destructive">{error}</div> : importedCalls.length === 0 ? <div className="text-center py-8 text-muted-foreground">
               لا توجد مكالمات مستوردة
-            </div>
-          ) : (
-            <Table>
+            </div> : <Table>
               <TableHeader>
                 <TableRow>
                   <TableHead>الاسم</TableHead>
@@ -148,12 +137,7 @@ const CallCenter = () => {
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {importedCalls.map((call, index) => (
-                  <TableRow 
-                    key={`${call.phone}-${index}`}
-                    className="cursor-pointer hover:bg-muted/50"
-                    onClick={() => handleCallClick(call)}
-                  >
+                {importedCalls.map((call, index) => <TableRow key={`${call.phone}-${index}`} className="cursor-pointer hover:bg-muted/50" onClick={() => handleCallClick(call)}>
                     <TableCell className="font-medium">{call.name}</TableCell>
                     <TableCell>{call.phone}</TableCell>
                     <TableCell className="text-sm text-muted-foreground">
@@ -165,40 +149,22 @@ const CallCenter = () => {
                       </Badge>
                     </TableCell>
                     <TableCell>
-                      <Button 
-                        variant="ghost" 
-                        size="sm"
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          handleCallClick(call);
-                        }}
-                      >
+                      <Button variant="ghost" size="sm" onClick={e => {
+                  e.stopPropagation();
+                  handleCallClick(call);
+                }}>
                         تحديث الحالة
                       </Button>
                     </TableCell>
-                  </TableRow>
-                ))}
+                  </TableRow>)}
               </TableBody>
-            </Table>
-          )}
+            </Table>}
         </CardContent>
       </Card>
 
-      {selectedCall && (
-        <CallStatusDialog
-          open={dialogOpen}
-          onOpenChange={setDialogOpen}
-          callData={selectedCall}
-          onStatusUpdate={handleStatusUpdate}
-        />
-      )}
+      {selectedCall && <CallStatusDialog open={dialogOpen} onOpenChange={setDialogOpen} callData={selectedCall} onStatusUpdate={handleStatusUpdate} />}
 
-      <FloatingActionButton
-        icon={Phone}
-        label="Make quick call"
-        onClick={handleQuickCall}
-        position="bottom-right"
-      />
+      <FloatingActionButton icon={Phone} label="Make quick call" onClick={handleQuickCall} position="bottom-right" />
     </div>;
 };
 export default CallCenter;
