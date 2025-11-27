@@ -3,13 +3,15 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
-import { Phone, PhoneCall, PhoneIncoming, PhoneMissed } from "lucide-react";
+import { Phone, PhoneCall, PhoneIncoming, PhoneMissed, Loader2 } from "lucide-react";
 import { MetricCard } from "@/components/MetricCard";
 import { CallCenterForm } from "@/components/CallCenterForm";
 import { CallCenterRecentList } from "@/components/CallCenterRecentList";
 import { FloatingActionButton } from "@/components/FloatingActionButton";
 import { CustomerSearch } from "@/components/CustomerSearch";
 import { toast } from "sonner";
+import { useImportedCalls, ImportedCall } from "@/hooks/useImportedCalls";
+import { CallStatusDialog } from "@/components/CallStatusDialog";
 
 const CallCenter = () => {
   const [recentCalls, setRecentCalls] = useState<Array<{
@@ -20,6 +22,11 @@ const CallCenter = () => {
     notes?: string;
     timestamp: string;
   }>>([]);
+  
+  const [selectedCall, setSelectedCall] = useState<ImportedCall | null>(null);
+  const [dialogOpen, setDialogOpen] = useState(false);
+  
+  const { calls: importedCalls, isLoading, error, updateCallStatus } = useImportedCalls();
 
   const handleCallAdded = (call: {
     name: string;
@@ -40,54 +47,45 @@ const CallCenter = () => {
     };
     setRecentCalls((prev) => [newCall, ...prev].slice(0, 10));
   };
-  const callLogs = [{
-    id: 1,
-    caller: "Ahmed Hassan",
-    type: "inbound",
-    duration: "5:32",
-    status: "completed",
-    time: "10:30 AM"
-  }, {
-    id: 2,
-    caller: "Sara Mohammed",
-    type: "outbound",
-    duration: "3:45",
-    status: "completed",
-    time: "10:15 AM"
-  }, {
-    id: 3,
-    caller: "Khaled Ali",
-    type: "inbound",
-    duration: "0:00",
-    status: "missed",
-    time: "09:58 AM"
-  }, {
-    id: 4,
-    caller: "Fatima Omar",
-    type: "outbound",
-    duration: "8:12",
-    status: "completed",
-    time: "09:45 AM"
-  }, {
-    id: 5,
-    caller: "Ibrahim Mahmoud",
-    type: "inbound",
-    duration: "6:28",
-    status: "completed",
-    time: "09:30 AM"
-  }];
-  const getStatusColor = (status: string) => {
+
+  const handleCallClick = (call: ImportedCall) => {
+    setSelectedCall(call);
+    setDialogOpen(true);
+  };
+
+  const handleStatusUpdate = (status: "contacted" | "no-answer" | "wrong-number") => {
+    if (selectedCall) {
+      updateCallStatus(selectedCall.phone, status);
+    }
+  };
+  const getStatusColor = (status: ImportedCall["status"]) => {
     switch (status) {
-      case "completed":
+      case "contacted":
         return "bg-success text-success-foreground";
-      case "missed":
+      case "no-answer":
         return "bg-destructive text-destructive-foreground";
+      case "wrong-number":
+        return "bg-muted text-muted-foreground";
+      case "pending":
+        return "bg-destructive/80 text-destructive-foreground font-bold";
       default:
         return "bg-secondary text-secondary-foreground";
     }
   };
-  const getTypeIcon = (type: string) => {
-    return type === "inbound" ? PhoneIncoming : PhoneCall;
+
+  const getStatusLabel = (status: ImportedCall["status"]) => {
+    switch (status) {
+      case "contacted":
+        return "تم الاتصال";
+      case "no-answer":
+        return "لم يتم الرد";
+      case "wrong-number":
+        return "رقم خطأ";
+      case "pending":
+        return "لم يتم الاتصال";
+      default:
+        return status;
+    }
   };
 
   const handleQuickCall = () => {
@@ -125,49 +123,75 @@ const CallCenter = () => {
 
       <Card>
         <CardHeader>
-          <CardTitle>Recent Call Activity</CardTitle>
+          <CardTitle>المكالمات المستوردة من Google Sheet</CardTitle>
         </CardHeader>
         <CardContent>
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>Caller</TableHead>
-                <TableHead>Type</TableHead>
-                <TableHead>Duration</TableHead>
-                <TableHead>Status</TableHead>
-                <TableHead>Time</TableHead>
-                <TableHead>Action</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {callLogs.map(call => {
-              const TypeIcon = getTypeIcon(call.type);
-              return <TableRow key={call.id}>
-                    <TableCell className="font-medium">{call.caller}</TableCell>
-                    <TableCell>
-                      <div className="flex items-center gap-2">
-                        <TypeIcon className="h-4 w-4 text-muted-foreground" />
-                        <span className="capitalize">{call.type}</span>
-                      </div>
+          {isLoading ? (
+            <div className="flex items-center justify-center py-8">
+              <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+            </div>
+          ) : error ? (
+            <div className="text-center py-8 text-destructive">{error}</div>
+          ) : importedCalls.length === 0 ? (
+            <div className="text-center py-8 text-muted-foreground">
+              لا توجد مكالمات مستوردة
+            </div>
+          ) : (
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>الاسم</TableHead>
+                  <TableHead>رقم الهاتف</TableHead>
+                  <TableHead>وقت التسجيل</TableHead>
+                  <TableHead>الحالة</TableHead>
+                  <TableHead>إجراء</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {importedCalls.map((call, index) => (
+                  <TableRow 
+                    key={`${call.phone}-${index}`}
+                    className="cursor-pointer hover:bg-muted/50"
+                    onClick={() => handleCallClick(call)}
+                  >
+                    <TableCell className="font-medium">{call.name}</TableCell>
+                    <TableCell>{call.phone}</TableCell>
+                    <TableCell className="text-sm text-muted-foreground">
+                      {new Date(call.timestamp).toLocaleString("ar-IQ")}
                     </TableCell>
-                    <TableCell>{call.duration}</TableCell>
                     <TableCell>
                       <Badge className={getStatusColor(call.status)}>
-                        {call.status}
+                        {getStatusLabel(call.status)}
                       </Badge>
                     </TableCell>
-                    <TableCell>{call.time}</TableCell>
                     <TableCell>
-                      <Button variant="ghost" size="sm">
-                        View Details
+                      <Button 
+                        variant="ghost" 
+                        size="sm"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleCallClick(call);
+                        }}
+                      >
+                        تحديث الحالة
                       </Button>
                     </TableCell>
-                  </TableRow>;
-            })}
-            </TableBody>
-          </Table>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          )}
         </CardContent>
       </Card>
+
+      {selectedCall && (
+        <CallStatusDialog
+          open={dialogOpen}
+          onOpenChange={setDialogOpen}
+          callData={selectedCall}
+          onStatusUpdate={handleStatusUpdate}
+        />
+      )}
 
       <FloatingActionButton
         icon={Phone}
