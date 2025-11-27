@@ -13,6 +13,10 @@ export default function Reception() {
     name: "",
     phone: "",
     address: "",
+    profession: "",
+    family_members: "",
+    house_category: "",
+    house_number: "",
     source: "",
   });
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -22,7 +26,7 @@ export default function Reception() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    if (!formData.name || !formData.phone || !formData.address) {
+    if (!formData.name || !formData.phone || !formData.address || !formData.profession || !formData.family_members || !formData.house_category || !formData.house_number) {
       toast({
         title: "Error",
         description: "Please fill in all required fields",
@@ -36,8 +40,12 @@ export default function Reception() {
     try {
       const params = new URLSearchParams({
         name: formData.name,
-        phone: formData.phone,
         address: formData.address,
+        phone: formData.phone,
+        "المهنة": formData.profession,
+        "عدد افراد الاسرة": formData.family_members,
+        "فئة الدار": formData.house_category,
+        "رقم الدار": formData.house_number,
         source: formData.source || "",
       });
 
@@ -57,6 +65,10 @@ export default function Reception() {
         name: "",
         phone: "",
         address: "",
+        profession: "",
+        family_members: "",
+        house_category: "",
+        house_number: "",
         source: "",
       });
       
@@ -127,6 +139,70 @@ export default function Reception() {
                   setFormData({ ...formData, address: e.target.value })
                 }
                 placeholder="City / Area"
+                required
+              />
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="profession">
+                المهنة <span className="text-destructive">*</span>
+              </Label>
+              <Input
+                id="profession"
+                type="text"
+                value={formData.profession}
+                onChange={(e) =>
+                  setFormData({ ...formData, profession: e.target.value })
+                }
+                placeholder="Enter profession"
+                required
+              />
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="family_members">
+                عدد افراد الاسرة <span className="text-destructive">*</span>
+              </Label>
+              <Input
+                id="family_members"
+                type="number"
+                value={formData.family_members}
+                onChange={(e) =>
+                  setFormData({ ...formData, family_members: e.target.value })
+                }
+                placeholder="Enter number of family members"
+                required
+              />
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="house_category">
+                فئة الدار <span className="text-destructive">*</span>
+              </Label>
+              <Input
+                id="house_category"
+                type="text"
+                value={formData.house_category}
+                onChange={(e) =>
+                  setFormData({ ...formData, house_category: e.target.value })
+                }
+                placeholder="Enter house category"
+                required
+              />
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="house_number">
+                رقم الدار <span className="text-destructive">*</span>
+              </Label>
+              <Input
+                id="house_number"
+                type="text"
+                value={formData.house_number}
+                onChange={(e) =>
+                  setFormData({ ...formData, house_number: e.target.value })
+                }
+                placeholder="Enter house number"
                 required
               />
             </div>
