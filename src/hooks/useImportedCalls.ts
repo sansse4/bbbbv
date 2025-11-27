@@ -17,27 +17,57 @@ export const useImportedCalls = () => {
   const fetchCalls = async () => {
     try {
       setIsLoading(true);
-      const response = await fetch(IMPORT_SHEET_URL);
+      setError(null);
+      
+      const response = await fetch(IMPORT_SHEET_URL, {
+        method: 'GET',
+        mode: 'cors',
+      });
       
       if (!response.ok) {
-        throw new Error("Failed to fetch calls");
+        throw new Error(`HTTP error! status: ${response.status}`);
       }
 
-      const data = await response.json();
+      const contentType = response.headers.get("content-type");
+      let data;
+      
+      if (contentType && contentType.includes("application/json")) {
+        data = await response.json();
+      } else {
+        const text = await response.text();
+        console.log("Response text:", text);
+        try {
+          data = JSON.parse(text);
+        } catch {
+          throw new Error("Invalid JSON response");
+        }
+      }
+      
+      // Handle both array and object responses
+      const dataArray = Array.isArray(data) ? data : (data.data || []);
+      
+      if (!Array.isArray(dataArray) || dataArray.length === 0) {
+        setCalls([]);
+        setError(null);
+        return;
+      }
       
       // Transform the data to match our interface
-      const transformedCalls = data.map((item: any) => ({
-        name: item.name || item.الاسم || "",
-        phone: item.phone || item.رقم_الهاتف || item.الرقم || "",
-        timestamp: item.timestamp || item.وقت_التسجيل || new Date().toISOString(),
-        status: "pending" as const,
-      }));
+      const transformedCalls = dataArray
+        .filter((item: any) => item && (item.name || item.الاسم || item.phone || item.رقم_الهاتف))
+        .map((item: any) => ({
+          name: item.name || item.الاسم || item.customerName || "",
+          phone: item.phone || item.رقم_الهاتف || item.الرقم || item.phoneNumber || "",
+          timestamp: item.timestamp || item.وقت_التسجيل || item.date || new Date().toISOString(),
+          status: "pending" as const,
+        }));
 
       setCalls(transformedCalls);
       setError(null);
     } catch (err) {
       console.error("Error fetching calls:", err);
-      setError("فشل تحميل البيانات");
+      setError("فشل تحميل البيانات من Google Sheet");
+      setCalls([]);
     } finally {
       setIsLoading(false);
     }
