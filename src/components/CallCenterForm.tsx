@@ -30,6 +30,7 @@ const CALLCENTER_API_URL = "https://script.google.com/macros/s/AKfycbyoJr4D2YxvN
 const callCenterFormSchema = z.object({
   name: z.string().min(1, "الاسم مطلوب"),
   phone: z.string().min(1, "رقم الهاتف مطلوب").regex(/^[\d+\s()-]+$/, "رقم الهاتف غير صحيح"),
+  call_type: z.string().min(1, "نوع الاتصال مطلوب"),
   appointment: z.string().min(1, "حجز الموعد مطلوب"),
   status: z.string().min(1, "حالة الزبون مطلوبة"),
   notes: z.string().optional(),
@@ -43,6 +44,7 @@ interface CallCenterFormProps {
 
 export const CallCenterForm = ({ onCallAdded }: CallCenterFormProps) => {
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [showForm, setShowForm] = useState(false);
   const { profile } = useAuth();
 
   const form = useForm<CallCenterFormValues>({
@@ -50,6 +52,7 @@ export const CallCenterForm = ({ onCallAdded }: CallCenterFormProps) => {
     defaultValues: {
       name: "",
       phone: "",
+      call_type: "",
       appointment: "",
       status: "",
       notes: "",
@@ -65,6 +68,7 @@ export const CallCenterForm = ({ onCallAdded }: CallCenterFormProps) => {
       const params = new URLSearchParams({
         name: data.name,
         phone: data.phone,
+        call_type: data.call_type,
         appointment: data.appointment,
         status: data.status,
         notes: data.notes || "",
@@ -105,11 +109,22 @@ export const CallCenterForm = ({ onCallAdded }: CallCenterFormProps) => {
   return (
     <Card>
       <CardHeader>
-        <CardTitle className="flex items-center gap-2">
-          <Phone className="h-5 w-5" />
-          تسجيل مكالمة جديدة
+        <CardTitle className="flex items-center justify-between">
+          <div className="flex items-center gap-2">
+            <Phone className="h-5 w-5" />
+            تسجيل مكالمة
+          </div>
+          <Button
+            type="button"
+            variant="outline"
+            size="sm"
+            onClick={() => setShowForm(!showForm)}
+          >
+            {showForm ? "إخفاء النموذج" : "تسجيل يدوي"}
+          </Button>
         </CardTitle>
       </CardHeader>
+      {showForm && (
       <CardContent>
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
@@ -144,6 +159,32 @@ export const CallCenterForm = ({ onCallAdded }: CallCenterFormProps) => {
                       disabled={isSubmitting}
                     />
                   </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
+            <FormField
+              control={form.control}
+              name="call_type"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>نوع الاتصال</FormLabel>
+                  <Select
+                    onValueChange={field.onChange}
+                    value={field.value}
+                    disabled={isSubmitting}
+                  >
+                    <FormControl>
+                      <SelectTrigger>
+                        <SelectValue placeholder="اختر نوع الاتصال" />
+                      </SelectTrigger>
+                    </FormControl>
+                    <SelectContent>
+                      <SelectItem value="وارد">وارد</SelectItem>
+                      <SelectItem value="صادر">صادر</SelectItem>
+                    </SelectContent>
+                  </Select>
                   <FormMessage />
                 </FormItem>
               )}
@@ -245,6 +286,7 @@ export const CallCenterForm = ({ onCallAdded }: CallCenterFormProps) => {
           </form>
         </Form>
       </CardContent>
+      )}
     </Card>
   );
 };
