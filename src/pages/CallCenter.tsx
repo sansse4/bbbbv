@@ -131,6 +131,8 @@ const CallCenter = () => {
                 <TableRow>
                   <TableHead>الاسم</TableHead>
                   <TableHead>رقم الهاتف</TableHead>
+                  <TableHead>حالة الزبون</TableHead>
+                  <TableHead>ملاحظات</TableHead>
                   <TableHead>وقت التسجيل</TableHead>
                   <TableHead>الحالة</TableHead>
                   <TableHead>إجراء</TableHead>
@@ -140,6 +142,8 @@ const CallCenter = () => {
                 {importedCalls.map((call, index) => <TableRow key={`${call.phone}-${index}`} className="cursor-pointer hover:bg-muted/50" onClick={() => handleCallClick(call)}>
                     <TableCell className="font-medium">{call.name}</TableCell>
                     <TableCell>{call.phone}</TableCell>
+                    <TableCell className="text-sm">{call.customerStatus || "-"}</TableCell>
+                    <TableCell className="text-sm max-w-[200px] truncate">{call.notes || "-"}</TableCell>
                     <TableCell className="text-sm text-muted-foreground">
                       {new Date(call.timestamp).toLocaleString("ar-IQ")}
                     </TableCell>

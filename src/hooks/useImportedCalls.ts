@@ -3,6 +3,8 @@ import { useState, useEffect } from "react";
 export interface ImportedCall {
   name: string;
   phone: string;
+  customerStatus?: string;
+  notes?: string;
   timestamp: string;
   status: "pending" | "contacted" | "no-answer" | "wrong-number";
 }
@@ -57,8 +59,10 @@ export const useImportedCalls = () => {
         .filter((item: any) => item && (item.name || item.الاسم || item.phone || item.رقم_الهاتف))
         .map((item: any) => ({
           name: item.name || item.الاسم || item.customerName || "",
-          phone: item.phone || item.رقم_الهاتف || item.الرقم || item.phoneNumber || "",
-          timestamp: item.timestamp || item.وقت_التسجيل || item.date || new Date().toISOString(),
+          phone: item.phone || item.رقم_الهاتف || item["رقم الهاتف"] || item.الرقم || item.phoneNumber || "",
+          customerStatus: item.customerStatus || item.حالة_الزبون || item["حالة الزبون"] || "",
+          notes: item.notes || item.ملاحظات || item.ملاحضات || "",
+          timestamp: item.timestamp || item.Timestamp || item.وقت_التسجيل || item.date || new Date().toISOString(),
           status: "pending" as const,
         }));
 
