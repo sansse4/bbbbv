@@ -181,8 +181,9 @@ export const CallCenterForm = ({ onCallAdded }: CallCenterFormProps) => {
                       </SelectTrigger>
                     </FormControl>
                     <SelectContent>
-                      <SelectItem value="وارد">وارد</SelectItem>
-                      <SelectItem value="صادر">صادر</SelectItem>
+                      <SelectItem value="تم الرد">تم الرد</SelectItem>
+                      <SelectItem value="لم يتم الرد">لم يتم الرد</SelectItem>
+                      <SelectItem value="رقم خطأ">رقم خطأ</SelectItem>
                     </SelectContent>
                   </Select>
                   <FormMessage />
