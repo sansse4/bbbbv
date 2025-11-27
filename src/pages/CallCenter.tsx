@@ -3,7 +3,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
-import { Phone, PhoneCall, PhoneIncoming, PhoneMissed, Loader2 } from "lucide-react";
+import { Phone, PhoneCall, PhoneIncoming, PhoneMissed, Loader2, RefreshCw } from "lucide-react";
 import { MetricCard } from "@/components/MetricCard";
 import { CallCenterForm } from "@/components/CallCenterForm";
 import { CallCenterRecentList } from "@/components/CallCenterRecentList";
@@ -27,7 +27,8 @@ const CallCenter = () => {
     calls: importedCalls,
     isLoading,
     error,
-    updateCallStatus
+    updateCallStatus,
+    refetch
   } = useImportedCalls();
   const handleCallAdded = (call: {
     name: string;
@@ -118,8 +119,18 @@ const CallCenter = () => {
       <CallCenterRecentList calls={recentCalls} />
 
       <Card>
-        <CardHeader>
-          <CardTitle>المكالمات   </CardTitle>
+        <CardHeader className="flex flex-row items-center justify-between">
+          <CardTitle>المكالمات</CardTitle>
+          <Button 
+            variant="outline" 
+            size="sm" 
+            onClick={refetch}
+            disabled={isLoading}
+            className="gap-2"
+          >
+            <RefreshCw className={`h-4 w-4 ${isLoading ? 'animate-spin' : ''}`} />
+            تحديث
+          </Button>
         </CardHeader>
         <CardContent>
           {isLoading ? <div className="flex items-center justify-center py-8">
