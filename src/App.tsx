@@ -40,9 +40,9 @@ const App = () => (
                   <SidebarProvider>
                     <div className="min-h-screen flex w-full bg-background">
                       <AppSidebar />
-                      <div className="flex-1 flex flex-col">
+                      <div className="flex-1 flex flex-col w-full">
                         <Header />
-                        <main className="flex-1 p-6 overflow-auto">
+                        <main className="flex-1 p-3 md:p-6 overflow-auto">
                           <PageTransition>
                             <Routes>
                               <Route path="/" element={<Dashboard />} />
