@@ -9,10 +9,13 @@ import { CallCenterForm } from "@/components/CallCenterForm";
 import { CallCenterRecentList } from "@/components/CallCenterRecentList";
 import { FloatingActionButton } from "@/components/FloatingActionButton";
 import { CustomerSearch } from "@/components/CustomerSearch";
+import { CallCard } from "@/components/CallCard";
 import { toast } from "sonner";
 import { useImportedCalls, ImportedCall } from "@/hooks/useImportedCalls";
 import { CallStatusDialog } from "@/components/CallStatusDialog";
+import { useIsMobile } from "@/hooks/use-mobile";
 const CallCenter = () => {
+  const isMobile = useIsMobile();
   const [recentCalls, setRecentCalls] = useState<Array<{
     name: string;
     phone: string;
@@ -133,11 +136,30 @@ const CallCenter = () => {
           </Button>
         </CardHeader>
         <CardContent className="p-0 md:p-6">
-          {isLoading ? <div className="flex items-center justify-center py-8">
+          {isLoading ? (
+            <div className="flex items-center justify-center py-8">
               <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
-            </div> : error ? <div className="text-center py-8 text-destructive px-4">{error}</div> : importedCalls.length === 0 ? <div className="text-center py-8 text-muted-foreground px-4">
+            </div>
+          ) : error ? (
+            <div className="text-center py-8 text-destructive px-4">{error}</div>
+          ) : importedCalls.length === 0 ? (
+            <div className="text-center py-8 text-muted-foreground px-4">
               لا توجد مكالمات مستوردة
-            </div> : <div className="overflow-x-auto">
+            </div>
+          ) : isMobile ? (
+            <div className="space-y-3 p-4">
+              {importedCalls.map((call, index) => (
+                <CallCard
+                  key={`${call.phone}-${index}`}
+                  call={call}
+                  onStatusUpdate={handleCallClick}
+                  getStatusColor={getStatusColor}
+                  getStatusLabel={getStatusLabel}
+                />
+              ))}
+            </div>
+          ) : (
+            <div className="overflow-x-auto">
               <Table>
                 <TableHeader>
                   <TableRow>
@@ -151,7 +173,12 @@ const CallCenter = () => {
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  {importedCalls.map((call, index) => <TableRow key={`${call.phone}-${index}`} className="cursor-pointer hover:bg-muted/50" onClick={() => handleCallClick(call)}>
+                  {importedCalls.map((call, index) => (
+                    <TableRow
+                      key={`${call.phone}-${index}`}
+                      className="cursor-pointer hover:bg-muted/50"
+                      onClick={() => handleCallClick(call)}
+                    >
                       <TableCell className="font-medium whitespace-nowrap">{call.name}</TableCell>
                       <TableCell className="whitespace-nowrap">{call.phone}</TableCell>
                       <TableCell className="text-sm whitespace-nowrap">{call.customerStatus || "-"}</TableCell>
@@ -165,17 +192,23 @@ const CallCenter = () => {
                         </Badge>
                       </TableCell>
                       <TableCell className="whitespace-nowrap">
-                        <Button variant="ghost" size="sm" onClick={e => {
-                    e.stopPropagation();
-                    handleCallClick(call);
-                  }}>
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleCallClick(call);
+                          }}
+                        >
                           تحديث الحالة
                         </Button>
                       </TableCell>
-                    </TableRow>)}
+                    </TableRow>
+                  ))}
                 </TableBody>
               </Table>
-            </div>}
+            </div>
+          )}
         </CardContent>
       </Card>
 
