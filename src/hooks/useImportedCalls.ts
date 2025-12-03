@@ -46,7 +46,7 @@ export const useImportedCalls = () => {
       }
       
       // Handle both array and object responses
-      const dataArray = Array.isArray(data) ? data : (data.data || []);
+      const dataArray = Array.isArray(data) ? data : (data.rows || data.data || []);
       
       if (!Array.isArray(dataArray) || dataArray.length === 0) {
         setCalls([]);
