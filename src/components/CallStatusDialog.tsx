@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
@@ -70,6 +70,18 @@ export const CallStatusDialog = ({
       notes: "",
     },
   });
+
+  // Reset form when dialog opens with new data
+  useEffect(() => {
+    if (open) {
+      form.reset({
+        callStatus: "contacted",
+        customerStatus: "",
+        appointment: "",
+        notes: "",
+      });
+    }
+  }, [open, callData.phone]);
 
   const onSubmit = async (data: CallStatusFormValues) => {
     setIsSubmitting(true);
