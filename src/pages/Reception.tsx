@@ -9,7 +9,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 
-const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwEOffxzz-GzLOX_AyCjRsvGsgmE6zD-kIhWhrEWGVextncIfZnGBxHiVHjTnLc6k6Q/exec";
+const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbw7Hyc7b4OC2P3y8EjCqK8z_DHcJb22NidQq-VNXB_oyXgoIVJwIR55GTslitHodd84/exec";
 
 interface SalesEmployee {
   id: string;
