@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback } from "react";
 
-const DEPOSITS_SHEET_URL = "https://script.google.com/macros/s/AKfycbzSdXyejlXu8t-SroB5D-lwMhPFaeWPCerhMZizPDcIBbJc1JUed5Yc-CG9GLzhXcg/exec?field=قيمة_المقدمة";
+const DEPOSITS_SHEET_BASE_URL = "https://script.google.com/macros/s/AKfycbzSdXyejlXu8t-SroB5D-lwMhPFaeWPCerhMZizPDcIBbJc1JUed5Yc-CG9GLzhXcg/exec";
+const FIELD_NAME = "قيمة_المقدمة";
 
 interface DepositsData {
   total: number;
@@ -19,28 +20,33 @@ export function useTotalDeposits(): DepositsData {
     setError(null);
     
     try {
-      const response = await fetch(DEPOSITS_SHEET_URL);
+      const url = `${DEPOSITS_SHEET_BASE_URL}?field=${encodeURIComponent(FIELD_NAME)}`;
+      console.log("Fetching deposits from:", url);
+      
+      const response = await fetch(url);
       
       if (!response.ok) {
         throw new Error("فشل في جلب بيانات المقدمات");
       }
       
       const data = await response.json();
+      console.log("Deposits API response:", data);
       
-      // Handle different response formats
-      if (typeof data === "number") {
+      // Handle the API response format
+      if (data.success === true && data.total !== undefined) {
+        setTotal(Number(data.total) || 0);
+      } else if (data.success === true && data.sum !== undefined) {
+        setTotal(Number(data.sum) || 0);
+      } else if (typeof data === "number") {
         setTotal(data);
       } else if (data.total !== undefined) {
         setTotal(Number(data.total) || 0);
       } else if (data.sum !== undefined) {
         setTotal(Number(data.sum) || 0);
-      } else if (Array.isArray(data) && data.length > 0) {
-        // If it's an array, try to sum up the values
-        const sum = data.reduce((acc, item) => {
-          const value = item.amount || item.paid || item.deposit || item.value || 0;
-          return acc + (Number(value) || 0);
-        }, 0);
-        setTotal(sum);
+      } else if (data.success === false) {
+        console.error("API Error:", data.message);
+        setError(data.message || "خطأ في جلب البيانات");
+        setTotal(0);
       } else {
         setTotal(0);
       }
