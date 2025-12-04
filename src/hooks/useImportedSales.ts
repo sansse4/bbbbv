@@ -25,7 +25,7 @@ export const useImportedSales = () => {
       setIsLoading(true);
       setError(null);
       
-      const response = await fetch(`${SALES_SHEET_URL}?action=read`, {
+      const response = await fetch(`${SALES_SHEET_URL}?action=getAll`, {
         method: 'GET',
         mode: 'cors',
       });
@@ -58,20 +58,20 @@ export const useImportedSales = () => {
         return;
       }
       
-      // Transform the data to match our interface
+      // Transform the data to match our interface - exact column names from sheet
       const transformedSales = dataArray
-        .filter((item: any) => item && (item.name || item.الاسم || item.phone || item.الهاتف))
+        .filter((item: any) => item && (item["الاسم"] || item.name || item["رقم الهاتف"] || item.phone))
         .map((item: any, index: number) => ({
           id: String(index + 1),
-          name: item.name || item.الاسم || "",
-          address: item.address || item.العنوان || "",
-          phone: item.phone || item.الهاتف || item.رقم_الهاتف || "",
-          profession: item.المهنة || item.profession || "",
-          familyMembers: item["عدد افراد الاسرة"] || item.عدد_افراد_الاسرة || item.familyMembers || "",
-          houseCategory: item["فئة الدار"] || item.فئة_الدار || item.houseCategory || "",
-          houseNumber: item["رقم الدار"] || item.رقم_الدار || item.houseNumber || "",
-          source: item.source || item.المصدر || "",
-          timestamp: item.Timestamp || item.timestamp || item.التاريخ || "",
+          name: item["الاسم"] || item.name || "",
+          address: item["العنوان"] || item.address || "",
+          phone: item["رقم الهاتف"] || item.phone || "",
+          profession: item["المهنة"] || item.profession || "",
+          familyMembers: item["عدد افراد الاسرة"] || item.familyMembers || "",
+          houseCategory: item["فئة الدار"] || item.houseCategory || "",
+          houseNumber: item["رقم الدار"] || item.houseNumber || "",
+          source: item["المصدر"] || item.source || "",
+          timestamp: item["التاريخ"] || item.Timestamp || item.timestamp || "",
         }));
 
       setSales(transformedSales);
