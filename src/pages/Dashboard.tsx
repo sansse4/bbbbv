@@ -1,6 +1,7 @@
 import { MetricCard } from "@/components/MetricCard";
 import { InteractiveSitePlan } from "@/components/InteractiveSitePlan";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { useTotalDeposits } from "@/hooks/useTotalDeposits";
 import {
   Users,
   TrendingUp,
@@ -8,6 +9,7 @@ import {
   DollarSign,
   Phone,
   Building,
+  Wallet,
 } from "lucide-react";
 import {
   LineChart,
@@ -46,6 +48,15 @@ const conversionData = [
 const COLORS = ["hsl(var(--chart-1))", "hsl(var(--chart-2))", "hsl(var(--chart-3))", "hsl(var(--chart-4))"];
 
 const Dashboard = () => {
+  const { total: totalDeposits, isLoading: depositsLoading } = useTotalDeposits();
+
+  const formatCurrency = (value: number) => {
+    return new Intl.NumberFormat("ar-IQ", {
+      style: "decimal",
+      maximumFractionDigits: 0,
+    }).format(value);
+  };
+
   return (
     <div className="space-y-6">
       <div>
@@ -56,7 +67,7 @@ const Dashboard = () => {
       </div>
 
       {/* Metrics Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
         <MetricCard
           title="Total Customers"
           value="1,247"
@@ -84,6 +95,12 @@ const Dashboard = () => {
           change="+5.7%"
           trend="up"
           icon={Building}
+        />
+        <MetricCard
+          title="مجموع المقدمات"
+          value={depositsLoading ? "..." : formatCurrency(totalDeposits)}
+          icon={Wallet}
+          className="bg-primary/5 border-primary/20"
         />
       </div>
 
