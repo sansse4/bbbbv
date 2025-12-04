@@ -1,7 +1,7 @@
 import { useState, useEffect, useCallback } from "react";
 
 const DEPOSITS_SHEET_BASE_URL = "https://script.google.com/macros/s/AKfycbx3Abe7hL1qeSDOhwgDKGKftUaF-2BjlO36T02vq13gGCIKQ42xSXzqmhdg_Nr5uiin/exec";
-const FIELD_NAME = "قيمة_المقدمة";
+const FIELD_NAME = "قيمة المقدمة";
 
 interface DepositsData {
   total: number;
