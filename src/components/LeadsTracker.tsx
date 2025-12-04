@@ -8,11 +8,11 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { useImportedLeads } from "@/hooks/useImportedLeads";
-import { Users, Phone, Home, RefreshCw } from "lucide-react";
+import { useImportedSales } from "@/hooks/useImportedSales";
+import { Users, Phone, Home, RefreshCw, MapPin, Briefcase } from "lucide-react";
 
 export const LeadsTracker = () => {
-  const { leads, isLoading, error, refetch } = useImportedLeads();
+  const { sales: leads, isLoading, error, refetch } = useImportedSales();
 
   if (isLoading) {
     return (
@@ -59,18 +59,24 @@ export const LeadsTracker = () => {
                 <TableHeader>
                   <TableRow>
                     <TableHead>الاسم</TableHead>
-                    <TableHead>الرقم</TableHead>
-                    <TableHead>الفئة</TableHead>
-                    <TableHead>الدار</TableHead>
+                    <TableHead>العنوان</TableHead>
+                    <TableHead>الهاتف</TableHead>
+                    <TableHead>المهنة</TableHead>
+                    <TableHead>عدد افراد الاسرة</TableHead>
+                    <TableHead>فئة الدار</TableHead>
+                    <TableHead>رقم الدار</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
                   {leads.map((lead) => (
                     <TableRow key={lead.id}>
                       <TableCell className="font-medium">{lead.name}</TableCell>
+                      <TableCell>{lead.address || "-"}</TableCell>
                       <TableCell dir="ltr">{lead.phone}</TableCell>
-                      <TableCell>{lead.category || "-"}</TableCell>
-                      <TableCell>{lead.house || "-"}</TableCell>
+                      <TableCell>{lead.profession || "-"}</TableCell>
+                      <TableCell>{lead.familyMembers || "-"}</TableCell>
+                      <TableCell>{lead.houseCategory || "-"}</TableCell>
+                      <TableCell>{lead.houseNumber || "-"}</TableCell>
                     </TableRow>
                   ))}
                 </TableBody>
@@ -90,18 +96,34 @@ export const LeadsTracker = () => {
                     <span dir="ltr">{lead.phone}</span>
                   </div>
                   
-                  {lead.category && (
-                    <div className="text-sm text-muted-foreground mb-2">
-                      الفئة: {lead.category}
+                  {lead.address && (
+                    <div className="flex items-center gap-1 text-sm text-muted-foreground mb-2">
+                      <MapPin className="h-3 w-3" />
+                      {lead.address}
                     </div>
                   )}
                   
-                  {lead.house && (
-                    <div className="flex items-center gap-1 text-sm text-muted-foreground">
-                      <Home className="h-3 w-3" />
-                      {lead.house}
+                  {lead.profession && (
+                    <div className="flex items-center gap-1 text-sm text-muted-foreground mb-2">
+                      <Briefcase className="h-3 w-3" />
+                      {lead.profession}
                     </div>
                   )}
+                  
+                  <div className="grid grid-cols-2 gap-2 text-sm text-muted-foreground">
+                    {lead.familyMembers && (
+                      <div>أفراد الأسرة: {lead.familyMembers}</div>
+                    )}
+                    {lead.houseCategory && (
+                      <div>فئة الدار: {lead.houseCategory}</div>
+                    )}
+                    {lead.houseNumber && (
+                      <div className="flex items-center gap-1">
+                        <Home className="h-3 w-3" />
+                        {lead.houseNumber}
+                      </div>
+                    )}
+                  </div>
                 </Card>
               ))}
             </div>
