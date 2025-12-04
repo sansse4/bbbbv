@@ -78,13 +78,13 @@ export const CallStatusDialog = ({
       const employeeName = profile?.full_name || "غير محدد";
       
       const params = new URLSearchParams({
-        "اسم الموظف": employeeName,
-        "الاسم": callData.name,
-        "التصالات": data.callStatus === "contacted" ? "تم الرد" : data.callStatus === "no-answer" ? "لم يتم الرد" : "رقم خطأ",
-        "رقم الهاتف": callData.phone,
-        "حجز موعد": data.appointment,
-        "حالة الزبون": data.customerStatus,
-        "ملاحظات": data.notes || "",
+        employee: employeeName,
+        name: callData.name,
+        call_type: data.callStatus === "contacted" ? "تم الرد" : data.callStatus === "no-answer" ? "لم يتم الرد" : "رقم خطأ",
+        phone: callData.phone,
+        appointment: data.appointment,
+        status: data.customerStatus,
+        notes: data.notes || "",
       });
 
       const response = await fetch(`${EXPORT_SHEET_URL}?${params.toString()}`);
