@@ -76,16 +76,17 @@ export const CallStatusDialog = ({
 
     try {
       const employeeName = profile?.full_name || "غير محدد";
+      const callStatus = data.callStatus === "contacted" ? "تم الرد" : data.callStatus === "no-answer" ? "لم يتم الرد" : "رقم خطأ";
       
-      const params = new URLSearchParams({
-        employee: employeeName,
-        name: callData.name,
-        call_type: data.callStatus === "contacted" ? "تم الرد" : data.callStatus === "no-answer" ? "لم يتم الرد" : "رقم خطأ",
-        phone: callData.phone,
-        appointment: data.appointment,
-        status: data.customerStatus,
-        notes: data.notes || "",
-      });
+      // Build params in exact column order
+      const params = new URLSearchParams();
+      params.append("employee", employeeName);
+      params.append("name", callData.name);
+      params.append("call_status", callStatus);
+      params.append("phone", callData.phone);
+      params.append("booking", data.appointment);
+      params.append("status", data.customerStatus);
+      params.append("notes", data.notes || "");
 
       const response = await fetch(`${EXPORT_SHEET_URL}?${params.toString()}`);
       
