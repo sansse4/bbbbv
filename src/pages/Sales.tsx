@@ -14,6 +14,7 @@ import { TrendingUp, DollarSign, Target, Award } from "lucide-react";
 import { MetricCard } from "@/components/MetricCard";
 import { SalesForm } from "@/components/SalesForm";
 import { SalesRecentList } from "@/components/SalesRecentList";
+import { LeadsTracker } from "@/components/LeadsTracker";
 
 const Sales = () => {
   const [recentSales, setRecentSales] = useState<any[]>([]);
@@ -87,6 +88,8 @@ const Sales = () => {
           icon={TrendingUp}
         />
       </div>
+
+      <LeadsTracker />
 
       <SalesForm onSaleAdded={handleSaleAdded} />
 
