@@ -10,25 +10,20 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
-import { TrendingUp, DollarSign, Target, Award } from "lucide-react";
+import { TrendingUp, DollarSign, Target, Award, RefreshCw } from "lucide-react";
 import { MetricCard } from "@/components/MetricCard";
 import { SalesForm } from "@/components/SalesForm";
 import { SalesRecentList } from "@/components/SalesRecentList";
 import { LeadsTracker } from "@/components/LeadsTracker";
+import { useImportedSales } from "@/hooks/useImportedSales";
 
 const Sales = () => {
   const [recentSales, setRecentSales] = useState<any[]>([]);
+  const { sales: salesData, isLoading, error, refetch } = useImportedSales();
 
   const handleSaleAdded = (sale: any) => {
     setRecentSales((prev) => [sale, ...prev]);
   };
-  const salesData = [
-    { id: 1, property: "Luxury Villa #401", client: "Ahmed Hassan", amount: "$450,000", status: "closed", date: "2024-03-15" },
-    { id: 2, property: "Downtown Apartment", client: "Sara Mohammed", amount: "$280,000", status: "pending", date: "2024-03-14" },
-    { id: 3, property: "Commercial Space", client: "Khaled Ali", amount: "$680,000", status: "negotiation", date: "2024-03-13" },
-    { id: 4, property: "Suburban House", client: "Fatima Omar", amount: "$320,000", status: "closed", date: "2024-03-12" },
-    { id: 5, property: "Office Building", client: "Ibrahim Mahmoud", amount: "$1,200,000", status: "pending", date: "2024-03-11" },
-  ];
 
   const getStatusColor = (status: string) => {
     switch (status) {
@@ -96,42 +91,55 @@ const Sales = () => {
       {recentSales.length > 0 && <SalesRecentList sales={recentSales} />}
 
       <Card className="mt-6">
-        <CardHeader>
+        <CardHeader className="flex flex-row items-center justify-between">
           <CardTitle>Recent Sales Activity</CardTitle>
+          <Button variant="outline" size="sm" onClick={refetch} disabled={isLoading}>
+            <RefreshCw className={`h-4 w-4 mr-2 ${isLoading ? 'animate-spin' : ''}`} />
+            تحديث
+          </Button>
         </CardHeader>
         <CardContent>
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>Property</TableHead>
-                <TableHead>Client</TableHead>
-                <TableHead>Amount</TableHead>
-                <TableHead>Status</TableHead>
-                <TableHead>Date</TableHead>
-                <TableHead>Action</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {salesData.map((sale) => (
-                <TableRow key={sale.id}>
-                  <TableCell className="font-medium">{sale.property}</TableCell>
-                  <TableCell>{sale.client}</TableCell>
-                  <TableCell className="font-semibold">{sale.amount}</TableCell>
-                  <TableCell>
-                    <Badge className={getStatusColor(sale.status)}>
-                      {sale.status}
-                    </Badge>
-                  </TableCell>
-                  <TableCell>{sale.date}</TableCell>
-                  <TableCell>
-                    <Button variant="ghost" size="sm">
-                      View Details
-                    </Button>
-                  </TableCell>
+          {error && (
+            <div className="text-destructive text-center py-4">{error}</div>
+          )}
+          {isLoading ? (
+            <div className="text-center py-8 text-muted-foreground">جاري تحميل البيانات...</div>
+          ) : salesData.length === 0 ? (
+            <div className="text-center py-8 text-muted-foreground">لا توجد بيانات مبيعات</div>
+          ) : (
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>Property</TableHead>
+                  <TableHead>Client</TableHead>
+                  <TableHead>Amount</TableHead>
+                  <TableHead>Status</TableHead>
+                  <TableHead>Date</TableHead>
+                  <TableHead>Action</TableHead>
                 </TableRow>
-              ))}
-            </TableBody>
-          </Table>
+              </TableHeader>
+              <TableBody>
+                {salesData.map((sale) => (
+                  <TableRow key={sale.id}>
+                    <TableCell className="font-medium">{sale.property}</TableCell>
+                    <TableCell>{sale.client}</TableCell>
+                    <TableCell className="font-semibold">{sale.amount}</TableCell>
+                    <TableCell>
+                      <Badge className={getStatusColor(sale.status)}>
+                        {sale.status}
+                      </Badge>
+                    </TableCell>
+                    <TableCell>{sale.date}</TableCell>
+                    <TableCell>
+                      <Button variant="ghost" size="sm">
+                        View Details
+                      </Button>
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          )}
         </CardContent>
       </Card>
     </div>
