@@ -8,7 +8,7 @@ export interface ImportedLead {
   house: string;
 }
 
-const LEADS_SHEET_URL = "https://script.google.com/macros/s/AKfycbwEOffxzz-GzLOX_AyCjRsvGsgmE6zD-kIhWhrEWGVextncIfZnGBxHiVHjTnLc6k6Q/exec";
+const LEADS_SHEET_URL = "https://script.google.com/macros/s/AKfycbw7Hyc7b4OC2P3y8EjCqK8z_DHcJb22NidQq-VNXB_oyXgoIVJwIR55GTslitHodd84/exec";
 
 export const useImportedLeads = () => {
   const [leads, setLeads] = useState<ImportedLead[]>([]);
