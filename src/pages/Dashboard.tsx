@@ -1,6 +1,7 @@
 import { MetricCard } from "@/components/MetricCard";
 import { InteractiveSitePlan } from "@/components/InteractiveSitePlan";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
 import { useTotalDeposits } from "@/hooks/useTotalDeposits";
 import {
   Users,
@@ -10,6 +11,7 @@ import {
   Phone,
   Building,
   Wallet,
+  RefreshCw,
 } from "lucide-react";
 import {
   LineChart,
@@ -48,7 +50,7 @@ const conversionData = [
 const COLORS = ["hsl(var(--chart-1))", "hsl(var(--chart-2))", "hsl(var(--chart-3))", "hsl(var(--chart-4))"];
 
 const Dashboard = () => {
-  const { total: totalDeposits, isLoading: depositsLoading } = useTotalDeposits();
+  const { total: totalDeposits, isLoading: depositsLoading, refetch: refetchDeposits } = useTotalDeposits();
 
   const formatCurrency = (value: number) => {
     return new Intl.NumberFormat("ar-IQ", {
@@ -96,14 +98,34 @@ const Dashboard = () => {
           trend="up"
           icon={Building}
         />
-        <MetricCard
-          title="مجموع المقدمات"
-          value={depositsLoading ? "..." : formatCurrency(totalDeposits)}
-          icon={Wallet}
-          className="bg-primary/5 border-primary/20"
-        />
+        <Card className="hover:shadow-lg transition-shadow bg-primary/5 border-primary/20">
+          <CardContent className="p-6">
+            <div className="flex items-start justify-between">
+              <div className="flex-1">
+                <p className="text-sm font-medium text-muted-foreground mb-2">مجموع المقدمات</p>
+                <h3 className="text-3xl font-bold text-foreground mb-1">
+                  {depositsLoading ? "..." : formatCurrency(totalDeposits)}
+                </h3>
+              </div>
+              <div className="flex flex-col items-center gap-2">
+                <div className="h-12 w-12 rounded-lg bg-primary/10 flex items-center justify-center">
+                  <Wallet className="h-6 w-6 text-primary" />
+                </div>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={refetchDeposits}
+                  disabled={depositsLoading}
+                  className="text-xs"
+                >
+                  <RefreshCw className={`h-3 w-3 mr-1 ${depositsLoading ? "animate-spin" : ""}`} />
+                  تحديث
+                </Button>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
       </div>
-
       {/* Interactive Site Plan - Prominent Display */}
       <div className="my-8">
         <InteractiveSitePlan />
