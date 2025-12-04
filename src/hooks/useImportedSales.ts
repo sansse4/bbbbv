@@ -2,11 +2,15 @@ import { useState, useEffect } from "react";
 
 export interface ImportedSale {
   id: string;
-  property: string;
-  client: string;
-  amount: string;
-  status: string;
-  date: string;
+  name: string;
+  address: string;
+  phone: string;
+  profession: string;
+  familyMembers: string;
+  houseCategory: string;
+  houseNumber: string;
+  source: string;
+  timestamp: string;
 }
 
 const SALES_SHEET_URL = "https://script.google.com/macros/s/AKfycbyGWprXHrPtiTVJhlP0iqVSAqfbqTwJr2vh7TIEs0Nv67_05Ig-0BYtSWihSwUPWE7z/exec";
@@ -56,14 +60,18 @@ export const useImportedSales = () => {
       
       // Transform the data to match our interface
       const transformedSales = dataArray
-        .filter((item: any) => item && (item.property || item.العقار || item.client || item.العميل))
+        .filter((item: any) => item && (item.name || item.الاسم || item.phone || item.الهاتف))
         .map((item: any, index: number) => ({
-          id: item.id || String(index + 1),
-          property: item.property || item.العقار || item.اسم_العقار || "",
-          client: item.client || item.العميل || item.اسم_العميل || item.customer_name || "",
-          amount: item.amount || item.المبلغ || item.السعر || "",
-          status: item.status || item.الحالة || "pending",
-          date: item.date || item.التاريخ || new Date().toISOString().split('T')[0],
+          id: String(index + 1),
+          name: item.name || item.الاسم || "",
+          address: item.address || item.العنوان || "",
+          phone: item.phone || item.الهاتف || item.رقم_الهاتف || "",
+          profession: item.المهنة || item.profession || "",
+          familyMembers: item["عدد افراد الاسرة"] || item.عدد_افراد_الاسرة || item.familyMembers || "",
+          houseCategory: item["فئة الدار"] || item.فئة_الدار || item.houseCategory || "",
+          houseNumber: item["رقم الدار"] || item.رقم_الدار || item.houseNumber || "",
+          source: item.source || item.المصدر || "",
+          timestamp: item.Timestamp || item.timestamp || item.التاريخ || "",
         }));
 
       setSales(transformedSales);

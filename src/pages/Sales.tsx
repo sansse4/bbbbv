@@ -110,31 +110,29 @@ const Sales = () => {
             <Table>
               <TableHeader>
                 <TableRow>
-                  <TableHead>Property</TableHead>
-                  <TableHead>Client</TableHead>
-                  <TableHead>Amount</TableHead>
-                  <TableHead>Status</TableHead>
-                  <TableHead>Date</TableHead>
-                  <TableHead>Action</TableHead>
+                  <TableHead>الاسم</TableHead>
+                  <TableHead>العنوان</TableHead>
+                  <TableHead>الهاتف</TableHead>
+                  <TableHead>المهنة</TableHead>
+                  <TableHead>عدد افراد الاسرة</TableHead>
+                  <TableHead>فئة الدار</TableHead>
+                  <TableHead>رقم الدار</TableHead>
+                  <TableHead>المصدر</TableHead>
+                  <TableHead>التاريخ</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
                 {salesData.map((sale) => (
                   <TableRow key={sale.id}>
-                    <TableCell className="font-medium">{sale.property}</TableCell>
-                    <TableCell>{sale.client}</TableCell>
-                    <TableCell className="font-semibold">{sale.amount}</TableCell>
-                    <TableCell>
-                      <Badge className={getStatusColor(sale.status)}>
-                        {sale.status}
-                      </Badge>
-                    </TableCell>
-                    <TableCell>{sale.date}</TableCell>
-                    <TableCell>
-                      <Button variant="ghost" size="sm">
-                        View Details
-                      </Button>
-                    </TableCell>
+                    <TableCell className="font-medium">{sale.name}</TableCell>
+                    <TableCell>{sale.address}</TableCell>
+                    <TableCell dir="ltr">{sale.phone}</TableCell>
+                    <TableCell>{sale.profession}</TableCell>
+                    <TableCell>{sale.familyMembers}</TableCell>
+                    <TableCell>{sale.houseCategory}</TableCell>
+                    <TableCell>{sale.houseNumber}</TableCell>
+                    <TableCell>{sale.source}</TableCell>
+                    <TableCell>{sale.timestamp}</TableCell>
                   </TableRow>
                 ))}
               </TableBody>
