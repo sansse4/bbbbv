@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback } from "react";
 
-const DEPOSITS_SHEET_URL = "https://script.google.com/macros/s/AKfycbxY0o4_TXZy3hHBU3grCEnKvKgVJ5RZrx_KjRLMEs7gXqHYITjp89Wiw8ADmmvfIG_7/exec";
+const DEPOSITS_SHEET_URL = "https://script.google.com/macros/s/AKfycbzSdXyejlXu8t-SroB5D-lwMhPFaeWPCerhMZizPDcIBbJc1JUed5Yc-CG9GLzhXcg/exec";
 
 interface DepositsData {
   total: number;
