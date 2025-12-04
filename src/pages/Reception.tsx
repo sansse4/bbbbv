@@ -1,12 +1,20 @@
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { supabase } from "@/integrations/supabase/client";
+import { useAuth } from "@/contexts/AuthContext";
 
 const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbzZbK7_1q7oI6dckHQvR5aeeB3cj21BYI_v5pDDoHqdNnjxycK7Swvw1jR2uYCdvZIN/exec";
+
+interface SalesEmployee {
+  id: string;
+  full_name: string;
+}
 
 export default function Reception() {
   const [formData, setFormData] = useState({
@@ -18,18 +26,40 @@ export default function Reception() {
     house_category: "",
     house_number: "",
     source: "",
+    assigned_to: "",
   });
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [salesEmployees, setSalesEmployees] = useState<SalesEmployee[]>([]);
   const { toast } = useToast();
+  const { user } = useAuth();
   const nameRef = useRef<HTMLInputElement>(null);
+
+  // Fetch sales employees
+  useEffect(() => {
+    const fetchSalesEmployees = async () => {
+      const { data, error } = await supabase
+        .from("profiles")
+        .select("id, full_name")
+        .eq("department", "Sales");
+
+      if (error) {
+        console.error("Error fetching sales employees:", error);
+        return;
+      }
+
+      setSalesEmployees(data || []);
+    };
+
+    fetchSalesEmployees();
+  }, []);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    if (!formData.name || !formData.phone || !formData.address || !formData.profession || !formData.family_members || !formData.house_category || !formData.house_number) {
+    if (!formData.name || !formData.phone || !formData.address || !formData.profession || !formData.family_members || !formData.house_category || !formData.house_number || !formData.assigned_to) {
       toast({
-        title: "Error",
-        description: "Please fill in all required fields",
+        title: "خطأ",
+        description: "يرجى ملء جميع الحقول المطلوبة بما في ذلك اختيار موظف المبيعات",
         variant: "destructive",
       });
       return;
@@ -38,6 +68,10 @@ export default function Reception() {
     setIsSubmitting(true);
 
     try {
+      // Get the selected sales employee name
+      const selectedEmployee = salesEmployees.find(emp => emp.id === formData.assigned_to);
+
+      // Send to Google Sheets
       const params = new URLSearchParams({
         name: formData.name,
         address: formData.address,
@@ -47,17 +81,49 @@ export default function Reception() {
         "فئة الدار": formData.house_category,
         "رقم الدار": formData.house_number,
         source: formData.source || "",
+        "موظف المبيعات": selectedEmployee?.full_name || "",
       });
 
-      const response = await fetch(`${GOOGLE_SCRIPT_URL}?${params.toString()}`, {
+      await fetch(`${GOOGLE_SCRIPT_URL}?${params.toString()}`, {
         method: "GET",
         mode: "no-cors",
       });
 
-      // no-cors mode doesn't allow reading the response, so we assume success
+      // Insert lead into database
+      const { error: leadError } = await supabase.from("leads").insert({
+        customer_name: formData.name,
+        customer_phone: formData.phone,
+        customer_address: formData.address,
+        profession: formData.profession,
+        family_members: parseInt(formData.family_members),
+        house_category: formData.house_category,
+        house_number: formData.house_number,
+        source: formData.source || null,
+        assigned_to: formData.assigned_to,
+        created_by: user?.id,
+        status: "pending",
+      });
+
+      if (leadError) {
+        console.error("Error inserting lead:", leadError);
+        // Still show success since Google Sheets was updated
+      }
+
+      // Create notification for the sales employee
+      const { error: notificationError } = await supabase.from("notifications").insert({
+        user_id: formData.assigned_to,
+        title: "عميل جديد",
+        message: `تم تحويل عميل جديد إليك: ${formData.name} - ${formData.phone}`,
+        type: "lead",
+      });
+
+      if (notificationError) {
+        console.error("Error creating notification:", notificationError);
+      }
+
       toast({
-        title: "Success",
-        description: "Visitor checked in successfully",
+        title: "تم بنجاح",
+        description: `تم تسجيل الزائر وإرسال البيانات إلى ${selectedEmployee?.full_name}`,
       });
 
       // Clear form and focus back to first field
@@ -70,15 +136,17 @@ export default function Reception() {
         house_category: "",
         house_number: "",
         source: "",
+        assigned_to: "",
       });
       
       setTimeout(() => {
         nameRef.current?.focus();
       }, 100);
     } catch (error) {
+      console.error("Error:", error);
       toast({
-        title: "Error",
-        description: "Failed to send data, please try again",
+        title: "خطأ",
+        description: "فشل في إرسال البيانات، يرجى المحاولة مرة أخرى",
         variant: "destructive",
       });
     } finally {
@@ -87,16 +155,16 @@ export default function Reception() {
   };
 
   return (
-    <div className="container max-w-2xl mx-auto py-8">
+    <div className="container max-w-2xl mx-auto py-8 px-4">
       <Card>
         <CardHeader>
-          <CardTitle>Visitor Check-In</CardTitle>
+          <CardTitle>تسجيل الزوار</CardTitle>
         </CardHeader>
         <CardContent>
           <form onSubmit={handleSubmit} className="space-y-6">
             <div className="space-y-2">
               <Label htmlFor="name">
-                Name <span className="text-destructive">*</span>
+                الاسم <span className="text-destructive">*</span>
               </Label>
               <Input
                 id="name"
@@ -106,14 +174,14 @@ export default function Reception() {
                 onChange={(e) =>
                   setFormData({ ...formData, name: e.target.value })
                 }
-                placeholder="Enter name"
+                placeholder="أدخل الاسم"
                 required
               />
             </div>
 
             <div className="space-y-2">
               <Label htmlFor="phone">
-                Phone Number <span className="text-destructive">*</span>
+                رقم الهاتف <span className="text-destructive">*</span>
               </Label>
               <Input
                 id="phone"
@@ -122,14 +190,14 @@ export default function Reception() {
                 onChange={(e) =>
                   setFormData({ ...formData, phone: e.target.value })
                 }
-                placeholder="Enter phone number"
+                placeholder="أدخل رقم الهاتف"
                 required
               />
             </div>
 
             <div className="space-y-2">
               <Label htmlFor="address">
-                Address <span className="text-destructive">*</span>
+                العنوان <span className="text-destructive">*</span>
               </Label>
               <Input
                 id="address"
@@ -138,7 +206,7 @@ export default function Reception() {
                 onChange={(e) =>
                   setFormData({ ...formData, address: e.target.value })
                 }
-                placeholder="City / Area"
+                placeholder="المدينة / المنطقة"
                 required
               />
             </div>
@@ -154,7 +222,7 @@ export default function Reception() {
                 onChange={(e) =>
                   setFormData({ ...formData, profession: e.target.value })
                 }
-                placeholder="Enter profession"
+                placeholder="أدخل المهنة"
                 required
               />
             </div>
@@ -170,7 +238,7 @@ export default function Reception() {
                 onChange={(e) =>
                   setFormData({ ...formData, family_members: e.target.value })
                 }
-                placeholder="Enter number of family members"
+                placeholder="أدخل عدد أفراد الأسرة"
                 required
               />
             </div>
@@ -186,7 +254,7 @@ export default function Reception() {
                 onChange={(e) =>
                   setFormData({ ...formData, house_category: e.target.value })
                 }
-                placeholder="Enter house category"
+                placeholder="أدخل فئة الدار"
                 required
               />
             </div>
@@ -202,26 +270,49 @@ export default function Reception() {
                 onChange={(e) =>
                   setFormData({ ...formData, house_number: e.target.value })
                 }
-                placeholder="Enter house number"
+                placeholder="أدخل رقم الدار"
                 required
               />
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="source">How did you hear about the project?</Label>
+              <Label htmlFor="assigned_to">
+                موظف المبيعات <span className="text-destructive">*</span>
+              </Label>
+              <Select
+                value={formData.assigned_to}
+                onValueChange={(value) =>
+                  setFormData({ ...formData, assigned_to: value })
+                }
+              >
+                <SelectTrigger>
+                  <SelectValue placeholder="اختر موظف المبيعات" />
+                </SelectTrigger>
+                <SelectContent>
+                  {salesEmployees.map((employee) => (
+                    <SelectItem key={employee.id} value={employee.id}>
+                      {employee.full_name}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="source">كيف سمعت عن المشروع؟</Label>
               <Textarea
                 id="source"
                 value={formData.source}
                 onChange={(e) =>
                   setFormData({ ...formData, source: e.target.value })
                 }
-                placeholder="Optional"
+                placeholder="اختياري"
                 rows={3}
               />
             </div>
 
             <Button type="submit" className="w-full" disabled={isSubmitting}>
-              {isSubmitting ? "Saving..." : "Save"}
+              {isSubmitting ? "جاري الحفظ..." : "حفظ"}
             </Button>
           </form>
         </CardContent>

@@ -1,4 +1,4 @@
-import { Search, Bell, Settings, User, LogOut } from "lucide-react";
+import { Search, Settings, User, LogOut } from "lucide-react";
 import { SidebarTrigger } from "@/components/ui/sidebar";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -13,6 +13,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { useAuth } from "@/contexts/AuthContext";
+import NotificationBell from "@/components/NotificationBell";
 
 export function Header() {
   const { profile, role, signOut } = useAuth();
@@ -40,10 +41,7 @@ export function Header() {
       </div>
 
       <div className="flex items-center gap-2">
-        <Button variant="ghost" size="icon" className="relative">
-          <Bell className="h-5 w-5" />
-          <span className="absolute top-1 right-1 h-2 w-2 bg-destructive rounded-full"></span>
-        </Button>
+        <NotificationBell />
         <Button variant="ghost" size="icon">
           <Settings className="h-5 w-5" />
         </Button>
