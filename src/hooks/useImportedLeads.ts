@@ -20,7 +20,8 @@ export const useImportedLeads = () => {
       setIsLoading(true);
       setError(null);
       
-      const response = await fetch(`${LEADS_SHEET_URL}?action=read`, {
+      // Try fetching with action=getAll first
+      const response = await fetch(`${LEADS_SHEET_URL}?action=getAll`, {
         method: 'GET',
         mode: 'cors',
       });
@@ -36,6 +37,7 @@ export const useImportedLeads = () => {
         data = await response.json();
       } else {
         const text = await response.text();
+        console.log("Leads response:", text);
         try {
           data = JSON.parse(text);
         } catch {
@@ -43,8 +45,16 @@ export const useImportedLeads = () => {
         }
       }
       
+      // Check if response indicates an error
+      if (data && data.success === false) {
+        console.log("API returned error:", data.message);
+        setLeads([]);
+        setError(null);
+        return;
+      }
+      
       // Handle both array and object responses
-      const dataArray = Array.isArray(data) ? data : (data.rows || data.data || []);
+      const dataArray = Array.isArray(data) ? data : (data.rows || data.data || data.values || []);
       
       if (!Array.isArray(dataArray) || dataArray.length === 0) {
         setLeads([]);
