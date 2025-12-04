@@ -107,36 +107,38 @@ const Sales = () => {
           ) : salesData.length === 0 ? (
             <div className="text-center py-8 text-muted-foreground">لا توجد بيانات مبيعات</div>
           ) : (
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>الاسم</TableHead>
-                  <TableHead>العنوان</TableHead>
-                  <TableHead>الهاتف</TableHead>
-                  <TableHead>المهنة</TableHead>
-                  <TableHead>عدد افراد الاسرة</TableHead>
-                  <TableHead>فئة الدار</TableHead>
-                  <TableHead>رقم الدار</TableHead>
-                  <TableHead>المصدر</TableHead>
-                  <TableHead>التاريخ</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {salesData.map((sale) => (
-                  <TableRow key={sale.id}>
-                    <TableCell className="font-medium">{sale.name}</TableCell>
-                    <TableCell>{sale.address}</TableCell>
-                    <TableCell dir="ltr">{sale.phone}</TableCell>
-                    <TableCell>{sale.profession}</TableCell>
-                    <TableCell>{sale.familyMembers}</TableCell>
-                    <TableCell>{sale.houseCategory}</TableCell>
-                    <TableCell>{sale.houseNumber}</TableCell>
-                    <TableCell>{sale.source}</TableCell>
-                    <TableCell>{sale.timestamp}</TableCell>
+            <div className="overflow-x-auto -mx-6 px-6">
+              <Table className="min-w-[800px]">
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>الاسم</TableHead>
+                    <TableHead>العنوان</TableHead>
+                    <TableHead>الهاتف</TableHead>
+                    <TableHead>المهنة</TableHead>
+                    <TableHead>عدد افراد الاسرة</TableHead>
+                    <TableHead>فئة الدار</TableHead>
+                    <TableHead>رقم الدار</TableHead>
+                    <TableHead>المصدر</TableHead>
+                    <TableHead>التاريخ</TableHead>
                   </TableRow>
-                ))}
-              </TableBody>
-            </Table>
+                </TableHeader>
+                <TableBody>
+                  {salesData.map((sale) => (
+                    <TableRow key={sale.id}>
+                      <TableCell className="font-medium">{sale.name}</TableCell>
+                      <TableCell>{sale.address}</TableCell>
+                      <TableCell dir="ltr">{sale.phone}</TableCell>
+                      <TableCell>{sale.profession}</TableCell>
+                      <TableCell>{sale.familyMembers}</TableCell>
+                      <TableCell>{sale.houseCategory}</TableCell>
+                      <TableCell>{sale.houseNumber}</TableCell>
+                      <TableCell>{sale.source}</TableCell>
+                      <TableCell>{sale.timestamp}</TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            </div>
           )}
         </CardContent>
       </Card>
