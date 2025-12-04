@@ -56,9 +56,18 @@ const CallCenter = () => {
     setSelectedCall(call);
     setDialogOpen(true);
   };
+  
+  const handleDialogOpenChange = (open: boolean) => {
+    setDialogOpen(open);
+    if (!open) {
+      setSelectedCall(null);
+    }
+  };
+  
   const handleStatusUpdate = (status: "contacted" | "no-answer" | "wrong-number") => {
     if (selectedCall) {
       updateCallStatus(selectedCall.phone, status);
+      setSelectedCall(null);
     }
   };
   const getStatusColor = (status: ImportedCall["status"]) => {
@@ -212,7 +221,7 @@ const CallCenter = () => {
         </CardContent>
       </Card>
 
-      {selectedCall && <CallStatusDialog open={dialogOpen} onOpenChange={setDialogOpen} callData={selectedCall} onStatusUpdate={handleStatusUpdate} />}
+      {selectedCall && <CallStatusDialog open={dialogOpen} onOpenChange={handleDialogOpenChange} callData={selectedCall} onStatusUpdate={handleStatusUpdate} />}
 
       <FloatingActionButton icon={Phone} label="Make quick call" onClick={handleQuickCall} position="bottom-right" />
     </div>;
