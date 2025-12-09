@@ -35,7 +35,13 @@ export interface SalesSheetData {
   rows: SalesRow[];
 }
 
-export const useSalesSheetData = () => {
+export interface SalesFilters {
+  dateFrom?: string;
+  dateTo?: string;
+  salesPerson?: string;
+}
+
+export const useSalesSheetData = (filters?: SalesFilters) => {
   const [data, setData] = useState<SalesSheetData | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -45,7 +51,19 @@ export const useSalesSheetData = () => {
       setIsLoading(true);
       setError(null);
       
-      const response = await fetch(SALES_SHEET_URL, {
+      // Build URL with filter parameters
+      const url = new URL(SALES_SHEET_URL);
+      if (filters?.dateFrom) {
+        url.searchParams.append('dateFrom', filters.dateFrom);
+      }
+      if (filters?.dateTo) {
+        url.searchParams.append('dateTo', filters.dateTo);
+      }
+      if (filters?.salesPerson) {
+        url.searchParams.append('salesPerson', filters.salesPerson);
+      }
+      
+      const response = await fetch(url.toString(), {
         method: 'GET',
         mode: 'cors',
       });
@@ -67,7 +85,7 @@ export const useSalesSheetData = () => {
     } finally {
       setIsLoading(false);
     }
-  }, []);
+  }, [filters?.dateFrom, filters?.dateTo, filters?.salesPerson]);
 
   useEffect(() => {
     fetchData();
