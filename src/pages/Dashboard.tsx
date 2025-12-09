@@ -1,9 +1,15 @@
+import { useState } from "react";
+import { format } from "date-fns";
+import { ar } from "date-fns/locale";
 import { MetricCard } from "@/components/MetricCard";
 import { InteractiveSitePlan } from "@/components/InteractiveSitePlan";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import { Calendar } from "@/components/ui/calendar";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { useTotalDeposits } from "@/hooks/useTotalDeposits";
 import { useSalesSheetData } from "@/hooks/useSalesSheetData";
+import { cn } from "@/lib/utils";
 import {
   Users,
   TrendingUp,
@@ -14,12 +20,10 @@ import {
   Wallet,
   RefreshCw,
   Banknote,
+  CalendarIcon,
+  X,
 } from "lucide-react";
 import {
-  LineChart,
-  Line,
-  AreaChart,
-  Area,
   BarChart,
   Bar,
   PieChart,
@@ -36,8 +40,17 @@ import {
 const COLORS = ["hsl(var(--chart-1))", "hsl(var(--chart-2))", "hsl(var(--chart-3))", "hsl(var(--chart-4))", "hsl(var(--chart-5))"];
 
 const Dashboard = () => {
+  const [dateFrom, setDateFrom] = useState<Date | undefined>(undefined);
+  const [dateTo, setDateTo] = useState<Date | undefined>(undefined);
+
   const { total: totalDeposits, isLoading: depositsLoading, refetch: refetchDeposits } = useTotalDeposits();
-  const { totals, customersCount, rows, isLoading: salesLoading, refetch: refetchSales } = useSalesSheetData();
+  
+  const filters = {
+    dateFrom: dateFrom ? format(dateFrom, "yyyy-MM-dd") : undefined,
+    dateTo: dateTo ? format(dateTo, "yyyy-MM-dd") : undefined,
+  };
+  
+  const { totals, customersCount, rows, isLoading: salesLoading, refetch: refetchSales } = useSalesSheetData(filters);
 
   const formatCurrency = (value: number) => {
     return new Intl.NumberFormat("ar-IQ", {
@@ -76,13 +89,88 @@ const Dashboard = () => {
     refetchDeposits();
     refetchSales();
   };
+
+  const clearDateFilter = () => {
+    setDateFrom(undefined);
+    setDateTo(undefined);
+  };
+
   return (
     <div className="space-y-6">
-      <div>
-        <h1 className="text-3xl font-bold text-foreground">Dashboard Overview</h1>
-        <p className="text-muted-foreground mt-1">
-          Real-time insights into your real estate operations
-        </p>
+      <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+        <div>
+          <h1 className="text-3xl font-bold text-foreground">Dashboard Overview</h1>
+          <p className="text-muted-foreground mt-1">
+            Real-time insights into your real estate operations
+          </p>
+        </div>
+        
+        {/* Date Filter */}
+        <div className="flex flex-wrap items-center gap-2">
+          <Popover>
+            <PopoverTrigger asChild>
+              <Button
+                variant="outline"
+                className={cn(
+                  "justify-start text-left font-normal",
+                  !dateFrom && "text-muted-foreground"
+                )}
+              >
+                <CalendarIcon className="ml-2 h-4 w-4" />
+                {dateFrom ? format(dateFrom, "yyyy/MM/dd", { locale: ar }) : "من تاريخ"}
+              </Button>
+            </PopoverTrigger>
+            <PopoverContent className="w-auto p-0" align="start">
+              <Calendar
+                mode="single"
+                selected={dateFrom}
+                onSelect={setDateFrom}
+                initialFocus
+                className={cn("p-3 pointer-events-auto")}
+              />
+            </PopoverContent>
+          </Popover>
+
+          <Popover>
+            <PopoverTrigger asChild>
+              <Button
+                variant="outline"
+                className={cn(
+                  "justify-start text-left font-normal",
+                  !dateTo && "text-muted-foreground"
+                )}
+              >
+                <CalendarIcon className="ml-2 h-4 w-4" />
+                {dateTo ? format(dateTo, "yyyy/MM/dd", { locale: ar }) : "إلى تاريخ"}
+              </Button>
+            </PopoverTrigger>
+            <PopoverContent className="w-auto p-0" align="start">
+              <Calendar
+                mode="single"
+                selected={dateTo}
+                onSelect={setDateTo}
+                initialFocus
+                className={cn("p-3 pointer-events-auto")}
+              />
+            </PopoverContent>
+          </Popover>
+
+          {(dateFrom || dateTo) && (
+            <Button variant="ghost" size="icon" onClick={clearDateFilter}>
+              <X className="h-4 w-4" />
+            </Button>
+          )}
+
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={handleRefreshAll}
+            disabled={depositsLoading || salesLoading}
+          >
+            <RefreshCw className={cn("h-4 w-4 ml-1", (depositsLoading || salesLoading) && "animate-spin")} />
+            تحديث
+          </Button>
+        </div>
       </div>
 
       {/* Metrics Grid */}
