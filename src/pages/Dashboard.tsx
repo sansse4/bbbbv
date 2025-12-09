@@ -3,6 +3,7 @@ import { InteractiveSitePlan } from "@/components/InteractiveSitePlan";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { useTotalDeposits } from "@/hooks/useTotalDeposits";
+import { useSalesSheetData } from "@/hooks/useSalesSheetData";
 import {
   Users,
   TrendingUp,
@@ -12,6 +13,7 @@ import {
   Building,
   Wallet,
   RefreshCw,
+  Banknote,
 } from "lucide-react";
 import {
   LineChart,
@@ -31,26 +33,11 @@ import {
   Legend,
 } from "recharts";
 
-const monthlyData = [
-  { month: "Jan", customers: 45, contracts: 32, revenue: 125000 },
-  { month: "Feb", customers: 52, contracts: 38, revenue: 148000 },
-  { month: "Mar", customers: 61, contracts: 45, revenue: 172000 },
-  { month: "Apr", customers: 58, contracts: 41, revenue: 165000 },
-  { month: "May", customers: 72, contracts: 54, revenue: 198000 },
-  { month: "Jun", customers: 85, contracts: 63, revenue: 234000 },
-];
-
-const conversionData = [
-  { name: "Ads", value: 450 },
-  { name: "Site Visits", value: 280 },
-  { name: "Proposals", value: 165 },
-  { name: "Contracts", value: 98 },
-];
-
-const COLORS = ["hsl(var(--chart-1))", "hsl(var(--chart-2))", "hsl(var(--chart-3))", "hsl(var(--chart-4))"];
+const COLORS = ["hsl(var(--chart-1))", "hsl(var(--chart-2))", "hsl(var(--chart-3))", "hsl(var(--chart-4))", "hsl(var(--chart-5))"];
 
 const Dashboard = () => {
   const { total: totalDeposits, isLoading: depositsLoading, refetch: refetchDeposits } = useTotalDeposits();
+  const { totals, customersCount, rows, isLoading: salesLoading, refetch: refetchSales } = useSalesSheetData();
 
   const formatCurrency = (value: number) => {
     return new Intl.NumberFormat("ar-IQ", {
@@ -59,6 +46,36 @@ const Dashboard = () => {
     }).format(value);
   };
 
+  // Calculate sales person performance data
+  const salesPersonData = rows.reduce((acc, row) => {
+    const person = row.salesPerson;
+    if (!person) return acc;
+    if (!acc[person]) {
+      acc[person] = { name: person, sales: 0, revenue: 0 };
+    }
+    acc[person].sales += 1;
+    acc[person].revenue += typeof row.salePrice === 'number' ? row.salePrice : 0;
+    return acc;
+  }, {} as Record<string, { name: string; sales: number; revenue: number }>);
+
+  const salesByPerson = Object.values(salesPersonData);
+
+  // Calculate payment type distribution
+  const paymentTypeData = rows.reduce((acc, row) => {
+    const type = row.paymentType?.trim() || "غير محدد";
+    if (!acc[type]) {
+      acc[type] = { name: type, value: 0 };
+    }
+    acc[type].value += 1;
+    return acc;
+  }, {} as Record<string, { name: string; value: number }>);
+
+  const paymentDistribution = Object.values(paymentTypeData);
+
+  const handleRefreshAll = () => {
+    refetchDeposits();
+    refetchSales();
+  };
   return (
     <div className="space-y-6">
       <div>
@@ -71,31 +88,23 @@ const Dashboard = () => {
       {/* Metrics Grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
         <MetricCard
-          title="Total Customers"
-          value="1,247"
-          change="+12.5%"
-          trend="up"
+          title="عدد العملاء"
+          value={salesLoading ? "..." : customersCount.toString()}
           icon={Users}
         />
         <MetricCard
-          title="Active Contracts"
-          value="128"
-          change="+8.3%"
-          trend="up"
-          icon={FileText}
-        />
-        <MetricCard
-          title="Monthly Revenue"
-          value="$234K"
-          change="+18.2%"
-          trend="up"
+          title="إجمالي المبيعات"
+          value={salesLoading ? "..." : formatCurrency(totals?.salePrice || 0)}
           icon={DollarSign}
         />
         <MetricCard
-          title="Properties Listed"
-          value="128"
-          change="+5.7%"
-          trend="up"
+          title="السعر الحقيقي"
+          value={salesLoading ? "..." : formatCurrency(totals?.realPrice || 0)}
+          icon={Banknote}
+        />
+        <MetricCard
+          title="عمولة الإدارة"
+          value={salesLoading ? "..." : formatCurrency(totals?.adminCommission || 0)}
           icon={Building}
         />
         <Card className="hover:shadow-lg transition-shadow bg-primary/5 border-primary/20">
@@ -114,11 +123,11 @@ const Dashboard = () => {
                 <Button
                   variant="outline"
                   size="sm"
-                  onClick={refetchDeposits}
-                  disabled={depositsLoading}
+                  onClick={handleRefreshAll}
+                  disabled={depositsLoading || salesLoading}
                   className="text-xs"
                 >
-                  <RefreshCw className={`h-3 w-3 mr-1 ${depositsLoading ? "animate-spin" : ""}`} />
+                  <RefreshCw className={`h-3 w-3 mr-1 ${depositsLoading || salesLoading ? "animate-spin" : ""}`} />
                   تحديث
                 </Button>
               </div>
@@ -126,6 +135,7 @@ const Dashboard = () => {
           </CardContent>
         </Card>
       </div>
+
       {/* Interactive Site Plan - Prominent Display */}
       <div className="my-8">
         <InteractiveSitePlan />
@@ -137,20 +147,14 @@ const Dashboard = () => {
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
               <TrendingUp className="h-5 w-5 text-primary" />
-              Customer Growth Trend
+              أداء موظفي المبيعات
             </CardTitle>
           </CardHeader>
           <CardContent>
             <ResponsiveContainer width="100%" height={300}>
-              <AreaChart data={monthlyData}>
-                <defs>
-                  <linearGradient id="colorCustomers" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="5%" stopColor="hsl(var(--chart-1))" stopOpacity={0.3} />
-                    <stop offset="95%" stopColor="hsl(var(--chart-1))" stopOpacity={0} />
-                  </linearGradient>
-                </defs>
+              <BarChart data={salesByPerson}>
                 <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
-                <XAxis dataKey="month" stroke="hsl(var(--muted-foreground))" />
+                <XAxis dataKey="name" stroke="hsl(var(--muted-foreground))" />
                 <YAxis stroke="hsl(var(--muted-foreground))" />
                 <Tooltip
                   contentStyle={{
@@ -158,16 +162,11 @@ const Dashboard = () => {
                     border: "1px solid hsl(var(--border))",
                     borderRadius: "var(--radius)",
                   }}
+                  formatter={(value: number) => formatCurrency(value)}
                 />
-                <Area
-                  type="monotone"
-                  dataKey="customers"
-                  stroke="hsl(var(--chart-1))"
-                  fillOpacity={1}
-                  fill="url(#colorCustomers)"
-                  strokeWidth={2}
-                />
-              </AreaChart>
+                <Legend />
+                <Bar dataKey="sales" name="عدد المبيعات" fill="hsl(var(--chart-1))" radius={[8, 8, 0, 0]} />
+              </BarChart>
             </ResponsiveContainer>
           </CardContent>
         </Card>
@@ -176,25 +175,24 @@ const Dashboard = () => {
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
               <FileText className="h-5 w-5 text-accent" />
-              Contracts vs Revenue
+              إيرادات حسب الموظف
             </CardTitle>
           </CardHeader>
           <CardContent>
             <ResponsiveContainer width="100%" height={300}>
-              <BarChart data={monthlyData}>
+              <BarChart data={salesByPerson}>
                 <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
-                <XAxis dataKey="month" stroke="hsl(var(--muted-foreground))" />
-                <YAxis stroke="hsl(var(--muted-foreground))" />
+                <XAxis dataKey="name" stroke="hsl(var(--muted-foreground))" />
+                <YAxis stroke="hsl(var(--muted-foreground))" tickFormatter={(value) => `${(value / 1000000000).toFixed(1)}B`} />
                 <Tooltip
                   contentStyle={{
                     backgroundColor: "hsl(var(--card))",
                     border: "1px solid hsl(var(--border))",
                     borderRadius: "var(--radius)",
                   }}
+                  formatter={(value: number) => formatCurrency(value)}
                 />
-                <Legend />
-                <Bar dataKey="contracts" fill="hsl(var(--chart-2))" radius={[8, 8, 0, 0]} />
-                <Bar dataKey="revenue" fill="hsl(var(--chart-3))" radius={[8, 8, 0, 0]} />
+                <Bar dataKey="revenue" name="الإيرادات" fill="hsl(var(--chart-2))" radius={[8, 8, 0, 0]} />
               </BarChart>
             </ResponsiveContainer>
           </CardContent>
@@ -207,14 +205,14 @@ const Dashboard = () => {
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
               <Phone className="h-5 w-5 text-success" />
-              Conversion Funnel
+              توزيع طرق الدفع
             </CardTitle>
           </CardHeader>
           <CardContent>
             <ResponsiveContainer width="100%" height={300}>
               <PieChart>
                 <Pie
-                  data={conversionData}
+                  data={paymentDistribution}
                   cx="50%"
                   cy="50%"
                   labelLine={false}
@@ -223,7 +221,7 @@ const Dashboard = () => {
                   fill="#8884d8"
                   dataKey="value"
                 >
-                  {conversionData.map((entry, index) => (
+                  {paymentDistribution.map((entry, index) => (
                     <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
                   ))}
                 </Pie>
@@ -243,31 +241,32 @@ const Dashboard = () => {
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
               <DollarSign className="h-5 w-5 text-warning" />
-              Revenue Growth
+              ملخص المالية
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <ResponsiveContainer width="100%" height={300}>
-              <LineChart data={monthlyData}>
-                <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
-                <XAxis dataKey="month" stroke="hsl(var(--muted-foreground))" />
-                <YAxis stroke="hsl(var(--muted-foreground))" />
-                <Tooltip
-                  contentStyle={{
-                    backgroundColor: "hsl(var(--card))",
-                    border: "1px solid hsl(var(--border))",
-                    borderRadius: "var(--radius)",
-                  }}
-                />
-                <Line
-                  type="monotone"
-                  dataKey="revenue"
-                  stroke="hsl(var(--chart-4))"
-                  strokeWidth={3}
-                  dot={{ r: 5, fill: "hsl(var(--chart-4))" }}
-                />
-              </LineChart>
-            </ResponsiveContainer>
+            <div className="space-y-4">
+              <div className="flex justify-between items-center p-3 bg-muted/50 rounded-lg">
+                <span className="text-muted-foreground">إجمالي المبيعات</span>
+                <span className="font-bold text-lg">{salesLoading ? "..." : formatCurrency(totals?.salePrice || 0)}</span>
+              </div>
+              <div className="flex justify-between items-center p-3 bg-muted/50 rounded-lg">
+                <span className="text-muted-foreground">السعر الحقيقي</span>
+                <span className="font-bold text-lg">{salesLoading ? "..." : formatCurrency(totals?.realPrice || 0)}</span>
+              </div>
+              <div className="flex justify-between items-center p-3 bg-muted/50 rounded-lg">
+                <span className="text-muted-foreground">مجموع المقدمات</span>
+                <span className="font-bold text-lg">{salesLoading ? "..." : formatCurrency(totals?.downPayment || 0)}</span>
+              </div>
+              <div className="flex justify-between items-center p-3 bg-muted/50 rounded-lg">
+                <span className="text-muted-foreground">عمولة الإدارة</span>
+                <span className="font-bold text-lg">{salesLoading ? "..." : formatCurrency(totals?.adminCommission || 0)}</span>
+              </div>
+              <div className="flex justify-between items-center p-3 bg-primary/10 rounded-lg border border-primary/20">
+                <span className="text-muted-foreground">عمولة رؤية</span>
+                <span className="font-bold text-lg text-primary">{salesLoading ? "..." : formatCurrency(totals?.roayaCommission || 0)}</span>
+              </div>
+            </div>
           </CardContent>
         </Card>
       </div>
