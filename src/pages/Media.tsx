@@ -47,7 +47,7 @@ const Media = () => {
       });
 
       const response = await fetch(
-        `https://script.google.com/macros/s/AKfycbwUKt4g9GMaX8pMRxwn1ywYiywphXdV3KuVbmBNYK1VyPc_JesdGrZijL2kV4PvEmNZ/exec?${params}`
+        `https://script.google.com/macros/s/AKfycbxMor9nLf1Ei2lazJqMzYR3MyBg6msZg8H5hn_9KkRdiE2d2lk4_gOX3WXaOTpSNGwF/exec?${params}`
       );
 
       if (response.ok) {
