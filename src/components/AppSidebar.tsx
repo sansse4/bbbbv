@@ -1,6 +1,6 @@
 import { NavLink } from "@/components/NavLink";
 import { useLocation } from "react-router-dom";
-import { LayoutDashboard, Image, TrendingUp, Phone, FileText, BarChart3, Users, ClipboardCheck, UserCircle, Home } from "lucide-react";
+import { LayoutDashboard, Image, TrendingUp, Phone, Users, ClipboardCheck, UserCircle, Home } from "lucide-react";
 import roayaLogo from "@/assets/roaya-logo.png";
 import { Sidebar, SidebarContent, SidebarGroup, SidebarGroupContent, SidebarGroupLabel, SidebarMenu, SidebarMenuButton, SidebarMenuItem, useSidebar } from "@/components/ui/sidebar";
 import { useAuth } from "@/contexts/AuthContext";
@@ -34,16 +34,6 @@ const menuItems = [{
   url: "/call-center",
   icon: Phone,
   department: "Call Center"
-}, {
-  title: "Contract Registration",
-  url: "/contracts",
-  icon: FileText,
-  department: "Contract Registration"
-}, {
-  title: "Growth Analytics",
-  url: "/analytics",
-  icon: BarChart3,
-  department: "Growth Analytics"
 }, {
   title: "Reception",
   url: "/reception",
