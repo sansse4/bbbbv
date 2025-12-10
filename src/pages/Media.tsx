@@ -6,8 +6,10 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { useToast } from "@/hooks/use-toast";
 import { Image, Upload, Folder, Grid3x3 } from "lucide-react";
 import { useState, useRef } from "react";
+import { useAuth } from "@/contexts/AuthContext";
 
 const Media = () => {
+  const { profile } = useAuth();
   const [formData, setFormData] = useState({
     name: "",
     phone: "",
@@ -38,6 +40,8 @@ const Media = () => {
         "رقم الهاتف": formData.phone,
         "حالة الزبون": formData.customerStatus || "",
         "ملاحظات": formData.notes || "",
+        "اسم الموظف": profile?.full_name || "",
+        "حالة الاتصال": "لا يوجد اتصال",
       });
 
       const response = await fetch(
