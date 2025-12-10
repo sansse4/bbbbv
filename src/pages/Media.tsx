@@ -14,6 +14,7 @@ const Media = () => {
     name: "",
     phone: "",
     customerStatus: "",
+    booking: "",
     notes: "",
   });
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -23,7 +24,7 @@ const Media = () => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    if (!formData.name || !formData.phone || !formData.customerStatus) {
+    if (!formData.name || !formData.phone || !formData.customerStatus || !formData.booking) {
       toast({
         title: "خطأ",
         description: "يرجى ملء جميع الحقول المطلوبة",
@@ -39,6 +40,7 @@ const Media = () => {
         "الاسم": formData.name,
         "رقم الهاتف": formData.phone,
         "حالة الزبون": formData.customerStatus || "",
+        "تم الحجز": formData.booking || "",
         "ملاحظات": formData.notes || "",
         "اسم الموظف": profile?.full_name || "",
         "حالة الاتصال": "لا يوجد اتصال",
@@ -58,6 +60,7 @@ const Media = () => {
           name: "",
           phone: "",
           customerStatus: "",
+          booking: "",
           notes: "",
         });
 
@@ -150,9 +153,29 @@ const Media = () => {
                     <SelectItem value="يحتاج متابعة">يحتاج متابعة</SelectItem>
                     <SelectItem value="أخرى">أخرى</SelectItem>
                   </SelectContent>
-                </Select>
-              </div>
+              </Select>
             </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="booking">
+                تم الحجز <span className="text-destructive">*</span>
+              </Label>
+              <Select
+                value={formData.booking}
+                onValueChange={(value) =>
+                  setFormData({ ...formData, booking: value })
+                }
+              >
+                <SelectTrigger id="booking" dir="rtl">
+                  <SelectValue placeholder="اختر حالة الحجز" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="نعم">نعم</SelectItem>
+                  <SelectItem value="لا">لا</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+          </div>
 
             <div className="space-y-2">
               <Label htmlFor="notes">ملاحظات</Label>
