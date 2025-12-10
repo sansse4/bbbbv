@@ -53,7 +53,7 @@ export default function UserManagement() {
   });
 
   useEffect(() => {
-    if (role?.role === 'admin') {
+    if (role?.role === 'admin' || role?.role === 'assistant_manager') {
       fetchUsers();
     }
   }, [role]);
@@ -268,7 +268,7 @@ export default function UserManagement() {
     }
   };
 
-  if (role?.role !== 'admin') {
+  if (role?.role !== 'admin' && role?.role !== 'assistant_manager') {
     return (
       <div className="min-h-screen flex items-center justify-center">
         <p className="text-muted-foreground">Access denied. Admin only.</p>
@@ -345,10 +345,11 @@ export default function UserManagement() {
                       <SelectTrigger>
                         <SelectValue />
                       </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="employee">Employee</SelectItem>
-                        <SelectItem value="admin">Admin</SelectItem>
-                      </SelectContent>
+                <SelectContent>
+                  <SelectItem value="employee">موظف</SelectItem>
+                  <SelectItem value="assistant_manager">مساعد مدير</SelectItem>
+                  <SelectItem value="admin">مدير</SelectItem>
+                </SelectContent>
                     </Select>
                   </div>
                   <div className="space-y-2">
@@ -399,9 +400,13 @@ export default function UserManagement() {
                     <TableCell>{user.department || '-'}</TableCell>
                     <TableCell>
                       <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
-                        user.role === 'admin' ? 'bg-primary/10 text-primary' : 'bg-secondary text-secondary-foreground'
+                        user.role === 'admin' 
+                          ? 'bg-primary/10 text-primary' 
+                          : user.role === 'assistant_manager'
+                            ? 'bg-amber-500/10 text-amber-600'
+                            : 'bg-secondary text-secondary-foreground'
                       }`}>
-                        {user.role}
+                        {user.role === 'admin' ? 'مدير' : user.role === 'assistant_manager' ? 'مساعد مدير' : 'موظف'}
                       </span>
                     </TableCell>
                     <TableCell className="text-right">
@@ -474,10 +479,11 @@ export default function UserManagement() {
                 <SelectTrigger>
                   <SelectValue />
                 </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="employee">Employee</SelectItem>
-                  <SelectItem value="admin">Admin</SelectItem>
-                </SelectContent>
+              <SelectContent>
+                <SelectItem value="employee">موظف</SelectItem>
+                <SelectItem value="assistant_manager">مساعد مدير</SelectItem>
+                <SelectItem value="admin">مدير</SelectItem>
+              </SelectContent>
               </Select>
             </div>
             <div className="space-y-2">
