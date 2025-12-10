@@ -9,6 +9,7 @@ import { Calendar } from "@/components/ui/calendar";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { useTotalDeposits } from "@/hooks/useTotalDeposits";
 import { useSalesSheetData } from "@/hooks/useSalesSheetData";
+import { useFinanceSummary } from "@/hooks/useFinanceSummary";
 import { cn } from "@/lib/utils";
 import {
   Users,
@@ -21,6 +22,11 @@ import {
   Banknote,
   CalendarIcon,
   X,
+  PiggyBank,
+  Receipt,
+  Percent,
+  Building2,
+  Calculator,
 } from "lucide-react";
 import {
   BarChart,
@@ -43,6 +49,7 @@ const Dashboard = () => {
   const [dateTo, setDateTo] = useState<Date | undefined>(undefined);
 
   const { total: totalDeposits, isLoading: depositsLoading, refetch: refetchDeposits } = useTotalDeposits();
+  const { data: financeSummary, isLoading: financeLoading, error: financeError, refetch: refetchFinance } = useFinanceSummary();
   
   const filters = {
     dateFrom: dateFrom ? format(dateFrom, "yyyy-MM-dd") : undefined,
@@ -87,6 +94,7 @@ const Dashboard = () => {
   const handleRefreshAll = () => {
     refetchDeposits();
     refetchSales();
+    refetchFinance();
   };
 
   const clearDateFilter = () => {
@@ -217,6 +225,131 @@ const Dashboard = () => {
           </CardContent>
         </Card>
       </div>
+
+      {/* Financial Summary Section */}
+      <Card className="border-primary/20">
+        <CardHeader className="flex flex-row items-center justify-between">
+          <CardTitle className="flex items-center gap-2">
+            <Calculator className="h-5 w-5 text-primary" />
+            ملخص مالي
+          </CardTitle>
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={refetchFinance}
+            disabled={financeLoading}
+          >
+            <RefreshCw className={cn("h-4 w-4 ml-1", financeLoading && "animate-spin")} />
+            تحديث
+          </Button>
+        </CardHeader>
+        <CardContent>
+          {financeError ? (
+            <div className="p-4 text-center text-destructive bg-destructive/10 rounded-lg">
+              <p>خطأ في جلب البيانات المالية</p>
+              <p className="text-sm text-muted-foreground mt-1">{financeError}</p>
+            </div>
+          ) : (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-4">
+              <Card className="bg-muted/30">
+                <CardContent className="p-4">
+                  <div className="flex items-center gap-3">
+                    <div className="h-10 w-10 rounded-lg bg-primary/10 flex items-center justify-center">
+                      <Banknote className="h-5 w-5 text-primary" />
+                    </div>
+                    <div>
+                      <p className="text-xs text-muted-foreground">السعر الحقيقي</p>
+                      <p className="text-lg font-bold">
+                        {financeLoading ? "..." : formatCurrency(financeSummary?.total_real_price || 0)}
+                      </p>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+              
+              <Card className="bg-muted/30">
+                <CardContent className="p-4">
+                  <div className="flex items-center gap-3">
+                    <div className="h-10 w-10 rounded-lg bg-chart-1/10 flex items-center justify-center">
+                      <DollarSign className="h-5 w-5 text-chart-1" />
+                    </div>
+                    <div>
+                      <p className="text-xs text-muted-foreground">سعر البيع</p>
+                      <p className="text-lg font-bold">
+                        {financeLoading ? "..." : formatCurrency(financeSummary?.total_sale_price || 0)}
+                      </p>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+              
+              <Card className="bg-muted/30">
+                <CardContent className="p-4">
+                  <div className="flex items-center gap-3">
+                    <div className="h-10 w-10 rounded-lg bg-chart-2/10 flex items-center justify-center">
+                      <PiggyBank className="h-5 w-5 text-chart-2" />
+                    </div>
+                    <div>
+                      <p className="text-xs text-muted-foreground">قيمة المقدمة</p>
+                      <p className="text-lg font-bold">
+                        {financeLoading ? "..." : formatCurrency(financeSummary?.total_down_payment || 0)}
+                      </p>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+              
+              <Card className="bg-muted/30">
+                <CardContent className="p-4">
+                  <div className="flex items-center gap-3">
+                    <div className="h-10 w-10 rounded-lg bg-chart-3/10 flex items-center justify-center">
+                      <Percent className="h-5 w-5 text-chart-3" />
+                    </div>
+                    <div>
+                      <p className="text-xs text-muted-foreground">العمولة الإدارية</p>
+                      <p className="text-lg font-bold">
+                        {financeLoading ? "..." : formatCurrency(financeSummary?.total_admin_commission || 0)}
+                      </p>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+              
+              <Card className="bg-muted/30">
+                <CardContent className="p-4">
+                  <div className="flex items-center gap-3">
+                    <div className="h-10 w-10 rounded-lg bg-chart-4/10 flex items-center justify-center">
+                      <Building2 className="h-5 w-5 text-chart-4" />
+                    </div>
+                    <div>
+                      <p className="text-xs text-muted-foreground">عمولة شركة رؤية</p>
+                      <p className="text-lg font-bold">
+                        {financeLoading ? "..." : formatCurrency(financeSummary?.total_roaya_commission || 0)}
+                      </p>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+              
+              <Card className="bg-success/10 border-success/20">
+                <CardContent className="p-4">
+                  <div className="flex items-center gap-3">
+                    <div className="h-10 w-10 rounded-lg bg-success/20 flex items-center justify-center">
+                      <Receipt className="h-5 w-5 text-success" />
+                    </div>
+                    <div>
+                      <p className="text-xs text-muted-foreground">صافي الدخل</p>
+                      <p className="text-lg font-bold text-success">
+                        {financeLoading ? "..." : formatCurrency(financeSummary?.net_income || 0)}
+                      </p>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            </div>
+          )}
+        </CardContent>
+      </Card>
 
       {/* Interactive Site Plan - Prominent Display */}
       <div className="my-8">
