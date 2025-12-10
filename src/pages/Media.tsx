@@ -36,7 +36,7 @@ const Media = () => {
     setIsSubmitting(true);
 
     try {
-      const params = new URLSearchParams({
+      const dataToSend = {
         "الاسم": formData.name,
         "رقم الهاتف": formData.phone,
         "حالة الزبون": formData.customerStatus || "",
@@ -44,12 +44,16 @@ const Media = () => {
         "ملاحضات": formData.notes || "",
         "اسم الموظف": profile?.full_name || "",
         "حالة التصال": "لا يوجد اتصال",
-      });
+      };
+      
+      console.log("Data being sent to Google Sheet:", dataToSend);
+      
+      const params = new URLSearchParams(dataToSend);
+      const fullUrl = `https://script.google.com/macros/s/AKfycbxMor9nLf1Ei2lazJqMzYR3MyBg6msZg8H5hn_9KkRdiE2d2lk4_gOX3WXaOTpSNGwF/exec?${params}`;
+      
+      console.log("Full URL:", fullUrl);
 
-      const response = await fetch(
-        `https://script.google.com/macros/s/AKfycbxMor9nLf1Ei2lazJqMzYR3MyBg6msZg8H5hn_9KkRdiE2d2lk4_gOX3WXaOTpSNGwF/exec?${params}`,
-        { mode: 'no-cors', redirect: 'follow' }
-      );
+      const response = await fetch(fullUrl, { mode: 'no-cors', redirect: 'follow' });
 
       // With no-cors mode, we can't check response.ok, so we assume success if no error thrown
       toast({
