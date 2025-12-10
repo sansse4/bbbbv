@@ -10,7 +10,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useToast } from '@/hooks/use-toast';
-import { Plus, Pencil, Trash2 } from 'lucide-react';
+import { Plus, Pencil, Trash2, KeyRound } from 'lucide-react';
 import type { Database } from '@/integrations/supabase/types';
 
 type UserProfile = {
@@ -38,7 +38,10 @@ export default function UserManagement() {
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
+  const [isPasswordDialogOpen, setIsPasswordDialogOpen] = useState(false);
   const [selectedUser, setSelectedUser] = useState<UserProfile | null>(null);
+  const [newPassword, setNewPassword] = useState('');
+  const [passwordLoading, setPasswordLoading] = useState(false);
 
   const [formData, setFormData] = useState({
     email: '',
@@ -186,6 +189,56 @@ export default function UserManagement() {
   const openDeleteDialog = (user: UserProfile) => {
     setSelectedUser(user);
     setIsDeleteDialogOpen(true);
+  };
+
+  const openPasswordDialog = (user: UserProfile) => {
+    setSelectedUser(user);
+    setNewPassword('');
+    setIsPasswordDialogOpen(true);
+  };
+
+  const handleChangePassword = async () => {
+    if (!selectedUser || !newPassword) return;
+
+    if (newPassword.length < 6) {
+      toast({
+        title: 'خطأ',
+        description: 'كلمة السر يجب أن تكون 6 أحرف على الأقل',
+        variant: 'destructive',
+      });
+      return;
+    }
+
+    setPasswordLoading(true);
+    try {
+      const { data: { session } } = await supabase.auth.getSession();
+      
+      const { data, error } = await supabase.functions.invoke('update-user-password', {
+        body: { userId: selectedUser.id, newPassword },
+        headers: {
+          Authorization: `Bearer ${session?.access_token}`,
+        },
+      });
+
+      if (error) throw error;
+
+      toast({
+        title: 'نجاح',
+        description: 'تم تغيير كلمة السر بنجاح',
+      });
+
+      setIsPasswordDialogOpen(false);
+      setSelectedUser(null);
+      setNewPassword('');
+    } catch (error: any) {
+      toast({
+        title: 'خطأ',
+        description: error.message,
+        variant: 'destructive',
+      });
+    } finally {
+      setPasswordLoading(false);
+    }
   };
 
   const handleDeleteUser = async () => {
@@ -357,13 +410,23 @@ export default function UserManagement() {
                           variant="ghost"
                           size="icon"
                           onClick={() => openEditDialog(user)}
+                          title="تعديل"
                         >
                           <Pencil className="h-4 w-4" />
                         </Button>
                         <Button
                           variant="ghost"
                           size="icon"
+                          onClick={() => openPasswordDialog(user)}
+                          title="تغيير كلمة السر"
+                        >
+                          <KeyRound className="h-4 w-4" />
+                        </Button>
+                        <Button
+                          variant="ghost"
+                          size="icon"
                           onClick={() => openDeleteDialog(user)}
+                          title="حذف"
                         >
                           <Trash2 className="h-4 w-4" />
                         </Button>
@@ -443,19 +506,52 @@ export default function UserManagement() {
       <AlertDialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>Are you sure?</AlertDialogTitle>
+            <AlertDialogTitle>هل أنت متأكد؟</AlertDialogTitle>
             <AlertDialogDescription>
-              This will permanently delete the user account for {selectedUser?.full_name} ({selectedUser?.username}). This action cannot be undone.
+              سيتم حذف حساب المستخدم {selectedUser?.full_name} ({selectedUser?.username}) بشكل نهائي. لا يمكن التراجع عن هذا الإجراء.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogCancel>إلغاء</AlertDialogCancel>
             <AlertDialogAction onClick={handleDeleteUser} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
-              Delete
+              حذف
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
+
+      {/* Password Change Dialog */}
+      <Dialog open={isPasswordDialogOpen} onOpenChange={setIsPasswordDialogOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>تغيير كلمة السر</DialogTitle>
+            <DialogDescription>
+              تغيير كلمة السر للمستخدم: {selectedUser?.full_name}
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4">
+            <div className="space-y-2">
+              <Label htmlFor="new_password">كلمة السر الجديدة</Label>
+              <Input
+                id="new_password"
+                type="password"
+                placeholder="أدخل كلمة السر الجديدة"
+                value={newPassword}
+                onChange={(e) => setNewPassword(e.target.value)}
+                minLength={6}
+              />
+              <p className="text-xs text-muted-foreground">يجب أن تكون كلمة السر 6 أحرف على الأقل</p>
+            </div>
+            <Button 
+              onClick={handleChangePassword} 
+              className="w-full"
+              disabled={passwordLoading || !newPassword || newPassword.length < 6}
+            >
+              {passwordLoading ? 'جاري التحديث...' : 'تحديث كلمة السر'}
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
