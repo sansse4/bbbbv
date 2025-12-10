@@ -40,7 +40,7 @@ const Media = () => {
         "الاسم": formData.name,
         "رقم الهاتف": formData.phone,
         "حالة الزبون": formData.customerStatus || "",
-        "تم الحجز": formData.booking || "",
+        "حجز موعد": formData.booking || "",
         "ملاحظات": formData.notes || "",
         "اسم الموظف": profile?.full_name || "",
         "حالة الاتصال": "لا يوجد اتصال",
@@ -158,7 +158,7 @@ const Media = () => {
 
             <div className="space-y-2">
               <Label htmlFor="booking">
-                تم الحجز <span className="text-destructive">*</span>
+                حجز موعد <span className="text-destructive">*</span>
               </Label>
               <Select
                 value={formData.booking}
