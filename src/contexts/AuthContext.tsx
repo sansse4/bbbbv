@@ -133,8 +133,20 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   };
 
   const signOut = async () => {
-    await supabase.auth.signOut();
-    navigate('/login');
+    try {
+      await supabase.auth.signOut();
+    } catch (error) {
+      // Even if signOut fails (e.g., session not found), clear local state
+      console.log('SignOut error (proceeding with local cleanup):', error);
+    } finally {
+      // Always clear local state and redirect
+      setUser(null);
+      setSession(null);
+      setProfile(null);
+      setRole(null);
+      setIsDataLoaded(false);
+      navigate('/login');
+    }
   };
 
   const hasAccess = (path: string): boolean => {
