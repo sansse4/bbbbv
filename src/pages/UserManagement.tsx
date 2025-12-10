@@ -9,8 +9,9 @@ import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, 
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Checkbox } from '@/components/ui/checkbox';
 import { useToast } from '@/hooks/use-toast';
-import { Plus, Pencil, Trash2, KeyRound } from 'lucide-react';
+import { Plus, Pencil, Trash2, KeyRound, Building2 } from 'lucide-react';
 import type { Database } from '@/integrations/supabase/types';
 
 type UserProfile = {
@@ -19,6 +20,7 @@ type UserProfile = {
   full_name: string;
   department: Database['public']['Enums']['department_type'] | null;
   role: Database['public']['Enums']['app_role'] | null;
+  supervised_departments?: Database['public']['Enums']['department_type'][];
 };
 
 const departments: Database['public']['Enums']['department_type'][] = [
@@ -30,6 +32,15 @@ const departments: Database['public']['Enums']['department_type'][] = [
   'Reception',
 ];
 
+const departmentLabels: Record<Database['public']['Enums']['department_type'], string> = {
+  'Media': 'الإعلام',
+  'Sales': 'المبيعات',
+  'Call Center': 'مركز الاتصال',
+  'Contract Registration': 'تسجيل العقود',
+  'Growth Analytics': 'تحليلات النمو',
+  'Reception': 'الاستقبال',
+};
+
 export default function UserManagement() {
   const { role } = useAuth();
   const { toast } = useToast();
@@ -39,9 +50,12 @@ export default function UserManagement() {
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
   const [isPasswordDialogOpen, setIsPasswordDialogOpen] = useState(false);
+  const [isDepartmentsDialogOpen, setIsDepartmentsDialogOpen] = useState(false);
   const [selectedUser, setSelectedUser] = useState<UserProfile | null>(null);
   const [newPassword, setNewPassword] = useState('');
   const [passwordLoading, setPasswordLoading] = useState(false);
+  const [selectedDepartments, setSelectedDepartments] = useState<Database['public']['Enums']['department_type'][]>([]);
+  const [departmentsLoading, setDepartmentsLoading] = useState(false);
 
   const [formData, setFormData] = useState({
     email: '',
@@ -52,8 +66,11 @@ export default function UserManagement() {
     role: 'employee' as Database['public']['Enums']['app_role'],
   });
 
+  const isAdmin = role?.role === 'admin';
+  const isAssistantManager = role?.role === 'assistant_manager';
+
   useEffect(() => {
-    if (role?.role === 'admin' || role?.role === 'assistant_manager') {
+    if (isAdmin || isAssistantManager) {
       fetchUsers();
     }
   }, [role]);
@@ -74,10 +91,27 @@ export default function UserManagement() {
 
       if (rolesError) throw rolesError;
 
-      const usersWithRoles = profiles?.map(profile => ({
-        ...profile,
-        role: roles?.find(r => r.user_id === profile.id)?.role || null,
-      })) || [];
+      // Fetch supervised departments for assistant managers
+      const { data: supervisedDepts, error: supervisedError } = await supabase
+        .from('assistant_manager_departments')
+        .select('*');
+
+      if (supervisedError && supervisedError.code !== 'PGRST116') {
+        console.error('Error fetching supervised departments:', supervisedError);
+      }
+
+      const usersWithRoles = profiles?.map(profile => {
+        const userRole = roles?.find(r => r.user_id === profile.id)?.role || null;
+        const userSupervisedDepts = supervisedDepts
+          ?.filter(d => d.user_id === profile.id)
+          .map(d => d.department) || [];
+        
+        return {
+          ...profile,
+          role: userRole,
+          supervised_departments: userSupervisedDepts,
+        };
+      }) || [];
 
       setUsers(usersWithRoles);
     } catch (error: any) {
@@ -110,8 +144,8 @@ export default function UserManagement() {
       if (error) throw error;
 
       toast({
-        title: 'Success',
-        description: 'User created successfully',
+        title: 'نجاح',
+        description: 'تم إنشاء المستخدم بنجاح',
       });
 
       setIsAddDialogOpen(false);
@@ -126,7 +160,7 @@ export default function UserManagement() {
       fetchUsers();
     } catch (error: any) {
       toast({
-        title: 'Error',
+        title: 'خطأ',
         description: error.message,
         variant: 'destructive',
       });
@@ -149,16 +183,19 @@ export default function UserManagement() {
 
       if (profileError) throw profileError;
 
-      const { error: roleError } = await supabase
-        .from('user_roles')
-        .update({ role: formData.role })
-        .eq('user_id', selectedUser.id);
+      // Only admin can change roles
+      if (isAdmin) {
+        const { error: roleError } = await supabase
+          .from('user_roles')
+          .update({ role: formData.role })
+          .eq('user_id', selectedUser.id);
 
-      if (roleError) throw roleError;
+        if (roleError) throw roleError;
+      }
 
       toast({
-        title: 'Success',
-        description: 'User updated successfully',
+        title: 'نجاح',
+        description: 'تم تحديث بيانات المستخدم بنجاح',
       });
 
       setIsEditDialogOpen(false);
@@ -166,7 +203,7 @@ export default function UserManagement() {
       fetchUsers();
     } catch (error: any) {
       toast({
-        title: 'Error',
+        title: 'خطأ',
         description: error.message,
         variant: 'destructive',
       });
@@ -195,6 +232,12 @@ export default function UserManagement() {
     setSelectedUser(user);
     setNewPassword('');
     setIsPasswordDialogOpen(true);
+  };
+
+  const openDepartmentsDialog = (user: UserProfile) => {
+    setSelectedUser(user);
+    setSelectedDepartments(user.supervised_departments || []);
+    setIsDepartmentsDialogOpen(true);
   };
 
   const handleChangePassword = async () => {
@@ -241,6 +284,60 @@ export default function UserManagement() {
     }
   };
 
+  const handleSaveDepartments = async () => {
+    if (!selectedUser) return;
+
+    setDepartmentsLoading(true);
+    try {
+      // First, delete all existing department assignments for this user
+      const { error: deleteError } = await supabase
+        .from('assistant_manager_departments')
+        .delete()
+        .eq('user_id', selectedUser.id);
+
+      if (deleteError) throw deleteError;
+
+      // Then, insert the new department assignments
+      if (selectedDepartments.length > 0) {
+        const { error: insertError } = await supabase
+          .from('assistant_manager_departments')
+          .insert(
+            selectedDepartments.map(dept => ({
+              user_id: selectedUser.id,
+              department: dept,
+            }))
+          );
+
+        if (insertError) throw insertError;
+      }
+
+      toast({
+        title: 'نجاح',
+        description: 'تم تحديث الأقسام المشرف عليها بنجاح',
+      });
+
+      setIsDepartmentsDialogOpen(false);
+      setSelectedUser(null);
+      fetchUsers();
+    } catch (error: any) {
+      toast({
+        title: 'خطأ',
+        description: error.message,
+        variant: 'destructive',
+      });
+    } finally {
+      setDepartmentsLoading(false);
+    }
+  };
+
+  const toggleDepartment = (dept: Database['public']['Enums']['department_type']) => {
+    setSelectedDepartments(prev => 
+      prev.includes(dept) 
+        ? prev.filter(d => d !== dept)
+        : [...prev, dept]
+    );
+  };
+
   const handleDeleteUser = async () => {
     if (!selectedUser) return;
 
@@ -252,8 +349,8 @@ export default function UserManagement() {
       if (error) throw error;
 
       toast({
-        title: 'Success',
-        description: 'User deleted successfully',
+        title: 'نجاح',
+        description: 'تم حذف المستخدم بنجاح',
       });
 
       setIsDeleteDialogOpen(false);
@@ -261,17 +358,17 @@ export default function UserManagement() {
       fetchUsers();
     } catch (error: any) {
       toast({
-        title: 'Error',
+        title: 'خطأ',
         description: error.message,
         variant: 'destructive',
       });
     }
   };
 
-  if (role?.role !== 'admin' && role?.role !== 'assistant_manager') {
+  if (!isAdmin && !isAssistantManager) {
     return (
       <div className="min-h-screen flex items-center justify-center">
-        <p className="text-muted-foreground">Access denied. Admin only.</p>
+        <p className="text-muted-foreground">غير مصرح بالوصول. للمدراء فقط.</p>
       </div>
     );
   }
@@ -282,98 +379,100 @@ export default function UserManagement() {
         <CardHeader>
           <div className="flex items-center justify-between">
             <div>
-              <CardTitle>User Management</CardTitle>
-              <CardDescription>Manage employee accounts, roles, and departments</CardDescription>
+              <CardTitle>إدارة المستخدمين</CardTitle>
+              <CardDescription>إدارة حسابات الموظفين والأدوار والأقسام</CardDescription>
             </div>
-            <Dialog open={isAddDialogOpen} onOpenChange={setIsAddDialogOpen}>
-              <DialogTrigger asChild>
-                <Button>
-                  <Plus className="mr-2 h-4 w-4" />
-                  Add User
-                </Button>
-              </DialogTrigger>
-              <DialogContent>
-                <DialogHeader>
-                  <DialogTitle>Add New User</DialogTitle>
-                  <DialogDescription>Create a new employee account</DialogDescription>
-                </DialogHeader>
-                <form onSubmit={handleAddUser} className="space-y-4">
-                  <div className="space-y-2">
-                    <Label htmlFor="email">Email</Label>
-                    <Input
-                      id="email"
-                      type="email"
-                      required
-                      value={formData.email}
-                      onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                    />
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="password">Password</Label>
-                    <Input
-                      id="password"
-                      type="password"
-                      required
-                      value={formData.password}
-                      onChange={(e) => setFormData({ ...formData, password: e.target.value })}
-                    />
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="username">Username</Label>
-                    <Input
-                      id="username"
-                      required
-                      value={formData.username}
-                      onChange={(e) => setFormData({ ...formData, username: e.target.value })}
-                    />
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="full_name">Full Name</Label>
-                    <Input
-                      id="full_name"
-                      required
-                      value={formData.full_name}
-                      onChange={(e) => setFormData({ ...formData, full_name: e.target.value })}
-                    />
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="role">Role</Label>
-                    <Select
-                      value={formData.role}
-                      onValueChange={(value) => setFormData({ ...formData, role: value as Database['public']['Enums']['app_role'] })}
-                    >
-                      <SelectTrigger>
-                        <SelectValue />
-                      </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="employee">موظف</SelectItem>
-                  <SelectItem value="assistant_manager">مساعد مدير</SelectItem>
-                  <SelectItem value="admin">مدير</SelectItem>
-                </SelectContent>
-                    </Select>
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="department">Department</Label>
-                    <Select
-                      value={formData.department}
-                      onValueChange={(value) => setFormData({ ...formData, department: value as Database['public']['Enums']['department_type'] })}
-                    >
-                      <SelectTrigger>
-                        <SelectValue placeholder="Select department" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {departments.map((dept) => (
-                          <SelectItem key={dept} value={dept}>
-                            {dept}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                  </div>
-                  <Button type="submit" className="w-full">Create User</Button>
-                </form>
-              </DialogContent>
-            </Dialog>
+            {isAdmin && (
+              <Dialog open={isAddDialogOpen} onOpenChange={setIsAddDialogOpen}>
+                <DialogTrigger asChild>
+                  <Button>
+                    <Plus className="mr-2 h-4 w-4" />
+                    إضافة مستخدم
+                  </Button>
+                </DialogTrigger>
+                <DialogContent>
+                  <DialogHeader>
+                    <DialogTitle>إضافة مستخدم جديد</DialogTitle>
+                    <DialogDescription>إنشاء حساب موظف جديد</DialogDescription>
+                  </DialogHeader>
+                  <form onSubmit={handleAddUser} className="space-y-4">
+                    <div className="space-y-2">
+                      <Label htmlFor="email">البريد الإلكتروني</Label>
+                      <Input
+                        id="email"
+                        type="email"
+                        required
+                        value={formData.email}
+                        onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="password">كلمة السر</Label>
+                      <Input
+                        id="password"
+                        type="password"
+                        required
+                        value={formData.password}
+                        onChange={(e) => setFormData({ ...formData, password: e.target.value })}
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="username">اسم المستخدم</Label>
+                      <Input
+                        id="username"
+                        required
+                        value={formData.username}
+                        onChange={(e) => setFormData({ ...formData, username: e.target.value })}
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="full_name">الاسم الكامل</Label>
+                      <Input
+                        id="full_name"
+                        required
+                        value={formData.full_name}
+                        onChange={(e) => setFormData({ ...formData, full_name: e.target.value })}
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="role">الدور</Label>
+                      <Select
+                        value={formData.role}
+                        onValueChange={(value) => setFormData({ ...formData, role: value as Database['public']['Enums']['app_role'] })}
+                      >
+                        <SelectTrigger>
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="employee">موظف</SelectItem>
+                          <SelectItem value="assistant_manager">مساعد مدير</SelectItem>
+                          <SelectItem value="admin">مدير</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="department">القسم</Label>
+                      <Select
+                        value={formData.department}
+                        onValueChange={(value) => setFormData({ ...formData, department: value as Database['public']['Enums']['department_type'] })}
+                      >
+                        <SelectTrigger>
+                          <SelectValue placeholder="اختر القسم" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {departments.map((dept) => (
+                            <SelectItem key={dept} value={dept}>
+                              {departmentLabels[dept]}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </div>
+                    <Button type="submit" className="w-full">إنشاء المستخدم</Button>
+                  </form>
+                </DialogContent>
+              </Dialog>
+            )}
           </div>
         </CardHeader>
         <CardContent>
@@ -385,11 +484,12 @@ export default function UserManagement() {
             <Table>
               <TableHeader>
                 <TableRow>
-                  <TableHead>Username</TableHead>
-                  <TableHead>Full Name</TableHead>
-                  <TableHead>Department</TableHead>
-                  <TableHead>Role</TableHead>
-                  <TableHead className="text-right">Actions</TableHead>
+                  <TableHead>اسم المستخدم</TableHead>
+                  <TableHead>الاسم الكامل</TableHead>
+                  <TableHead>القسم</TableHead>
+                  <TableHead>الأقسام المشرف عليها</TableHead>
+                  <TableHead>الدور</TableHead>
+                  <TableHead className="text-right">الإجراءات</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -397,7 +497,23 @@ export default function UserManagement() {
                   <TableRow key={user.id}>
                     <TableCell className="font-medium">{user.username}</TableCell>
                     <TableCell>{user.full_name}</TableCell>
-                    <TableCell>{user.department || '-'}</TableCell>
+                    <TableCell>{user.department ? departmentLabels[user.department] : '-'}</TableCell>
+                    <TableCell>
+                      {user.role === 'assistant_manager' && user.supervised_departments && user.supervised_departments.length > 0 ? (
+                        <div className="flex flex-wrap gap-1">
+                          {user.supervised_departments.map((dept) => (
+                            <span 
+                              key={dept} 
+                              className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-blue-500/10 text-blue-600"
+                            >
+                              {departmentLabels[dept]}
+                            </span>
+                          ))}
+                        </div>
+                      ) : (
+                        '-'
+                      )}
+                    </TableCell>
                     <TableCell>
                       <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
                         user.role === 'admin' 
@@ -419,22 +535,36 @@ export default function UserManagement() {
                         >
                           <Pencil className="h-4 w-4" />
                         </Button>
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          onClick={() => openPasswordDialog(user)}
-                          title="تغيير كلمة السر"
-                        >
-                          <KeyRound className="h-4 w-4" />
-                        </Button>
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          onClick={() => openDeleteDialog(user)}
-                          title="حذف"
-                        >
-                          <Trash2 className="h-4 w-4" />
-                        </Button>
+                        {isAdmin && user.role === 'assistant_manager' && (
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            onClick={() => openDepartmentsDialog(user)}
+                            title="إدارة الأقسام"
+                          >
+                            <Building2 className="h-4 w-4" />
+                          </Button>
+                        )}
+                        {isAdmin && (
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            onClick={() => openPasswordDialog(user)}
+                            title="تغيير كلمة السر"
+                          >
+                            <KeyRound className="h-4 w-4" />
+                          </Button>
+                        )}
+                        {isAdmin && (
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            onClick={() => openDeleteDialog(user)}
+                            title="حذف"
+                          >
+                            <Trash2 className="h-4 w-4" />
+                          </Button>
+                        )}
                       </div>
                     </TableCell>
                   </TableRow>
@@ -448,12 +578,12 @@ export default function UserManagement() {
       <Dialog open={isEditDialogOpen} onOpenChange={setIsEditDialogOpen}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>Edit User</DialogTitle>
-            <DialogDescription>Update user information</DialogDescription>
+            <DialogTitle>تعديل المستخدم</DialogTitle>
+            <DialogDescription>تحديث بيانات المستخدم</DialogDescription>
           </DialogHeader>
           <form onSubmit={handleEditUser} className="space-y-4">
             <div className="space-y-2">
-              <Label htmlFor="edit_username">Username</Label>
+              <Label htmlFor="edit_username">اسم المستخدم</Label>
               <Input
                 id="edit_username"
                 required
@@ -462,7 +592,7 @@ export default function UserManagement() {
               />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="edit_full_name">Full Name</Label>
+              <Label htmlFor="edit_full_name">الاسم الكامل</Label>
               <Input
                 id="edit_full_name"
                 required
@@ -470,41 +600,43 @@ export default function UserManagement() {
                 onChange={(e) => setFormData({ ...formData, full_name: e.target.value })}
               />
             </div>
+            {isAdmin && (
+              <div className="space-y-2">
+                <Label htmlFor="edit_role">الدور</Label>
+                <Select
+                  value={formData.role}
+                  onValueChange={(value) => setFormData({ ...formData, role: value as Database['public']['Enums']['app_role'] })}
+                >
+                  <SelectTrigger>
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="employee">موظف</SelectItem>
+                    <SelectItem value="assistant_manager">مساعد مدير</SelectItem>
+                    <SelectItem value="admin">مدير</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+            )}
             <div className="space-y-2">
-              <Label htmlFor="edit_role">Role</Label>
-              <Select
-                value={formData.role}
-                onValueChange={(value) => setFormData({ ...formData, role: value as Database['public']['Enums']['app_role'] })}
-              >
-                <SelectTrigger>
-                  <SelectValue />
-                </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="employee">موظف</SelectItem>
-                <SelectItem value="assistant_manager">مساعد مدير</SelectItem>
-                <SelectItem value="admin">مدير</SelectItem>
-              </SelectContent>
-              </Select>
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="edit_department">Department</Label>
+              <Label htmlFor="edit_department">القسم</Label>
               <Select
                 value={formData.department}
                 onValueChange={(value) => setFormData({ ...formData, department: value as Database['public']['Enums']['department_type'] })}
               >
                 <SelectTrigger>
-                  <SelectValue placeholder="Select department" />
+                  <SelectValue placeholder="اختر القسم" />
                 </SelectTrigger>
                 <SelectContent>
                   {departments.map((dept) => (
                     <SelectItem key={dept} value={dept}>
-                      {dept}
+                      {departmentLabels[dept]}
                     </SelectItem>
                   ))}
                 </SelectContent>
               </Select>
             </div>
-            <Button type="submit" className="w-full">Update User</Button>
+            <Button type="submit" className="w-full">تحديث المستخدم</Button>
           </form>
         </DialogContent>
       </Dialog>
@@ -554,6 +686,44 @@ export default function UserManagement() {
               disabled={passwordLoading || !newPassword || newPassword.length < 6}
             >
               {passwordLoading ? 'جاري التحديث...' : 'تحديث كلمة السر'}
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* Departments Management Dialog */}
+      <Dialog open={isDepartmentsDialogOpen} onOpenChange={setIsDepartmentsDialogOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>إدارة الأقسام المشرف عليها</DialogTitle>
+            <DialogDescription>
+              اختر الأقسام التي يشرف عليها: {selectedUser?.full_name}
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4">
+            <div className="space-y-3">
+              {departments.map((dept) => (
+                <div key={dept} className="flex items-center space-x-3 space-x-reverse">
+                  <Checkbox
+                    id={`dept-${dept}`}
+                    checked={selectedDepartments.includes(dept)}
+                    onCheckedChange={() => toggleDepartment(dept)}
+                  />
+                  <Label 
+                    htmlFor={`dept-${dept}`} 
+                    className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70 cursor-pointer"
+                  >
+                    {departmentLabels[dept]}
+                  </Label>
+                </div>
+              ))}
+            </div>
+            <Button 
+              onClick={handleSaveDepartments} 
+              className="w-full"
+              disabled={departmentsLoading}
+            >
+              {departmentsLoading ? 'جاري الحفظ...' : 'حفظ الأقسام'}
             </Button>
           </div>
         </DialogContent>

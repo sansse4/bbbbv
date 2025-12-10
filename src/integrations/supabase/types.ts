@@ -14,6 +14,27 @@ export type Database = {
   }
   public: {
     Tables: {
+      assistant_manager_departments: {
+        Row: {
+          created_at: string | null
+          department: Database["public"]["Enums"]["department_type"]
+          id: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string | null
+          department: Database["public"]["Enums"]["department_type"]
+          id?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string | null
+          department?: Database["public"]["Enums"]["department_type"]
+          id?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       attendance: {
         Row: {
           check_in: string | null
@@ -317,6 +338,13 @@ export type Database = {
       has_role: {
         Args: {
           _role: Database["public"]["Enums"]["app_role"]
+          _user_id: string
+        }
+        Returns: boolean
+      }
+      supervises_department: {
+        Args: {
+          _department: Database["public"]["Enums"]["department_type"]
           _user_id: string
         }
         Returns: boolean
