@@ -20,6 +20,7 @@ interface AuthContextType {
   profile: UserProfile | null;
   role: UserRole | null;
   loading: boolean;
+  isDataLoaded: boolean;
   signIn: (username: string, password: string) => Promise<{ error: Error | null }>;
   signOut: () => Promise<void>;
   hasAccess: (path: string) => boolean;
@@ -34,6 +35,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [profile, setProfile] = useState<UserProfile | null>(null);
   const [role, setRole] = useState<UserRole | null>(null);
   const [loading, setLoading] = useState(true);
+  const [isDataLoaded, setIsDataLoaded] = useState(false);
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -50,6 +52,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         } else {
           setProfile(null);
           setRole(null);
+          setIsDataLoaded(false);
           setLoading(false);
         }
       }
@@ -93,6 +96,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     } catch (error) {
       console.error('Error fetching user data:', error);
     } finally {
+      setIsDataLoaded(true);
       setLoading(false);
     }
   };
@@ -173,6 +177,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         profile,
         role,
         loading,
+        isDataLoaded,
         signIn,
         signOut,
         hasAccess,

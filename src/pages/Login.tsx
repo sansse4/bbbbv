@@ -13,14 +13,15 @@ const Login = () => {
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
-  const { signIn, user, getDefaultRoute } = useAuth();
+  const { signIn, user, role, isDataLoaded, getDefaultRoute } = useAuth();
   const navigate = useNavigate();
 
   useEffect(() => {
-    if (user) {
-      navigate(getDefaultRoute());
+    // Only redirect when user exists AND role data is fully loaded
+    if (user && isDataLoaded && role) {
+      navigate(getDefaultRoute(), { replace: true });
     }
-  }, [user, navigate, getDefaultRoute]);
+  }, [user, role, isDataLoaded, navigate, getDefaultRoute]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
