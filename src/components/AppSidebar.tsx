@@ -1,6 +1,6 @@
 import { NavLink } from "@/components/NavLink";
 import { useLocation } from "react-router-dom";
-import { LayoutDashboard, Image, TrendingUp, Phone, FileText, BarChart3, Users, ClipboardCheck, UserCircle } from "lucide-react";
+import { LayoutDashboard, Image, TrendingUp, Phone, FileText, BarChart3, Users, ClipboardCheck, UserCircle, Home } from "lucide-react";
 import roayaLogo from "@/assets/roaya-logo.png";
 import { Sidebar, SidebarContent, SidebarGroup, SidebarGroupContent, SidebarGroupLabel, SidebarMenu, SidebarMenuButton, SidebarMenuItem, useSidebar } from "@/components/ui/sidebar";
 import { useAuth } from "@/contexts/AuthContext";
@@ -11,7 +11,14 @@ const menuItems = [{
   title: "Dashboard",
   url: "/",
   icon: LayoutDashboard,
-  department: null
+  department: null,
+  adminOnly: true
+}, {
+  title: "لوحتي",
+  url: "/my-dashboard",
+  icon: Home,
+  department: null,
+  forEmployees: true
 }, {
   title: "Media",
   url: "/media",
@@ -51,7 +58,8 @@ const menuItems = [{
   title: "User Management",
   url: "/users",
   icon: Users,
-  department: null
+  department: null,
+  adminOnly: true
 }];
 
 export function AppSidebar() {
@@ -89,14 +97,16 @@ export function AppSidebar() {
   const getVisibleMenuItems = () => {
     if (!role) return [];
     
-    // Admin sees everything
+    // Admin sees everything except employee-only items
     if (role.role === 'admin') {
-      return menuItems;
+      return menuItems.filter(item => !item.forEmployees);
     }
 
-    // Assistant manager sees their supervised departments + employees + user management
+    // Assistant manager sees their supervised departments + employees + user management + my dashboard
     if (role.role === 'assistant_manager') {
       return menuItems.filter(item => {
+        // Show My Dashboard for assistant managers
+        if (item.forEmployees) return true;
         // Always show Employees
         if (item.url === '/employees') return true;
         // Show User Management for assistant managers
@@ -104,18 +114,20 @@ export function AppSidebar() {
         // Show departments they supervise
         if (item.department && supervisedDepartments.includes(item.department)) return true;
         // Hide main dashboard from assistant managers
-        if (item.url === '/') return false;
+        if (item.adminOnly) return false;
         return false;
       });
     }
 
-    // Regular employees - show their department only
+    // Regular employees - show their department + my dashboard only
     const userDepartment = profile?.department;
     return menuItems.filter(item => {
+      // Show My Dashboard for employees
+      if (item.forEmployees) return true;
       // Show their own department
       if (item.department && item.department === userDepartment) return true;
-      // Always show Employees for all
-      if (item.url === '/employees') return true;
+      // Hide admin-only items
+      if (item.adminOnly) return false;
       return false;
     });
   };
