@@ -66,13 +66,13 @@ export const CallCenterForm = ({ onCallAdded }: CallCenterFormProps) => {
       const employeeName = profile?.full_name || "غير محدد";
       
       const params = new URLSearchParams({
-        name: data.name,
-        phone: data.phone,
-        call_type: data.call_type,
-        appointment: data.appointment,
-        status: data.status,
-        notes: data.notes || "",
-        employee: employeeName,
+        "الاسم": data.name,
+        "رقم الهاتف": data.phone,
+        "حالة الاتصال": data.call_type,
+        "حجز موعد": data.appointment,
+        "حالة الزبون": data.status,
+        "ملاحضات": data.notes || "",
+        "اسم الموظف": employeeName,
       });
 
       const response = await fetch(`${CALLCENTER_API_URL}?${params.toString()}`);
