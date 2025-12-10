@@ -86,15 +86,6 @@ const Login = () => {
             <Button type="submit" className="w-full" disabled={loading}>
               {loading ? 'Signing in...' : 'Login'}
             </Button>
-
-            <div className="mt-6 p-4 bg-muted rounded-lg text-sm space-y-2">
-              <p className="font-medium">Demo Credentials:</p>
-              <div className="space-y-1 text-muted-foreground">
-                <p>Admin: admin / admin123</p>
-                <p>Media: media_user / media123</p>
-                <p>Sales: sales_user / sales123</p>
-              </div>
-            </div>
           </form>
         </CardContent>
       </Card>
