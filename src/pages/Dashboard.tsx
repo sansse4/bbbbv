@@ -208,7 +208,7 @@ const Dashboard = () => {
               </div>
               <div className="flex flex-col items-center gap-2">
                 <div className="h-12 w-12 rounded-lg bg-primary/10 flex items-center justify-center">
-                  <Wallet className="h-6 w-6 text-primary" />
+                  <DollarSign className="h-6 w-6 text-primary" />
                 </div>
                 <Button
                   variant="outline"
