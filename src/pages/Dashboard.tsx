@@ -287,7 +287,7 @@ const Dashboard = () => {
                 <CardContent className="p-4">
                   <div className="flex items-center gap-3">
                     <div className="h-10 w-10 rounded-lg bg-chart-2/10 flex items-center justify-center">
-                      <PiggyBank className="h-5 w-5 text-chart-2" />
+                      <DollarSign className="h-5 w-5 text-chart-2" />
                     </div>
                     <div>
                       <p className="text-xs text-muted-foreground">قيمة المقدمة</p>
