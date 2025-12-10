@@ -4,53 +4,82 @@ import { LayoutDashboard, Image, TrendingUp, Phone, FileText, BarChart3, Users, 
 import roayaLogo from "@/assets/roaya-logo.png";
 import { Sidebar, SidebarContent, SidebarGroup, SidebarGroupContent, SidebarGroupLabel, SidebarMenu, SidebarMenuButton, SidebarMenuItem, useSidebar } from "@/components/ui/sidebar";
 import { useAuth } from "@/contexts/AuthContext";
+import { useState, useEffect } from "react";
+import { supabase } from "@/integrations/supabase/client";
+
 const menuItems = [{
   title: "Dashboard",
   url: "/",
-  icon: LayoutDashboard
+  icon: LayoutDashboard,
+  department: null
 }, {
   title: "Media",
   url: "/media",
-  icon: Image
+  icon: Image,
+  department: "Media"
 }, {
   title: "Sales",
   url: "/sales",
-  icon: TrendingUp
+  icon: TrendingUp,
+  department: "Sales"
 }, {
   title: "Call Center",
   url: "/call-center",
-  icon: Phone
+  icon: Phone,
+  department: "Call Center"
 }, {
   title: "Contract Registration",
   url: "/contracts",
-  icon: FileText
+  icon: FileText,
+  department: "Contract Registration"
 }, {
   title: "Growth Analytics",
   url: "/analytics",
-  icon: BarChart3
+  icon: BarChart3,
+  department: "Growth Analytics"
 }, {
   title: "Reception",
   url: "/reception",
-  icon: ClipboardCheck
+  icon: ClipboardCheck,
+  department: "Reception"
 }, {
   title: "Employees",
   url: "/employees",
-  icon: UserCircle
+  icon: UserCircle,
+  department: null
 }, {
   title: "User Management",
   url: "/users",
-  icon: Users
+  icon: Users,
+  department: null
 }];
+
 export function AppSidebar() {
-  const {
-    open
-  } = useSidebar();
+  const { open } = useSidebar();
   const location = useLocation();
   const currentPath = location.pathname;
-  const {
-    role,
-    profile
-  } = useAuth();
+  const { role, profile, user } = useAuth();
+  const [supervisedDepartments, setSupervisedDepartments] = useState<string[]>([]);
+
+  useEffect(() => {
+    if (user?.id && role?.role === 'assistant_manager') {
+      fetchSupervisedDepartments();
+    }
+  }, [user?.id, role?.role]);
+
+  const fetchSupervisedDepartments = async () => {
+    if (!user?.id) return;
+    
+    const { data, error } = await supabase
+      .from('assistant_manager_departments')
+      .select('department')
+      .eq('user_id', user.id);
+    
+    if (!error && data) {
+      setSupervisedDepartments(data.map(d => d.department));
+    }
+  };
+
   const isActive = (path: string) => {
     if (path === "/") return currentPath === "/";
     return currentPath.startsWith(path);
@@ -59,26 +88,42 @@ export function AppSidebar() {
   // Filter menu items based on role and department
   const getVisibleMenuItems = () => {
     if (!role) return [];
+    
+    // Admin sees everything
     if (role.role === 'admin') {
       return menuItems;
     }
 
-    // For employees, show Dashboard and their department only (exclude User Management)
-    const departmentPaths: {
-      [key: string]: string;
-    } = {
-      'Media': '/media',
-      'Sales': '/sales',
-      'Call Center': '/call-center',
-      'Contract Registration': '/contracts',
-      'Growth Analytics': '/analytics',
-      'Reception': '/reception'
-    };
-    const userDepartmentPath = profile?.department ? departmentPaths[profile.department] : null;
-    return menuItems.filter(item => (item.url === '/' || item.url === userDepartmentPath || item.url === '/employees') && item.url !== '/users');
+    // Assistant manager sees their supervised departments + employees + user management
+    if (role.role === 'assistant_manager') {
+      return menuItems.filter(item => {
+        // Always show Employees
+        if (item.url === '/employees') return true;
+        // Show User Management for assistant managers
+        if (item.url === '/users') return true;
+        // Show departments they supervise
+        if (item.department && supervisedDepartments.includes(item.department)) return true;
+        // Hide main dashboard from assistant managers
+        if (item.url === '/') return false;
+        return false;
+      });
+    }
+
+    // Regular employees - show their department only
+    const userDepartment = profile?.department;
+    return menuItems.filter(item => {
+      // Show their own department
+      if (item.department && item.department === userDepartment) return true;
+      // Always show Employees for all
+      if (item.url === '/employees') return true;
+      return false;
+    });
   };
+
   const visibleMenuItems = getVisibleMenuItems();
-  return <Sidebar className={open ? "w-64" : "w-16"} collapsible="icon">
+
+  return (
+    <Sidebar className={open ? "w-64" : "w-16"} collapsible="icon">
       <SidebarContent className="bg-sidebar transition-all duration-300">
         <div className="p-4 border-b border-sidebar-border transition-all duration-300">
           <div className="flex items-center gap-3">
@@ -93,17 +138,27 @@ export function AppSidebar() {
           <SidebarGroupLabel>Main Menu</SidebarGroupLabel>
           <SidebarGroupContent>
             <SidebarMenu>
-              {visibleMenuItems.map(item => <SidebarMenuItem key={item.title}>
+              {visibleMenuItems.map(item => (
+                <SidebarMenuItem key={item.title}>
                   <SidebarMenuButton asChild>
-                    <NavLink to={item.url} end={item.url === "/"} className="hover:bg-sidebar-accent transition-all duration-200" activeClassName="bg-sidebar-accent text-sidebar-primary font-medium">
+                    <NavLink 
+                      to={item.url} 
+                      end={item.url === "/"} 
+                      className="hover:bg-sidebar-accent transition-all duration-200" 
+                      activeClassName="bg-sidebar-accent text-sidebar-primary font-medium"
+                    >
                       <item.icon className={`h-5 w-5 transition-all duration-300 ${!open && 'scale-110'}`} />
-                      <span className={`transition-all duration-300 ${open ? 'opacity-100 translate-x-0' : 'opacity-0 -translate-x-2 absolute'}`}>{item.title}</span>
+                      <span className={`transition-all duration-300 ${open ? 'opacity-100 translate-x-0' : 'opacity-0 -translate-x-2 absolute'}`}>
+                        {item.title}
+                      </span>
                     </NavLink>
                   </SidebarMenuButton>
-                </SidebarMenuItem>)}
+                </SidebarMenuItem>
+              ))}
             </SidebarMenu>
           </SidebarGroupContent>
         </SidebarGroup>
       </SidebarContent>
-    </Sidebar>;
+    </Sidebar>
+  );
 }
