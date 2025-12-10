@@ -53,37 +53,6 @@ const Sales = () => {
         </Button>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-        <MetricCard
-          title="Total Sales"
-          value="$2.93M"
-          change="+23.5%"
-          trend="up"
-          icon={DollarSign}
-        />
-        <MetricCard
-          title="Deals Closed"
-          value="87"
-          change="+12.8%"
-          trend="up"
-          icon={Award}
-        />
-        <MetricCard
-          title="Conversion Rate"
-          value="68%"
-          change="+5.2%"
-          trend="up"
-          icon={Target}
-        />
-        <MetricCard
-          title="Avg Deal Size"
-          value="$337K"
-          change="+8.9%"
-          trend="up"
-          icon={TrendingUp}
-        />
-      </div>
-
       <LeadsTracker />
 
       <SalesForm onSaleAdded={handleSaleAdded} />

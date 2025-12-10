@@ -117,13 +117,6 @@ const CallCenter = () => {
         </Button>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-        <MetricCard title="Total Calls Today" value="147" change="+8.3%" trend="up" icon={Phone} />
-        <MetricCard title="Answered Calls" value="132" change="+12.5%" trend="up" icon={PhoneIncoming} />
-        <MetricCard title="Missed Calls" value="15" change="-3.2%" trend="down" icon={PhoneMissed} />
-        <MetricCard title="Avg Duration" value="4:25" change="+5.8%" trend="up" icon={PhoneCall} />
-      </div>
-
       <CustomerSearch />
 
       <CallCenterForm onCallAdded={handleCallAdded} />
