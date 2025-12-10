@@ -23,6 +23,7 @@ interface AuthContextType {
   signIn: (username: string, password: string) => Promise<{ error: Error | null }>;
   signOut: () => Promise<void>;
   hasAccess: (path: string) => boolean;
+  getDefaultRoute: () => string;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -145,14 +146,23 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       '/analytics': 'Growth Analytics',
     };
 
-    // Dashboard is accessible to all authenticated users
-    if (path === '/') return true;
+    // My Dashboard is accessible to all authenticated employees
+    if (path === '/my-dashboard') return true;
+
+    // Main dashboard is only for admins
+    if (path === '/') return false;
 
     // Check if employee has access to this department
     const requiredDepartment = pathDepartmentMap[path];
     if (!requiredDepartment) return false;
 
     return profile?.department === requiredDepartment;
+  };
+
+  const getDefaultRoute = (): string => {
+    if (!role) return '/login';
+    if (role.role === 'admin') return '/';
+    return '/my-dashboard';
   };
 
   return (
@@ -166,6 +176,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         signIn,
         signOut,
         hasAccess,
+        getDefaultRoute,
       }}
     >
       {children}

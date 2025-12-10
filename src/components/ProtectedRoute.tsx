@@ -6,7 +6,7 @@ interface ProtectedRouteProps {
 }
 
 export function ProtectedRoute({ children }: ProtectedRouteProps) {
-  const { user, loading, hasAccess } = useAuth();
+  const { user, loading, hasAccess, getDefaultRoute } = useAuth();
   const location = useLocation();
 
   if (loading) {
@@ -25,19 +25,8 @@ export function ProtectedRoute({ children }: ProtectedRouteProps) {
   }
 
   if (!hasAccess(location.pathname)) {
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-muted p-4">
-        <div className="text-center max-w-md">
-          <h1 className="text-4xl font-bold mb-4">Access Denied</h1>
-          <p className="text-xl text-muted-foreground mb-6">
-            You don't have permission to access this section.
-          </p>
-          <a href="/" className="text-primary underline hover:text-primary/90">
-            Return to Dashboard
-          </a>
-        </div>
-      </div>
-    );
+    // Redirect to appropriate dashboard instead of showing error
+    return <Navigate to={getDefaultRoute()} replace />;
   }
 
   return <>{children}</>;

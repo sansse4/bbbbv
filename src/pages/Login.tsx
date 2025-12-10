@@ -13,14 +13,14 @@ const Login = () => {
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
-  const { signIn, user } = useAuth();
+  const { signIn, user, getDefaultRoute } = useAuth();
   const navigate = useNavigate();
 
   useEffect(() => {
     if (user) {
-      navigate('/');
+      navigate(getDefaultRoute());
     }
-  }, [user, navigate]);
+  }, [user, navigate, getDefaultRoute]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -32,9 +32,8 @@ const Login = () => {
     if (error) {
       setError(error.message);
       setLoading(false);
-    } else {
-      navigate('/');
     }
+    // Navigation will happen automatically via useEffect when user state changes
   };
 
   return (
