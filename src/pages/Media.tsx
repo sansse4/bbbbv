@@ -34,10 +34,10 @@ const Media = () => {
 
     try {
       const params = new URLSearchParams({
-        name: formData.name,
-        phone: formData.phone,
-        status: formData.customerStatus || "",
-        notes: formData.notes || "",
+        "الاسم": formData.name,
+        "رقم الهاتف": formData.phone,
+        "حالة الزبون": formData.customerStatus || "",
+        "ملاحظات": formData.notes || "",
       });
 
       const response = await fetch(
