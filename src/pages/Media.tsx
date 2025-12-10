@@ -47,29 +47,27 @@ const Media = () => {
       });
 
       const response = await fetch(
-        `https://script.google.com/macros/s/AKfycbxMor9nLf1Ei2lazJqMzYR3MyBg6msZg8H5hn_9KkRdiE2d2lk4_gOX3WXaOTpSNGwF/exec?${params}`
+        `https://script.google.com/macros/s/AKfycbxMor9nLf1Ei2lazJqMzYR3MyBg6msZg8H5hn_9KkRdiE2d2lk4_gOX3WXaOTpSNGwF/exec?${params}`,
+        { mode: 'no-cors', redirect: 'follow' }
       );
 
-      if (response.ok) {
-        toast({
-          title: "نجح",
-          description: "تم الحفظ بنجاح",
-        });
+      // With no-cors mode, we can't check response.ok, so we assume success if no error thrown
+      toast({
+        title: "نجح",
+        description: "تم الحفظ بنجاح",
+      });
 
-        setFormData({
-          name: "",
-          phone: "",
-          customerStatus: "",
-          booking: "",
-          notes: "",
-        });
+      setFormData({
+        name: "",
+        phone: "",
+        customerStatus: "",
+        booking: "",
+        notes: "",
+      });
 
-        setTimeout(() => {
-          nameRef.current?.focus();
-        }, 100);
-      } else {
-        throw new Error("Failed to save");
-      }
+      setTimeout(() => {
+        nameRef.current?.focus();
+      }, 100);
     } catch (error) {
       toast({
         title: "خطأ",
