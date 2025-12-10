@@ -1,7 +1,6 @@
 import { useState, useEffect, useCallback } from "react";
 
-const DEPOSITS_SHEET_BASE_URL = "https://script.google.com/macros/s/AKfycbx3Abe7hL1qeSDOhwgDKGKftUaF-2BjlO36T02vq13gGCIKQ42xSXzqmhdg_Nr5uiin/exec";
-const FIELD_NAME = "قيمة المقدمة";
+const DEPOSITS_SHEET_URL = "https://script.google.com/macros/s/AKfycbxbB7cwLB1e4hjA_PoOl4wYdAf-grjGueA7kRGL2L2akYneeB1UzglbyGABYkR5L9OVuw/exec";
 
 interface DepositsData {
   total: number;
@@ -20,10 +19,9 @@ export function useTotalDeposits(): DepositsData {
     setError(null);
     
     try {
-      const url = `${DEPOSITS_SHEET_BASE_URL}?field=${encodeURIComponent(FIELD_NAME)}`;
-      console.log("Fetching deposits from:", url);
+      console.log("Fetching deposits from:", DEPOSITS_SHEET_URL);
       
-      const response = await fetch(url);
+      const response = await fetch(DEPOSITS_SHEET_URL);
       
       if (!response.ok) {
         throw new Error("فشل في جلب بيانات المقدمات");
@@ -32,17 +30,11 @@ export function useTotalDeposits(): DepositsData {
       const data = await response.json();
       console.log("Deposits API response:", data);
       
-      // Handle the API response format
-      if (data.success === true && data.total !== undefined) {
-        setTotal(Number(data.total) || 0);
-      } else if (data.success === true && data.sum !== undefined) {
-        setTotal(Number(data.sum) || 0);
-      } else if (typeof data === "number") {
-        setTotal(data);
-      } else if (data.total !== undefined) {
-        setTotal(Number(data.total) || 0);
-      } else if (data.sum !== undefined) {
-        setTotal(Number(data.sum) || 0);
+      // Extract downPayment from totals object
+      if (data.success === true && data.totals?.downPayment !== undefined) {
+        setTotal(Number(data.totals.downPayment) || 0);
+      } else if (data.totals?.downPayment !== undefined) {
+        setTotal(Number(data.totals.downPayment) || 0);
       } else if (data.success === false) {
         console.error("API Error:", data.message);
         setError(data.message || "خطأ في جلب البيانات");
