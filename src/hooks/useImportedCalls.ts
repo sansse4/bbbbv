@@ -82,11 +82,13 @@ export const useImportedCalls = () => {
   }, []);
 
   const updateCallStatus = (phone: string, status: ImportedCall["status"]) => {
-    setCalls(prev => 
-      prev.map(call => 
+    setCalls(prev => {
+      const updated = prev.map(call => 
         call.phone === phone ? { ...call, status } : call
-      )
-    );
+      );
+      console.log("Updated calls:", updated.length, "Status changed to:", status);
+      return updated;
+    });
   };
 
   return {
