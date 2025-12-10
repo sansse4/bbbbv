@@ -36,24 +36,25 @@ const Media = () => {
     setIsSubmitting(true);
 
     try {
-      const dataToSend = {
-        "الاسم": formData.name,
-        "رقم الهاتف": formData.phone,
-        "حالة الزبون": formData.customerStatus || "",
-        "حجز موعد": formData.booking || "",
-        "ملاحضات": formData.notes || "",
-        "اسم الموظف": profile?.full_name || "",
-        "حالة التصال": "لا يوجد اتصال",
-      };
-      
-      console.log("Data being sent to Google Sheet:", dataToSend);
-      
-      const params = new URLSearchParams(dataToSend);
-      const fullUrl = `https://script.google.com/macros/s/AKfycbxMor9nLf1Ei2lazJqMzYR3MyBg6msZg8H5hn_9KkRdiE2d2lk4_gOX3WXaOTpSNGwF/exec?${params}`;
-      
-      console.log("Full URL:", fullUrl);
+      const formDataToSend = new FormData();
+      formDataToSend.append("الاسم", formData.name);
+      formDataToSend.append("رقم الهاتف", formData.phone);
+      formDataToSend.append("حالة الزبون", formData.customerStatus || "");
+      formDataToSend.append("حجز موعد", formData.booking || "");
+      formDataToSend.append("ملاحضات", formData.notes || "");
+      formDataToSend.append("اسم الموظف", profile?.full_name || "");
+      formDataToSend.append("حالة التصال", "لا يوجد اتصال");
 
-      const response = await fetch(fullUrl, { mode: 'no-cors', redirect: 'follow' });
+      console.log("Sending data to Google Sheet...");
+
+      await fetch(
+        "https://script.google.com/macros/s/AKfycbxMor9nLf1Ei2lazJqMzYR3MyBg6msZg8H5hn_9KkRdiE2d2lk4_gOX3WXaOTpSNGwF/exec",
+        { 
+          method: "POST",
+          body: formDataToSend,
+          mode: 'no-cors'
+        }
+      );
 
       // With no-cors mode, we can't check response.ok, so we assume success if no error thrown
       toast({
