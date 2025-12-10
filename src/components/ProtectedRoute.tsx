@@ -6,10 +6,11 @@ interface ProtectedRouteProps {
 }
 
 export function ProtectedRoute({ children }: ProtectedRouteProps) {
-  const { user, loading, hasAccess, getDefaultRoute } = useAuth();
+  const { user, loading, isDataLoaded, hasAccess, getDefaultRoute } = useAuth();
   const location = useLocation();
 
-  if (loading) {
+  // Show loading while auth state is being determined OR while user data is being fetched
+  if (loading || (user && !isDataLoaded)) {
     return (
       <div className="min-h-screen flex items-center justify-center">
         <div className="text-center">
