@@ -10,6 +10,7 @@ import { AuthProvider } from "@/contexts/AuthContext";
 import { ProtectedRoute } from "@/components/ProtectedRoute";
 import { PageTransition } from "@/components/PageTransition";
 import Dashboard from "./pages/Dashboard";
+import MyDashboard from "./pages/MyDashboard";
 import Media from "./pages/Media";
 import Sales from "./pages/Sales";
 import CallCenter from "./pages/CallCenter";
@@ -46,6 +47,7 @@ const App = () => (
                           <PageTransition>
                             <Routes>
                               <Route path="/" element={<Dashboard />} />
+                              <Route path="/my-dashboard" element={<MyDashboard />} />
                               <Route path="/media" element={<Media />} />
                               <Route path="/sales" element={<Sales />} />
                               <Route path="/call-center" element={<CallCenter />} />
