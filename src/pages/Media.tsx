@@ -41,9 +41,9 @@ const Media = () => {
         "رقم الهاتف": formData.phone,
         "حالة الزبون": formData.customerStatus || "",
         "حجز موعد": formData.booking || "",
-        "ملاحظات": formData.notes || "",
+        "ملاحضات": formData.notes || "",
         "اسم الموظف": profile?.full_name || "",
-        "حالة الاتصال": "لا يوجد اتصال",
+        "حالة التصال": "لا يوجد اتصال",
       });
 
       const response = await fetch(
