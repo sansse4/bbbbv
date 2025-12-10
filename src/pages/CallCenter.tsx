@@ -67,7 +67,6 @@ const CallCenter = () => {
   const handleStatusUpdate = (status: "contacted" | "no-answer" | "wrong-number") => {
     if (selectedCall) {
       updateCallStatus(selectedCall.phone, status);
-      setSelectedCall(null);
     }
   };
   const getStatusColor = (status: ImportedCall["status"]) => {
