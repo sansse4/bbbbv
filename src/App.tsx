@@ -15,8 +15,6 @@ import MyDashboard from "./pages/MyDashboard";
 import Media from "./pages/Media";
 import Sales from "./pages/Sales";
 import CallCenter from "./pages/CallCenter";
-import Contracts from "./pages/Contracts";
-import Analytics from "./pages/Analytics";
 import Reception from "./pages/Reception";
 import Login from "./pages/Login";
 import UserManagement from "./pages/UserManagement";
@@ -60,8 +58,6 @@ function App() {
                               <Route path="/media" element={<Media />} />
                               <Route path="/sales" element={<Sales />} />
                               <Route path="/call-center" element={<CallCenter />} />
-                              <Route path="/contracts" element={<Contracts />} />
-                              <Route path="/analytics" element={<Analytics />} />
                               <Route path="/reception" element={<Reception />} />
                               <Route path="/users" element={<UserManagement />} />
                               <Route path="/employees" element={<Employees />} />
