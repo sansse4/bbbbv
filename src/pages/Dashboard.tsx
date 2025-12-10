@@ -16,7 +16,6 @@ import {
   FileText,
   DollarSign,
   Phone,
-  Building,
   Wallet,
   RefreshCw,
   Banknote,
@@ -174,7 +173,7 @@ const Dashboard = () => {
       </div>
 
       {/* Metrics Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
         <MetricCard
           title="عدد العملاء"
           value={salesLoading ? "..." : customersCount.toString()}
@@ -189,11 +188,6 @@ const Dashboard = () => {
           title="السعر الحقيقي"
           value={salesLoading ? "..." : formatCurrency(totals?.realPrice || 0)}
           icon={Banknote}
-        />
-        <MetricCard
-          title="عمولة الإدارة"
-          value={salesLoading ? "..." : formatCurrency(totals?.adminCommission || 0)}
-          icon={Building}
         />
         <Card className="hover:shadow-lg transition-shadow bg-primary/5 border-primary/20">
           <CardContent className="p-6">
@@ -325,38 +319,6 @@ const Dashboard = () => {
           </CardContent>
         </Card>
 
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <DollarSign className="h-5 w-5 text-warning" />
-              ملخص المالية
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-4">
-              <div className="flex justify-between items-center p-3 bg-muted/50 rounded-lg">
-                <span className="text-muted-foreground">إجمالي المبيعات</span>
-                <span className="font-bold text-lg">{salesLoading ? "..." : formatCurrency(totals?.salePrice || 0)}</span>
-              </div>
-              <div className="flex justify-between items-center p-3 bg-muted/50 rounded-lg">
-                <span className="text-muted-foreground">السعر الحقيقي</span>
-                <span className="font-bold text-lg">{salesLoading ? "..." : formatCurrency(totals?.realPrice || 0)}</span>
-              </div>
-              <div className="flex justify-between items-center p-3 bg-muted/50 rounded-lg">
-                <span className="text-muted-foreground">مجموع المقدمات</span>
-                <span className="font-bold text-lg">{salesLoading ? "..." : formatCurrency(totals?.downPayment || 0)}</span>
-              </div>
-              <div className="flex justify-between items-center p-3 bg-muted/50 rounded-lg">
-                <span className="text-muted-foreground">عمولة الإدارة</span>
-                <span className="font-bold text-lg">{salesLoading ? "..." : formatCurrency(totals?.adminCommission || 0)}</span>
-              </div>
-              <div className="flex justify-between items-center p-3 bg-primary/10 rounded-lg border border-primary/20">
-                <span className="text-muted-foreground">عمولة رؤية</span>
-                <span className="font-bold text-lg text-primary">{salesLoading ? "..." : formatCurrency(totals?.roayaCommission || 0)}</span>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
       </div>
     </div>
   );
