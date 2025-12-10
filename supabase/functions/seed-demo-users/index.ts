@@ -5,72 +5,14 @@ const corsHeaders = {
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 };
 
-interface DemoUser {
+interface UserInput {
   email: string;
   password: string;
   full_name: string;
   username: string;
-  role: 'admin' | 'employee';
+  role: 'admin' | 'employee' | 'assistant_manager';
   department?: string;
 }
-
-const demoUsers: DemoUser[] = [
-  {
-    email: 'admin@roaya.com',
-    password: 'admin123',
-    full_name: 'Admin User',
-    username: 'admin',
-    role: 'admin',
-  },
-  {
-    email: 'media@roaya.com',
-    password: 'media123',
-    full_name: 'Media Manager',
-    username: 'media_user',
-    role: 'employee',
-    department: 'Media',
-  },
-  {
-    email: 'sales@roaya.com',
-    password: 'sales123',
-    full_name: 'Sales Manager',
-    username: 'sales_user',
-    role: 'employee',
-    department: 'Sales',
-  },
-  {
-    email: 'callcenter@roaya.com',
-    password: 'callcenter123',
-    full_name: 'Call Center Manager',
-    username: 'callcenter_user',
-    role: 'employee',
-    department: 'Call Center',
-  },
-  {
-    email: 'contracts@roaya.com',
-    password: 'contracts123',
-    full_name: 'Contracts Manager',
-    username: 'contracts_user',
-    role: 'employee',
-    department: 'Contract Registration',
-  },
-  {
-    email: 'analytics@roaya.com',
-    password: 'analytics123',
-    full_name: 'Analytics Manager',
-    username: 'analytics_user',
-    role: 'employee',
-    department: 'Growth Analytics',
-  },
-  {
-    email: 'reception@roaya.com',
-    password: 'reception123',
-    full_name: 'Reception Staff',
-    username: 'reception_user',
-    role: 'employee',
-    department: 'Reception',
-  },
-];
 
 Deno.serve(async (req) => {
   if (req.method === 'OPTIONS') {
@@ -89,11 +31,32 @@ Deno.serve(async (req) => {
       }
     );
 
+    // Parse request body
+    const body = await req.json();
+    const usersToCreate: UserInput[] = body.users || [];
+
+    if (usersToCreate.length === 0) {
+      return new Response(JSON.stringify({ error: 'No users provided' }), {
+        status: 400,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      });
+    }
+
     const results = [];
 
-    for (const user of demoUsers) {
+    for (const user of usersToCreate) {
       try {
-        // Check if user already exists
+        // Validate required fields
+        if (!user.email || !user.password || !user.full_name || !user.username || !user.role) {
+          results.push({ 
+            username: user.username || 'unknown', 
+            status: 'error', 
+            error: 'Missing required fields' 
+          });
+          continue;
+        }
+
+        // Check if username already exists
         const { data: existingProfile } = await supabaseAdmin
           .from('profiles')
           .select('username')
@@ -101,9 +64,20 @@ Deno.serve(async (req) => {
           .maybeSingle();
 
         if (existingProfile) {
-          results.push({ username: user.username, status: 'already_exists' });
+          results.push({ username: user.username, status: 'error', error: 'Username already exists' });
           continue;
         }
+
+        // Check if email already exists
+        const { data: existingUsers } = await supabaseAdmin.auth.admin.listUsers();
+        const emailExists = existingUsers?.users?.some(u => u.email === user.email);
+        
+        if (emailExists) {
+          results.push({ username: user.username, status: 'error', error: 'Email already exists' });
+          continue;
+        }
+
+        console.log(`Creating user: ${user.username} with email: ${user.email}`);
 
         // Create user in auth
         const { data: authData, error: authError } = await supabaseAdmin.auth.admin.createUser({
@@ -112,8 +86,16 @@ Deno.serve(async (req) => {
           email_confirm: true,
         });
 
-        if (authError) throw authError;
-        if (!authData.user) throw new Error('User creation failed');
+        if (authError) {
+          console.error(`Auth error for ${user.username}:`, authError);
+          throw authError;
+        }
+        
+        if (!authData.user) {
+          throw new Error('User creation failed - no user returned');
+        }
+
+        console.log(`Auth user created with ID: ${authData.user.id}`);
 
         // Create profile
         const { error: profileError } = await supabaseAdmin
@@ -125,7 +107,14 @@ Deno.serve(async (req) => {
             department: user.department || null,
           });
 
-        if (profileError) throw profileError;
+        if (profileError) {
+          console.error(`Profile error for ${user.username}:`, profileError);
+          // Rollback: delete auth user
+          await supabaseAdmin.auth.admin.deleteUser(authData.user.id);
+          throw profileError;
+        }
+
+        console.log(`Profile created for ${user.username}`);
 
         // Create role
         const { error: roleError } = await supabaseAdmin
@@ -135,11 +124,19 @@ Deno.serve(async (req) => {
             role: user.role,
           });
 
-        if (roleError) throw roleError;
+        if (roleError) {
+          console.error(`Role error for ${user.username}:`, roleError);
+          // Rollback: delete profile and auth user
+          await supabaseAdmin.from('profiles').delete().eq('id', authData.user.id);
+          await supabaseAdmin.auth.admin.deleteUser(authData.user.id);
+          throw roleError;
+        }
 
+        console.log(`User ${user.username} created successfully with role: ${user.role}`);
         results.push({ username: user.username, status: 'created' });
       } catch (error) {
         const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+        console.error(`Error creating user ${user.username}:`, errorMessage);
         results.push({ username: user.username, status: 'error', error: errorMessage });
       }
     }
@@ -149,6 +146,7 @@ Deno.serve(async (req) => {
     });
   } catch (error) {
     const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+    console.error('Function error:', errorMessage);
     return new Response(JSON.stringify({ error: errorMessage }), {
       status: 500,
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },

@@ -11,7 +11,7 @@ interface UserProfile {
 }
 
 interface UserRole {
-  role: 'admin' | 'employee';
+  role: 'admin' | 'employee' | 'assistant_manager';
 }
 
 interface AuthContextType {
@@ -139,7 +139,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const hasAccess = (path: string): boolean => {
     if (!role) return false;
-    if (role.role === 'admin') return true;
+    if (role.role === 'admin' || role.role === 'assistant_manager') return true;
 
     // Map paths to departments
     const pathDepartmentMap: { [key: string]: string } = {
@@ -153,7 +153,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     // My Dashboard is accessible to all authenticated employees
     if (path === '/my-dashboard') return true;
 
-    // Main dashboard is only for admins
+    // Main dashboard is only for admins and assistant managers
     if (path === '/') return false;
 
     // Check if employee has access to this department
@@ -165,7 +165,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const getDefaultRoute = (): string => {
     if (!role) return '/login';
-    if (role.role === 'admin') return '/';
+    if (role.role === 'admin' || role.role === 'assistant_manager') return '/';
     return '/my-dashboard';
   };
 
