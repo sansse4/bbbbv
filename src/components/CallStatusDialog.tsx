@@ -30,7 +30,7 @@ import { toast } from "sonner";
 import { Phone, PhoneMissed, PhoneOff } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 
-const API_URL = "https://script.google.com/macros/s/AKfycbxNfoFnzVciTOIWkknm6tt_8SNjmbs0x4lOyQ27zNrXxpcIVhPhynqAteQDKH90sA/exec";
+const API_URL = "https://script.google.com/macros/s/AKfycbwCKZTfI7FpeGouIhtIf1UIyagQNVdtJQNtQNkDrw-Nld1n0AHlhf2Umh5aSCXbTsEX/exec";
 
 const callStatusSchema = z.object({
   callStatus: z.enum(["contacted", "no-answer", "wrong-number"]),
