@@ -25,7 +25,7 @@ import { toast } from "@/hooks/use-toast";
 import { Phone } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 
-const CALLCENTER_API_URL = "https://script.google.com/macros/s/AKfycbyoJr4D2YxvNwsveg5giE6rAOmSSLjtnUyqBFg3MSPrAo9ov2Yu83qKEk8RkGbnR0g/exec";
+const CALLCENTER_API_URL = "https://script.google.com/macros/s/AKfycbxMor9nLf1Ei2lazJqMzYR3MyBg6msZg8H5hn_9KkRdiE2d2lk4_gOX3WXaOTpSNGwF/exec";
 
 const callCenterFormSchema = z.object({
   name: z.string().min(1, "الاسم مطلوب"),
