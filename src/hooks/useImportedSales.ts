@@ -11,9 +11,10 @@ export interface ImportedSale {
   houseNumber: string;
   source: string;
   timestamp: string;
+  customerStatus: string;
 }
 
-const SALES_SHEET_URL = "https://script.google.com/macros/s/AKfycbw7Hyc7b4OC2P3y8EjCqK8z_DHcJb22NidQq-VNXB_oyXgoIVJwIR55GTslitHodd84/exec";
+const SALES_SHEET_URL = "https://script.google.com/macros/s/AKfycbwggD1-fKIY0V0ZOIMGix50Hwiq0U7nLfxTxzHUYN931xa0oYxAzCZHB-q-95va2mhh/exec";
 
 export const useImportedSales = () => {
   const [sales, setSales] = useState<ImportedSale[]>([]);
@@ -70,8 +71,9 @@ export const useImportedSales = () => {
           familyMembers: item["عدد افراد الاسرة"] || item.familyMembers || "",
           houseCategory: item["فئة الدار"] || item.houseCategory || "",
           houseNumber: item["رقم الدار"] || item.houseNumber || "",
-          source: item["المصدر"] || item.source || "",
+          source: item["المصدر"] || item["كيف تعرف علينا"] || item.source || "",
           timestamp: item["التاريخ"] || item.Timestamp || item.timestamp || "",
+          customerStatus: item["حالة الزبون"] || "تم الاستلام",
         }));
 
       setSales(transformedSales);
