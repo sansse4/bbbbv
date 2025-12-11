@@ -65,6 +65,7 @@ export const LeadsTracker = () => {
                     <TableHead>عدد افراد الاسرة</TableHead>
                     <TableHead>فئة الدار</TableHead>
                     <TableHead>رقم الدار</TableHead>
+                    <TableHead>حالة الزبون</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
@@ -77,6 +78,11 @@ export const LeadsTracker = () => {
                       <TableCell>{lead.familyMembers || "-"}</TableCell>
                       <TableCell>{lead.houseCategory || "-"}</TableCell>
                       <TableCell>{lead.houseNumber || "-"}</TableCell>
+                      <TableCell>
+                        <span className="px-2 py-1 rounded-full text-xs bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200">
+                          {lead.customerStatus}
+                        </span>
+                      </TableCell>
                     </TableRow>
                   ))}
                 </TableBody>
@@ -123,6 +129,11 @@ export const LeadsTracker = () => {
                         {lead.houseNumber}
                       </div>
                     )}
+                  </div>
+                  <div className="mt-2">
+                    <span className="px-2 py-1 rounded-full text-xs bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200">
+                      {lead.customerStatus}
+                    </span>
                   </div>
                 </Card>
               ))}
