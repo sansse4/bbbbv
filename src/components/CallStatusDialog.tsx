@@ -30,7 +30,7 @@ import { toast } from "sonner";
 import { Phone, PhoneMissed, PhoneOff } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 
-const EXPORT_SHEET_URL = "https://script.google.com/macros/s/AKfycbxrkH3HdwceAJtIUn0sbIx1wbHyuyJR7Fm7nQYQeUEViTcyUvb4fsS964QhwMwl_9CV/exec";
+const API_URL = "https://script.google.com/macros/s/AKfycbxNfoFnzVciTOIWkknm6tt_8SNjmbs0x4lOyQ27zNrXxpcIVhPhynqAteQDKH90sA/exec";
 
 const callStatusSchema = z.object({
   callStatus: z.enum(["contacted", "no-answer", "wrong-number"]),
@@ -90,17 +90,18 @@ export const CallStatusDialog = ({
       const employeeName = profile?.full_name || "غير محدد";
       const callStatus = data.callStatus === "contacted" ? "تم الرد" : data.callStatus === "no-answer" ? "لم يتم الرد" : "رقم خطأ";
       
-      // Build params in exact column order
+      // Build params for update action
       const params = new URLSearchParams();
+      params.append("action", "update");
+      params.append("phone", callData.phone);
       params.append("employee", employeeName);
       params.append("name", callData.name);
       params.append("call_status", callStatus);
-      params.append("phone", callData.phone);
       params.append("booking", data.appointment);
       params.append("status", data.customerStatus);
       params.append("notes", data.notes || "");
 
-      const response = await fetch(`${EXPORT_SHEET_URL}?${params.toString()}`);
+      const response = await fetch(`${API_URL}?${params.toString()}`);
       
       if (!response.ok) {
         throw new Error("Network error");
