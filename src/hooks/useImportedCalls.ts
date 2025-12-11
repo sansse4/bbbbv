@@ -45,10 +45,21 @@ export const useImportedCalls = () => {
         }
       }
       
-      // Handle both array and object responses
-      const dataArray = Array.isArray(data) ? data : (data.rows || data.data || []);
+      // Handle both array and single object responses
+      let dataArray: any[] = [];
       
-      if (!Array.isArray(dataArray) || dataArray.length === 0) {
+      if (Array.isArray(data)) {
+        dataArray = data;
+      } else if (data.rows) {
+        dataArray = data.rows;
+      } else if (data.row) {
+        // New API returns single row object
+        dataArray = [data.row];
+      } else if (data.data) {
+        dataArray = data.data;
+      }
+      
+      if (dataArray.length === 0) {
         setCalls([]);
         setError(null);
         return;
