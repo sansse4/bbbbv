@@ -21,7 +21,7 @@ export const useImportedCalls = () => {
       setIsLoading(true);
       setError(null);
       
-      const response = await fetch(`${IMPORT_SHEET_URL}?action=read`, {
+      const response = await fetch(`${IMPORT_SHEET_URL}?action=get`, {
         method: 'GET',
         mode: 'cors',
       });
