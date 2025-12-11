@@ -13,7 +13,7 @@ import { useImportedSales } from "@/hooks/useImportedSales";
 import { Users, Phone, Home, RefreshCw, MapPin, Briefcase, CheckCircle, Loader2 } from "lucide-react";
 import { toast } from "sonner";
 
-const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwggD1-fKIY0V0ZOIMGix50Hwiq0U7nLfxTxzHUYN931xa0oYxAzCZHB-q-95va2mhh/exec";
+const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycby-F8Me1K9bhl6Oxd_qraF1bWqn3bzg3VgRTYEBT7SA4ZJvLWgUCevukXEyXxoNJps/exec";
 
 export const LeadsTracker = () => {
   const { sales: leads, isLoading, error, refetch } = useImportedSales();
