@@ -9,7 +9,7 @@ export interface ImportedCall {
   status: "pending" | "contacted" | "no-answer" | "wrong-number";
 }
 
-const IMPORT_SHEET_URL = "https://script.google.com/macros/s/AKfycbwCKZTfI7FpeGouIhtIf1UIyagQNVdtJQNtQNkDrw-Nld1n0AHlhf2Umh5aSCXbTsEX/exec";
+const IMPORT_SHEET_URL = "https://script.google.com/macros/s/AKfycbymyr7BV5Hmq_cX-t0_83aN_f1r9dYk2F5yjt7R_upz4GYTwuStRVA695JLdhdAlg59/exec";
 
 export const useImportedCalls = () => {
   const [calls, setCalls] = useState<ImportedCall[]>([]);
