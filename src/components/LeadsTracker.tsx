@@ -33,17 +33,25 @@ export const LeadsTracker = () => {
     setUpdatingPhone(leadPhone);
     
     try {
-      // Send update to Google Sheet
-      const formData = new FormData();
-      formData.append("action", "update");
-      formData.append("رقم الهاتف", leadPhone);
-      formData.append("حالة الزبون", "تم الاستلام");
+      // Send update to Google Sheet using GET with URL params
+      const params = new URLSearchParams({
+        action: "update",
+        "رقم الهاتف": leadPhone,
+        "حالة الزبون": "تم الاستلام",
+      });
 
-      await fetch(GOOGLE_SCRIPT_URL, {
-        method: "POST",
-        body: formData,
+      console.log("Sending update to Google Sheet:", {
+        url: `${GOOGLE_SCRIPT_URL}?${params.toString()}`,
+        phone: leadPhone,
+      });
+
+      // Try GET request first (some Google Apps Scripts prefer this)
+      const response = await fetch(`${GOOGLE_SCRIPT_URL}?${params.toString()}`, {
+        method: "GET",
         mode: "no-cors",
       });
+      
+      console.log("Google Sheet update response:", response);
 
       // Save locally
       const newReceived = new Set(receivedLeads);
