@@ -80,7 +80,7 @@ export default function Reception() {
       formDataToSend.append("عدد افراد الاسرة", formData.family_members);
       formDataToSend.append("فئة الدار", formData.house_category);
       formDataToSend.append("رقم الدار", formData.house_number);
-      formDataToSend.append("المصدر", formData.source || "");
+      formDataToSend.append("كيف تعرف علينا", formData.source || "");
       formDataToSend.append("موظف المبيعات", selectedEmployee?.full_name || "");
 
       await fetch(GOOGLE_SCRIPT_URL, {
