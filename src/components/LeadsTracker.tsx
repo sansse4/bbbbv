@@ -10,11 +10,15 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { useImportedSales } from "@/hooks/useImportedSales";
-import { Users, Phone, Home, RefreshCw, MapPin, Briefcase, CheckCircle } from "lucide-react";
+import { Users, Phone, Home, RefreshCw, MapPin, Briefcase, CheckCircle, Loader2 } from "lucide-react";
+import { toast } from "sonner";
+
+const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwggD1-fKIY0V0ZOIMGix50Hwiq0U7nLfxTxzHUYN931xa0oYxAzCZHB-q-95va2mhh/exec";
 
 export const LeadsTracker = () => {
   const { sales: leads, isLoading, error, refetch } = useImportedSales();
   const [receivedLeads, setReceivedLeads] = useState<Set<string>>(new Set());
+  const [updatingPhone, setUpdatingPhone] = useState<string | null>(null);
 
   // Load received status from localStorage
   useEffect(() => {
@@ -24,12 +28,36 @@ export const LeadsTracker = () => {
     }
   }, []);
 
-  // Save to localStorage when changed
-  const markAsReceived = (leadPhone: string) => {
-    const newReceived = new Set(receivedLeads);
-    newReceived.add(leadPhone);
-    setReceivedLeads(newReceived);
-    localStorage.setItem("receivedLeads", JSON.stringify([...newReceived]));
+  // Update Google Sheet and save locally
+  const markAsReceived = async (leadPhone: string) => {
+    setUpdatingPhone(leadPhone);
+    
+    try {
+      // Send update to Google Sheet
+      const formData = new FormData();
+      formData.append("action", "update");
+      formData.append("رقم الهاتف", leadPhone);
+      formData.append("حالة الزبون", "تم الاستلام");
+
+      await fetch(GOOGLE_SCRIPT_URL, {
+        method: "POST",
+        body: formData,
+        mode: "no-cors",
+      });
+
+      // Save locally
+      const newReceived = new Set(receivedLeads);
+      newReceived.add(leadPhone);
+      setReceivedLeads(newReceived);
+      localStorage.setItem("receivedLeads", JSON.stringify([...newReceived]));
+      
+      toast.success("تم تحديث حالة الزبون بنجاح");
+    } catch (err) {
+      console.error("Error updating status:", err);
+      toast.error("فشل تحديث حالة الزبون");
+    } finally {
+      setUpdatingPhone(null);
+    }
   };
 
   const isReceived = (leadPhone: string) => receivedLeads.has(leadPhone);
@@ -110,8 +138,13 @@ export const LeadsTracker = () => {
                             size="sm"
                             className="text-xs h-7 px-2 text-orange-600 border-orange-300 hover:bg-orange-50 dark:text-orange-400 dark:border-orange-600 dark:hover:bg-orange-950"
                             onClick={() => markAsReceived(lead.phone)}
+                            disabled={updatingPhone === lead.phone}
                           >
-                            انقر للاستلام
+                            {updatingPhone === lead.phone ? (
+                              <Loader2 className="h-3 w-3 animate-spin" />
+                            ) : (
+                              "انقر للاستلام"
+                            )}
                           </Button>
                         )}
                       </TableCell>
@@ -174,8 +207,13 @@ export const LeadsTracker = () => {
                         size="sm"
                         className="text-xs h-7 px-2 text-orange-600 border-orange-300 hover:bg-orange-50 dark:text-orange-400 dark:border-orange-600 dark:hover:bg-orange-950"
                         onClick={() => markAsReceived(lead.phone)}
+                        disabled={updatingPhone === lead.phone}
                       >
-                        انقر للاستلام
+                        {updatingPhone === lead.phone ? (
+                          <Loader2 className="h-3 w-3 animate-spin" />
+                        ) : (
+                          "انقر للاستلام"
+                        )}
                       </Button>
                     )}
                   </div>
