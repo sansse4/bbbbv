@@ -71,21 +71,21 @@ export default function Reception() {
       // Get the selected sales employee name
       const selectedEmployee = salesEmployees.find(emp => emp.id === formData.assigned_to);
 
-      // Send to Google Sheets
-      const params = new URLSearchParams({
-        name: formData.name,
-        address: formData.address,
-        phone: formData.phone,
-        "المهنة": formData.profession,
-        "عدد افراد الاسرة": formData.family_members,
-        "فئة الدار": formData.house_category,
-        "رقم الدار": formData.house_number,
-        source: formData.source || "",
-        "موظف المبيعات": selectedEmployee?.full_name || "",
-      });
+      // Send to Google Sheets using POST with FormData
+      const formDataToSend = new FormData();
+      formDataToSend.append("الاسم", formData.name);
+      formDataToSend.append("العنوان", formData.address);
+      formDataToSend.append("رقم الهاتف", formData.phone);
+      formDataToSend.append("المهنة", formData.profession);
+      formDataToSend.append("عدد افراد الاسرة", formData.family_members);
+      formDataToSend.append("فئة الدار", formData.house_category);
+      formDataToSend.append("رقم الدار", formData.house_number);
+      formDataToSend.append("المصدر", formData.source || "");
+      formDataToSend.append("موظف المبيعات", selectedEmployee?.full_name || "");
 
-      await fetch(`${GOOGLE_SCRIPT_URL}?${params.toString()}`, {
-        method: "GET",
+      await fetch(GOOGLE_SCRIPT_URL, {
+        method: "POST",
+        body: formDataToSend,
         mode: "no-cors",
       });
 
