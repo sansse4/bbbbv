@@ -48,8 +48,8 @@ const Media = () => {
       console.log("Sending data to Google Sheet...");
 
       await fetch(
-        "https://script.google.com/macros/s/AKfycbxMor9nLf1Ei2lazJqMzYR3MyBg6msZg8H5hn_9KkRdiE2d2lk4_gOX3WXaOTpSNGwF/exec",
-        { 
+        "https://script.google.com/macros/s/AKfycbymyr7BV5Hmq_cX-t0_83aN_f1r9dYk2F5yjt7R_upz4GYTwuStRVA695JLdhdAlg59/exec",
+        {
           method: "POST",
           body: formDataToSend,
           mode: 'no-cors'
