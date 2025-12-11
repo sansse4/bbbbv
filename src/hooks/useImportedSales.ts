@@ -14,7 +14,7 @@ export interface ImportedSale {
   customerStatus: string;
 }
 
-const SALES_SHEET_URL = "https://script.google.com/macros/s/AKfycbwggD1-fKIY0V0ZOIMGix50Hwiq0U7nLfxTxzHUYN931xa0oYxAzCZHB-q-95va2mhh/exec";
+const SALES_SHEET_URL = "https://script.google.com/macros/s/AKfycby-F8Me1K9bhl6Oxd_qraF1bWqn3bzg3VgRTYEBT7SA4ZJvLWgUCevukXEyXxoNJps/exec";
 
 export const useImportedSales = () => {
   const [sales, setSales] = useState<ImportedSale[]>([]);
