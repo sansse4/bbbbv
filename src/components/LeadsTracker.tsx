@@ -1,3 +1,4 @@
+import { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import {
@@ -9,10 +10,29 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { useImportedSales } from "@/hooks/useImportedSales";
-import { Users, Phone, Home, RefreshCw, MapPin, Briefcase } from "lucide-react";
+import { Users, Phone, Home, RefreshCw, MapPin, Briefcase, CheckCircle } from "lucide-react";
 
 export const LeadsTracker = () => {
   const { sales: leads, isLoading, error, refetch } = useImportedSales();
+  const [receivedLeads, setReceivedLeads] = useState<Set<string>>(new Set());
+
+  // Load received status from localStorage
+  useEffect(() => {
+    const saved = localStorage.getItem("receivedLeads");
+    if (saved) {
+      setReceivedLeads(new Set(JSON.parse(saved)));
+    }
+  }, []);
+
+  // Save to localStorage when changed
+  const markAsReceived = (leadPhone: string) => {
+    const newReceived = new Set(receivedLeads);
+    newReceived.add(leadPhone);
+    setReceivedLeads(newReceived);
+    localStorage.setItem("receivedLeads", JSON.stringify([...newReceived]));
+  };
+
+  const isReceived = (leadPhone: string) => receivedLeads.has(leadPhone);
 
   if (isLoading) {
     return (
@@ -79,9 +99,21 @@ export const LeadsTracker = () => {
                       <TableCell>{lead.houseCategory || "-"}</TableCell>
                       <TableCell>{lead.houseNumber || "-"}</TableCell>
                       <TableCell>
-                        <span className="px-2 py-1 rounded-full text-xs bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200">
-                          {lead.customerStatus}
-                        </span>
+                        {isReceived(lead.phone) ? (
+                          <span className="px-2 py-1 rounded-full text-xs bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200 flex items-center gap-1 w-fit">
+                            <CheckCircle className="h-3 w-3" />
+                            تم الاستلام
+                          </span>
+                        ) : (
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            className="text-xs h-7 px-2 text-orange-600 border-orange-300 hover:bg-orange-50 dark:text-orange-400 dark:border-orange-600 dark:hover:bg-orange-950"
+                            onClick={() => markAsReceived(lead.phone)}
+                          >
+                            انقر للاستلام
+                          </Button>
+                        )}
                       </TableCell>
                     </TableRow>
                   ))}
@@ -131,9 +163,21 @@ export const LeadsTracker = () => {
                     )}
                   </div>
                   <div className="mt-2">
-                    <span className="px-2 py-1 rounded-full text-xs bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200">
-                      {lead.customerStatus}
-                    </span>
+                    {isReceived(lead.phone) ? (
+                      <span className="px-2 py-1 rounded-full text-xs bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200 flex items-center gap-1 w-fit">
+                        <CheckCircle className="h-3 w-3" />
+                        تم الاستلام
+                      </span>
+                    ) : (
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        className="text-xs h-7 px-2 text-orange-600 border-orange-300 hover:bg-orange-50 dark:text-orange-400 dark:border-orange-600 dark:hover:bg-orange-950"
+                        onClick={() => markAsReceived(lead.phone)}
+                      >
+                        انقر للاستلام
+                      </Button>
+                    )}
                   </div>
                 </Card>
               ))}
