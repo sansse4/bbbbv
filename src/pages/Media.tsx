@@ -41,8 +41,8 @@ const Media = () => {
       formDataToSend.append("رقم الهاتف", formData.phone);
       formDataToSend.append("حالة الزبون", formData.customerStatus || "");
       formDataToSend.append("حجز موعد", formData.booking || "");
-      formDataToSend.append("ملاحضات", formData.notes || "");
-      formDataToSend.append("اسم الموظف", profile?.full_name || "");
+      formDataToSend.append("ملاحظات", formData.notes || "");
+      formDataToSend.append("اسم الموضف", profile?.full_name || "");
       formDataToSend.append("حالة التصال", "لا يوجد اتصال");
 
       console.log("Sending data to Google Sheet...");
