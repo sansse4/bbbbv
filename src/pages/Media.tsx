@@ -43,7 +43,7 @@ const Media = () => {
       formDataToSend.append("حجز موعد", formData.booking || "");
       formDataToSend.append("ملاحظات", formData.notes || "");
       formDataToSend.append("اسم الموضف", profile?.full_name || "");
-      formDataToSend.append("حالة التصال", "لا يوجد اتصال");
+      formDataToSend.append("حالة التصال", "لم يتم الرد");
 
       console.log("Sending data to Google Sheet...");
 
