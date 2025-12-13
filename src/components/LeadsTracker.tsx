@@ -89,9 +89,9 @@ export const LeadsTracker = () => {
       formData.append("عدد افراد الاسرة", editForm.familyMembers);
       formData.append("فئة الدار", editForm.houseCategory);
       formData.append("رقم الدار", editForm.houseNumber);
-      formData.append("ملاحظات", editForm.notes);
+      formData.append("ملاحضات", editForm.notes);
       formData.append("حالة الزبون", editForm.customerStatus || "تم الاستلام");
-      formData.append("اسم الموظف", editForm.employeeName);
+      formData.append("موضف المبيعات", editForm.employeeName);
 
       console.log("Sending update to Google Sheet:", {
         phone: selectedLead.phone,
@@ -135,7 +135,7 @@ export const LeadsTracker = () => {
       formData.append("action", "update");
       formData.append("رقم الهاتف", leadPhone);
       formData.append("حالة الزبون", "تم الاستلام");
-      formData.append("اسم الموظف", employeeName);
+      formData.append("موضف المبيعات", employeeName);
 
       console.log("Quick update to Google Sheet:", {
         phone: leadPhone,
