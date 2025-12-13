@@ -20,6 +20,7 @@ import {
   DialogFooter,
 } from "@/components/ui/dialog";
 import { useImportedSales, ImportedSale } from "@/hooks/useImportedSales";
+import { useAuth } from "@/contexts/AuthContext";
 import { Users, Phone, Home, RefreshCw, MapPin, Briefcase, CheckCircle, Loader2, Edit } from "lucide-react";
 import { toast } from "sonner";
 
@@ -27,6 +28,7 @@ const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbyPKbIeM9XZoH
 
 export const LeadsTracker = () => {
   const { sales: leads, isLoading, error, refetch } = useImportedSales();
+  const { profile } = useAuth();
   const [receivedLeads, setReceivedLeads] = useState<Set<string>>(new Set());
   const [updatingPhone, setUpdatingPhone] = useState<string | null>(null);
   const [selectedLead, setSelectedLead] = useState<ImportedSale | null>(null);
@@ -40,6 +42,7 @@ export const LeadsTracker = () => {
     houseNumber: "",
     notes: "",
     customerStatus: "",
+    employeeName: "",
   });
   const [isSaving, setIsSaving] = useState(false);
 
@@ -51,8 +54,9 @@ export const LeadsTracker = () => {
     }
   }, []);
 
-  // Open edit dialog
+  // Open edit dialog - auto set status to "تم الاستلام" and employee name
   const openEditDialog = (lead: ImportedSale) => {
+    const employeeName = profile?.full_name || "";
     setSelectedLead(lead);
     setEditForm({
       name: lead.name,
@@ -63,7 +67,8 @@ export const LeadsTracker = () => {
       houseCategory: lead.houseCategory || "",
       houseNumber: lead.houseNumber || "",
       notes: "",
-      customerStatus: receivedLeads.has(lead.phone) ? "تم الاستلام" : "",
+      customerStatus: "تم الاستلام",
+      employeeName: employeeName,
     });
   };
 
@@ -85,6 +90,7 @@ export const LeadsTracker = () => {
         "رقم الدار": editForm.houseNumber,
         "ملاحضات": editForm.notes,
         "حالة الزبون": editForm.customerStatus || "تم الاستلام",
+        "اسم الموظف": editForm.employeeName,
       });
 
       await fetch(`${GOOGLE_SCRIPT_URL}?${params.toString()}`, {
@@ -114,12 +120,14 @@ export const LeadsTracker = () => {
   // Quick mark as received
   const markAsReceived = async (leadPhone: string) => {
     setUpdatingPhone(leadPhone);
+    const employeeName = profile?.full_name || "";
     
     try {
       const params = new URLSearchParams({
         action: "update",
         "رقم الهاتف": leadPhone,
         "حالة الزبون": "تم الاستلام",
+        "اسم الموظف": employeeName,
       });
 
       await fetch(`${GOOGLE_SCRIPT_URL}?${params.toString()}`, {
