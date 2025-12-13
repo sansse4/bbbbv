@@ -24,7 +24,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { Users, Phone, Home, RefreshCw, MapPin, Briefcase, CheckCircle, Loader2, Edit } from "lucide-react";
 import { toast } from "sonner";
 
-const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbyPDTduwNrbtRiO7yKt7PAo76q_xdkKNDdZyJK6a4Xxy_67bVGc8B3qzIDGHenSWNrq/exec";
+const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbw8PkmPH44CUvyaRdSne88de834CGKVlDDS9us34uLudfFV4itSMu4eLuKtvo0BmNgd/exec";
 
 export const LeadsTracker = () => {
   const { sales: leads, isLoading, error, refetch } = useImportedSales();
