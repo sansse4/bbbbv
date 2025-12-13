@@ -79,22 +79,30 @@ export const LeadsTracker = () => {
     setIsSaving(true);
     
     try {
-      const params = new URLSearchParams({
-        action: "update",
-        "رقم الهاتف": selectedLead.phone,
-        "الاسم": editForm.name,
-        "العنوان": editForm.address,
-        "المهنة": editForm.profession,
-        "عدد افراد الاسرة": editForm.familyMembers,
-        "فئة الدار": editForm.houseCategory,
-        "رقم الدار": editForm.houseNumber,
-        "ملاحضات": editForm.notes,
-        "حالة الزبون": editForm.customerStatus || "تم الاستلام",
-        "اسم الموظف": editForm.employeeName,
+      // Use FormData with POST for better compatibility with Google Apps Script
+      const formData = new FormData();
+      formData.append("action", "update");
+      formData.append("رقم الهاتف", selectedLead.phone);
+      formData.append("الاسم", editForm.name);
+      formData.append("العنوان", editForm.address);
+      formData.append("المهنة", editForm.profession);
+      formData.append("عدد افراد الاسرة", editForm.familyMembers);
+      formData.append("فئة الدار", editForm.houseCategory);
+      formData.append("رقم الدار", editForm.houseNumber);
+      formData.append("ملاحظات", editForm.notes);
+      formData.append("حالة الزبون", editForm.customerStatus || "تم الاستلام");
+      formData.append("اسم الموظف", editForm.employeeName);
+
+      console.log("Sending update to Google Sheet:", {
+        phone: selectedLead.phone,
+        customerStatus: editForm.customerStatus,
+        notes: editForm.notes,
+        employeeName: editForm.employeeName,
       });
 
-      await fetch(`${GOOGLE_SCRIPT_URL}?${params.toString()}`, {
-        method: "GET",
+      await fetch(GOOGLE_SCRIPT_URL, {
+        method: "POST",
+        body: formData,
         mode: "no-cors",
       });
 
@@ -123,15 +131,21 @@ export const LeadsTracker = () => {
     const employeeName = profile?.full_name || "";
     
     try {
-      const params = new URLSearchParams({
-        action: "update",
-        "رقم الهاتف": leadPhone,
-        "حالة الزبون": "تم الاستلام",
-        "اسم الموظف": employeeName,
+      const formData = new FormData();
+      formData.append("action", "update");
+      formData.append("رقم الهاتف", leadPhone);
+      formData.append("حالة الزبون", "تم الاستلام");
+      formData.append("اسم الموظف", employeeName);
+
+      console.log("Quick update to Google Sheet:", {
+        phone: leadPhone,
+        customerStatus: "تم الاستلام",
+        employeeName: employeeName,
       });
 
-      await fetch(`${GOOGLE_SCRIPT_URL}?${params.toString()}`, {
-        method: "GET",
+      await fetch(GOOGLE_SCRIPT_URL, {
+        method: "POST",
+        body: formData,
         mode: "no-cors",
       });
 
