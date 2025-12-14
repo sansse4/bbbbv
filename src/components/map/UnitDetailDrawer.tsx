@@ -10,7 +10,7 @@ import { Unit, UnitStatus, useUpdateUnit } from "@/hooks/useUnits";
 import { useAuth } from "@/contexts/AuthContext";
 import { format } from "date-fns";
 import { ar } from "date-fns/locale";
-import { Home, MapPin, Ruler, DollarSign, User, Phone, Briefcase, Calculator, FileText, Clock, Edit, Save, X, CheckCircle, ShoppingCart } from "lucide-react";
+import { Home, MapPin, Ruler, DollarSign, User, Phone, Briefcase, Calculator, FileText, Clock, Edit, Save, X, CheckCircle, ShoppingCart, Timer, TimerOff } from "lucide-react";
 import { Separator } from "@/components/ui/separator";
 
 interface UnitDetailDrawerProps {
@@ -53,13 +53,44 @@ export function UnitDetailDrawer({ unit, open, onOpenChange }: UnitDetailDrawerP
     setIsEditing(false);
   };
 
-  const handleQuickAction = async (newStatus: UnitStatus) => {
+  const handleQuickAction = async (newStatus: UnitStatus, with48HourHold = false) => {
+    if (!unit) return;
+    
+    const updates: Partial<Unit> & { id: string } = {
+      id: unit.id,
+      status: newStatus,
+    };
+    
+    if (with48HourHold && newStatus === "reserved") {
+      const expiresAt = new Date();
+      expiresAt.setHours(expiresAt.getHours() + 48);
+      updates.reservation_expires_at = expiresAt.toISOString();
+    } else if (newStatus !== "reserved") {
+      updates.reservation_expires_at = null;
+    }
+    
+    await updateUnit.mutateAsync(updates);
+  };
+
+  const handleCancelHold = async () => {
     if (!unit) return;
     
     await updateUnit.mutateAsync({
       id: unit.id,
-      status: newStatus,
+      status: "available",
+      reservation_expires_at: null,
     });
+  };
+
+  const hasTemporaryHold = unit?.status === "reserved" && unit?.reservation_expires_at && new Date(unit.reservation_expires_at) > new Date();
+  
+  const getTimeRemaining = () => {
+    if (!unit?.reservation_expires_at) return null;
+    const diff = new Date(unit.reservation_expires_at).getTime() - new Date().getTime();
+    if (diff <= 0) return null;
+    const hours = Math.floor(diff / (1000 * 60 * 60));
+    const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+    return `${hours} ساعة و ${minutes} دقيقة`;
   };
 
   const formatCurrency = (value: number) => {
@@ -107,6 +138,19 @@ export function UnitDetailDrawer({ unit, open, onOpenChange }: UnitDetailDrawerP
               <UnitStatusBadge status={unit.status} />
             )}
           </div>
+
+          {/* Temporary Hold Info */}
+          {hasTemporaryHold && (
+            <div className="bg-amber-50 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-800 rounded-lg p-3">
+              <div className="flex items-center gap-2 text-amber-700 dark:text-amber-400">
+                <Timer className="h-4 w-4" />
+                <span className="font-medium text-sm">حجز مؤقت (48 ساعة)</span>
+              </div>
+              <p className="text-xs text-amber-600 dark:text-amber-500 mt-1">
+                الوقت المتبقي: {getTimeRemaining()}
+              </p>
+            </div>
+          )}
 
           <Separator />
 
@@ -273,38 +317,64 @@ export function UnitDetailDrawer({ unit, open, onOpenChange }: UnitDetailDrawerP
                 )}
 
                 {!isEditing && unit.status === "available" && (
-                  <div className="flex gap-2">
-                    <Button
-                      variant="outline"
-                      onClick={() => handleQuickAction("reserved")}
-                      disabled={updateUnit.isPending}
-                      className="flex-1 border-amber-500 text-amber-600 hover:bg-amber-50"
-                    >
-                      <CheckCircle className="h-4 w-4 ml-2" />
-                      حجز
-                    </Button>
-                    <Button
-                      variant="outline"
-                      onClick={() => handleQuickAction("sold")}
-                      disabled={updateUnit.isPending}
-                      className="flex-1 border-rose-500 text-rose-600 hover:bg-rose-50"
-                    >
-                      <ShoppingCart className="h-4 w-4 ml-2" />
-                      بيع
-                    </Button>
+                  <div className="space-y-2">
+                    <div className="flex gap-2">
+                      <Button
+                        variant="outline"
+                        onClick={() => handleQuickAction("reserved", true)}
+                        disabled={updateUnit.isPending}
+                        className="flex-1 border-amber-500 text-amber-600 hover:bg-amber-50 dark:hover:bg-amber-950/30"
+                      >
+                        <Timer className="h-4 w-4 ml-2" />
+                        حجز مؤقت 48 ساعة
+                      </Button>
+                    </div>
+                    <div className="flex gap-2">
+                      <Button
+                        variant="outline"
+                        onClick={() => handleQuickAction("reserved", false)}
+                        disabled={updateUnit.isPending}
+                        className="flex-1 border-amber-500 text-amber-600 hover:bg-amber-50 dark:hover:bg-amber-950/30"
+                      >
+                        <CheckCircle className="h-4 w-4 ml-2" />
+                        حجز دائم
+                      </Button>
+                      <Button
+                        variant="outline"
+                        onClick={() => handleQuickAction("sold")}
+                        disabled={updateUnit.isPending}
+                        className="flex-1 border-rose-500 text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-950/30"
+                      >
+                        <ShoppingCart className="h-4 w-4 ml-2" />
+                        بيع
+                      </Button>
+                    </div>
                   </div>
                 )}
 
                 {!isEditing && unit.status === "reserved" && (
-                  <Button
-                    variant="outline"
-                    onClick={() => handleQuickAction("sold")}
-                    disabled={updateUnit.isPending}
-                    className="w-full border-rose-500 text-rose-600 hover:bg-rose-50"
-                  >
-                    <ShoppingCart className="h-4 w-4 ml-2" />
-                    تحويل إلى مباع
-                  </Button>
+                  <div className="space-y-2">
+                    {hasTemporaryHold && (
+                      <Button
+                        variant="outline"
+                        onClick={handleCancelHold}
+                        disabled={updateUnit.isPending}
+                        className="w-full border-gray-500 text-gray-600 hover:bg-gray-50 dark:hover:bg-gray-950/30"
+                      >
+                        <TimerOff className="h-4 w-4 ml-2" />
+                        إلغاء الحجز المؤقت
+                      </Button>
+                    )}
+                    <Button
+                      variant="outline"
+                      onClick={() => handleQuickAction("sold")}
+                      disabled={updateUnit.isPending}
+                      className="w-full border-rose-500 text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-950/30"
+                    >
+                      <ShoppingCart className="h-4 w-4 ml-2" />
+                      تحويل إلى مباع
+                    </Button>
+                  </div>
                 )}
               </div>
             </>

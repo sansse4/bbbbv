@@ -17,6 +17,7 @@ export interface Unit {
   accountant_name: string | null;
   notes: string | null;
   is_residential: boolean;
+  reservation_expires_at: string | null;
   created_at: string;
   updated_at: string;
 }

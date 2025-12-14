@@ -313,6 +313,7 @@ export type Database = {
           is_residential: boolean
           notes: string | null
           price: number
+          reservation_expires_at: string | null
           sales_employee: string | null
           status: Database["public"]["Enums"]["unit_status"]
           unit_number: number
@@ -329,6 +330,7 @@ export type Database = {
           is_residential?: boolean
           notes?: string | null
           price?: number
+          reservation_expires_at?: string | null
           sales_employee?: string | null
           status?: Database["public"]["Enums"]["unit_status"]
           unit_number: number
@@ -345,6 +347,7 @@ export type Database = {
           is_residential?: boolean
           notes?: string | null
           price?: number
+          reservation_expires_at?: string | null
           sales_employee?: string | null
           status?: Database["public"]["Enums"]["unit_status"]
           unit_number?: number
