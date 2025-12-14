@@ -301,6 +301,57 @@ export type Database = {
         }
         Relationships: []
       }
+      units: {
+        Row: {
+          accountant_name: string | null
+          area_m2: number
+          block_number: number
+          buyer_name: string | null
+          buyer_phone: string | null
+          created_at: string
+          id: string
+          is_residential: boolean
+          notes: string | null
+          price: number
+          sales_employee: string | null
+          status: Database["public"]["Enums"]["unit_status"]
+          unit_number: number
+          updated_at: string
+        }
+        Insert: {
+          accountant_name?: string | null
+          area_m2: number
+          block_number: number
+          buyer_name?: string | null
+          buyer_phone?: string | null
+          created_at?: string
+          id?: string
+          is_residential?: boolean
+          notes?: string | null
+          price?: number
+          sales_employee?: string | null
+          status?: Database["public"]["Enums"]["unit_status"]
+          unit_number: number
+          updated_at?: string
+        }
+        Update: {
+          accountant_name?: string | null
+          area_m2?: number
+          block_number?: number
+          buyer_name?: string | null
+          buyer_phone?: string | null
+          created_at?: string
+          id?: string
+          is_residential?: boolean
+          notes?: string | null
+          price?: number
+          sales_employee?: string | null
+          status?: Database["public"]["Enums"]["unit_status"]
+          unit_number?: number
+          updated_at?: string
+        }
+        Relationships: []
+      }
       user_roles: {
         Row: {
           id: string
@@ -359,6 +410,7 @@ export type Database = {
         | "Contract Registration"
         | "Growth Analytics"
         | "Reception"
+      unit_status: "available" | "reserved" | "sold"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -495,6 +547,7 @@ export const Constants = {
         "Growth Analytics",
         "Reception",
       ],
+      unit_status: ["available", "reserved", "sold"],
     },
   },
 } as const

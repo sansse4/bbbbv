@@ -20,6 +20,7 @@ import Login from "./pages/Login";
 import UserManagement from "./pages/UserManagement";
 import Employees from "./pages/Employees";
 import EmployeeProfile from "./pages/EmployeeProfile";
+import Map from "./pages/Map";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient({
@@ -55,6 +56,7 @@ function App() {
                             <Routes>
                               <Route path="/" element={<Dashboard />} />
                               <Route path="/my-dashboard" element={<MyDashboard />} />
+                              <Route path="/map" element={<Map />} />
                               <Route path="/media" element={<Media />} />
                               <Route path="/sales" element={<Sales />} />
                               <Route path="/call-center" element={<CallCenter />} />
