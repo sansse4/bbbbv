@@ -70,7 +70,7 @@ export default function Appointments() {
   const [notes, setNotes] = useState("");
   const [status, setStatus] = useState("scheduled");
 
-  // Fetch appointments
+  // Fetch appointments with creator info
   const { data: appointments = [], isLoading } = useQuery({
     queryKey: ["appointments"],
     queryFn: async () => {
@@ -84,19 +84,21 @@ export default function Appointments() {
     }
   });
 
-  // Fetch sales employees for assignment
-  const { data: salesEmployees = [] } = useQuery({
-    queryKey: ["sales-employees"],
+  // Fetch all profiles for displaying names
+  const { data: allProfiles = [] } = useQuery({
+    queryKey: ["all-profiles"],
     queryFn: async () => {
       const { data, error } = await supabase
         .from("profiles")
-        .select("id, full_name, department")
-        .eq("department", "Sales");
+        .select("id, full_name, department");
       
       if (error) throw error;
       return data as Profile[];
     }
   });
+
+  // Filter sales employees for assignment
+  const salesEmployees = allProfiles.filter(p => p.department === "Sales");
 
   // Send notification to sales employee
   const sendNotification = async (employeeId: string, appointmentData: { customer_name: string; appointment_date: string; appointment_time: string }) => {
@@ -265,6 +267,11 @@ export default function Appointments() {
     if (!employeeId) return "-";
     const employee = salesEmployees.find(e => e.id === employeeId);
     return employee?.full_name || "-";
+  };
+
+  const getCreatorName = (creatorId: string) => {
+    const creator = allProfiles.find(p => p.id === creatorId);
+    return creator?.full_name || "-";
   };
 
   // Count appointments by status
@@ -476,6 +483,7 @@ export default function Appointments() {
           appointments={appointments}
           onSelectAppointment={handleEdit}
           getSalesEmployeeName={getSalesEmployeeName}
+          getCreatorName={getCreatorName}
         />
       ) : (
         <Card>
@@ -498,7 +506,8 @@ export default function Appointments() {
                       <TableHead>التاريخ</TableHead>
                       <TableHead>الوقت</TableHead>
                       <TableHead>النوع</TableHead>
-                      <TableHead>موظف المبيعات</TableHead>
+                      <TableHead>تم الحجز بواسطة</TableHead>
+                      <TableHead>موظف المبيعات المعين</TableHead>
                       <TableHead>الحالة</TableHead>
                       <TableHead>الإجراءات</TableHead>
                     </TableRow>
@@ -517,6 +526,7 @@ export default function Appointments() {
                         </TableCell>
                         <TableCell>{appointment.appointment_time}</TableCell>
                         <TableCell>{appointment.appointment_type || "-"}</TableCell>
+                        <TableCell className="text-muted-foreground">{getCreatorName(appointment.created_by)}</TableCell>
                         <TableCell>{getSalesEmployeeName(appointment.assigned_sales_employee)}</TableCell>
                         <TableCell>{getStatusBadge(appointment.status)}</TableCell>
                         <TableCell>
