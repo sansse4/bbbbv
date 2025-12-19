@@ -1,141 +1,233 @@
-import { useMemo, useState } from "react";
+import { useMemo, useState, useCallback } from "react";
 import { Unit } from "@/hooks/useUnits";
 import { getStatusColor } from "./UnitStatusBadge";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
-import masterplanImage from "@/assets/masterplan.jpg";
+import { Card } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
+import { Home, Maximize2, Minimize2 } from "lucide-react";
+import { Button } from "@/components/ui/button";
 
 interface MapViewProps {
   units: Unit[];
   onUnitClick: (unit: Unit) => void;
 }
 
-// Block positions on the masterplan (approximate positioning based on the image)
-// These will need fine-tuning based on the actual masterplan layout
-const BLOCK_POSITIONS: Record<number, { x: number; y: number; width: number; height: number; cols: number }> = {
-  1: { x: 5, y: 10, width: 12, height: 35, cols: 2 },
-  2: { x: 5, y: 48, width: 12, height: 40, cols: 2 },
-  3: { x: 18, y: 10, width: 12, height: 35, cols: 2 },
-  4: { x: 18, y: 48, width: 14, height: 45, cols: 2 },
-  5: { x: 32, y: 10, width: 14, height: 42, cols: 2 },
-  6: { x: 32, y: 55, width: 14, height: 40, cols: 2 },
-  7: { x: 47, y: 10, width: 14, height: 42, cols: 2 },
-  8: { x: 47, y: 55, width: 12, height: 35, cols: 2 },
-  9: { x: 60, y: 10, width: 14, height: 42, cols: 2 },
-  10: { x: 60, y: 55, width: 10, height: 25, cols: 2 },
-  11: { x: 60, y: 82, width: 10, height: 15, cols: 2 },
-  12: { x: 71, y: 10, width: 14, height: 42, cols: 2 },
-  13: { x: 71, y: 55, width: 12, height: 30, cols: 2 },
-  14: { x: 71, y: 87, width: 14, height: 10, cols: 3 },
-  15: { x: 83, y: 10, width: 12, height: 30, cols: 2 },
-  16: { x: 83, y: 42, width: 12, height: 28, cols: 2 },
-  17: { x: 83, y: 72, width: 12, height: 25, cols: 2 },
-  18: { x: 92, y: 10, width: 6, height: 20, cols: 1 },
-  19: { x: 92, y: 32, width: 6, height: 20, cols: 1 },
-  20: { x: 92, y: 54, width: 6, height: 28, cols: 2 },
-  21: { x: 92, y: 84, width: 6, height: 12, cols: 2 },
-};
-
 export function MapView({ units, onUnitClick }: MapViewProps) {
-  const [hoveredUnit, setHoveredUnit] = useState<Unit | null>(null);
+  const [hoveredBlock, setHoveredBlock] = useState<number | null>(null);
+  const [isFullscreen, setIsFullscreen] = useState(false);
 
   // Group units by block
   const unitsByBlock = useMemo(() => {
     const grouped: Record<number, Unit[]> = {};
+    
+    // Initialize all 21 blocks
+    for (let i = 1; i <= 21; i++) {
+      grouped[i] = [];
+    }
+    
     units.forEach((unit) => {
-      if (!grouped[unit.block_number]) {
-        grouped[unit.block_number] = [];
+      if (grouped[unit.block_number]) {
+        grouped[unit.block_number].push(unit);
       }
-      grouped[unit.block_number].push(unit);
     });
+    
     Object.keys(grouped).forEach((key) => {
       grouped[Number(key)].sort((a, b) => a.unit_number - b.unit_number);
     });
+    
     return grouped;
   }, [units]);
 
-  const formatCurrency = (value: number) => {
+  // Calculate block statistics
+  const blockStats = useMemo(() => {
+    const stats: Record<number, { total: number; available: number; reserved: number; sold: number }> = {};
+    
+    Object.entries(unitsByBlock).forEach(([block, blockUnits]) => {
+      stats[Number(block)] = {
+        total: blockUnits.length,
+        available: blockUnits.filter(u => u.status === "available").length,
+        reserved: blockUnits.filter(u => u.status === "reserved").length,
+        sold: blockUnits.filter(u => u.status === "sold").length,
+      };
+    });
+    
+    return stats;
+  }, [unitsByBlock]);
+
+  const formatCurrency = useCallback((value: number) => {
     return new Intl.NumberFormat("ar-IQ", {
       style: "decimal",
       maximumFractionDigits: 0,
     }).format(value);
-  };
+  }, []);
+
+  const getBlockStatusColor = useCallback((block: number) => {
+    const stats = blockStats[block];
+    if (!stats || stats.total === 0) return "bg-muted";
+    
+    const availablePercent = (stats.available / stats.total) * 100;
+    const soldPercent = (stats.sold / stats.total) * 100;
+    
+    if (soldPercent === 100) return "bg-rose-500/80";
+    if (availablePercent === 100) return "bg-emerald-500/80";
+    if (availablePercent >= 50) return "bg-emerald-500/60";
+    if (soldPercent >= 50) return "bg-rose-500/60";
+    return "bg-amber-500/60";
+  }, [blockStats]);
 
   return (
-    <div className="relative border rounded-xl overflow-hidden bg-muted/20">
-      {/* Masterplan Background */}
-      <div className="relative w-full" style={{ paddingTop: "70%" }}>
-        <img
-          src={masterplanImage}
-          alt="Compound Masterplan"
-          className="absolute inset-0 w-full h-full object-contain"
-        />
+    <Card className={cn(
+      "relative overflow-hidden transition-all duration-300",
+      isFullscreen ? "fixed inset-4 z-50" : ""
+    )}>
+      {/* Header */}
+      <div className="flex items-center justify-between p-4 border-b bg-muted/30">
+        <div className="flex items-center gap-2">
+          <Home className="h-5 w-5 text-primary" />
+          <span className="font-semibold">عرض الخريطة التفاعلية</span>
+        </div>
+        <Button
+          variant="ghost"
+          size="icon"
+          onClick={() => setIsFullscreen(!isFullscreen)}
+        >
+          {isFullscreen ? (
+            <Minimize2 className="h-4 w-4" />
+          ) : (
+            <Maximize2 className="h-4 w-4" />
+          )}
+        </Button>
+      </div>
 
-        {/* Overlay Units */}
-        <div className="absolute inset-0">
+      {/* Main Content */}
+      <div className={cn(
+        "p-4 overflow-auto",
+        isFullscreen ? "h-[calc(100%-120px)]" : "h-[500px]"
+      )}>
+        {/* Blocks Grid Layout */}
+        <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-7 gap-3">
           {Object.entries(unitsByBlock).map(([blockNum, blockUnits]) => {
             const block = Number(blockNum);
-            const position = BLOCK_POSITIONS[block];
-            if (!position) return null;
-
-            const unitsPerCol = Math.ceil(blockUnits.length / position.cols);
-            const unitWidth = position.width / position.cols;
-            const unitHeight = position.height / unitsPerCol;
+            const stats = blockStats[block];
+            const isHovered = hoveredBlock === block;
+            
+            if (blockUnits.length === 0) {
+              return (
+                <div
+                  key={block}
+                  className="p-3 rounded-xl bg-muted/30 border border-dashed border-muted-foreground/20 text-center"
+                >
+                  <span className="text-xs text-muted-foreground">بلوك {block}</span>
+                  <p className="text-[10px] text-muted-foreground/50 mt-1">لا توجد وحدات</p>
+                </div>
+              );
+            }
 
             return (
               <div
                 key={block}
-                className="absolute"
-                style={{
-                  left: `${position.x}%`,
-                  top: `${position.y}%`,
-                  width: `${position.width}%`,
-                  height: `${position.height}%`,
-                }}
+                className={cn(
+                  "relative rounded-xl border transition-all duration-200 cursor-pointer",
+                  "hover:shadow-lg hover:scale-[1.02]",
+                  isHovered ? "ring-2 ring-primary shadow-lg" : "",
+                  getBlockStatusColor(block)
+                )}
+                onMouseEnter={() => setHoveredBlock(block)}
+                onMouseLeave={() => setHoveredBlock(null)}
               >
-                <div
-                  className="grid h-full w-full gap-[1px]"
-                  style={{
-                    gridTemplateColumns: `repeat(${position.cols}, 1fr)`,
-                    gridTemplateRows: `repeat(${unitsPerCol}, 1fr)`,
-                  }}
-                >
-                  {blockUnits.map((unit) => (
-                    <Tooltip key={unit.id}>
-                      <TooltipTrigger asChild>
-                        <button
-                          onClick={() => onUnitClick(unit)}
-                          onMouseEnter={() => setHoveredUnit(unit)}
-                          onMouseLeave={() => setHoveredUnit(null)}
-                          className={cn(
-                            "w-full h-full rounded-[2px] transition-all text-[6px] md:text-[8px] font-bold text-white/90",
-                            "hover:scale-110 hover:z-10 hover:shadow-lg focus:outline-none focus:ring-1 focus:ring-white/50",
-                            "flex items-center justify-center"
-                          )}
-                          style={{ backgroundColor: getStatusColor(unit.status) }}
-                        >
-                          {unit.unit_number}
-                        </button>
-                      </TooltipTrigger>
-                      <TooltipContent side="top" className="max-w-[200px] z-50">
-                        <div className="text-xs space-y-1">
-                          <p className="font-bold">وحدة #{unit.unit_number}</p>
-                          <p>بلوك: {unit.block_number}</p>
-                          <p>المساحة: {unit.area_m2} م²</p>
-                          <p>السعر: {formatCurrency(unit.price)} د.ع</p>
-                          <p>
-                            الحالة:{" "}
-                            {unit.status === "available"
-                              ? "متاح"
-                              : unit.status === "reserved"
-                              ? "محجوز"
-                              : "مباع"}
-                          </p>
-                          {unit.buyer_name && <p>المشتري: {unit.buyer_name}</p>}
-                        </div>
-                      </TooltipContent>
-                    </Tooltip>
-                  ))}
+                {/* Block Header */}
+                <div className="p-2 text-center border-b border-white/20">
+                  <span className="text-sm font-bold text-white drop-shadow">
+                    بلوك {block}
+                  </span>
+                  <div className="flex justify-center gap-1 mt-1">
+                    <Badge variant="secondary" className="text-[9px] px-1 py-0 h-4 bg-white/20 text-white border-0">
+                      {stats.total} وحدة
+                    </Badge>
+                  </div>
+                </div>
+
+                {/* Units Grid */}
+                <div className="p-2">
+                  <div className="grid grid-cols-3 gap-1">
+                    {blockUnits.slice(0, 9).map((unit) => (
+                      <Tooltip key={unit.id}>
+                        <TooltipTrigger asChild>
+                          <button
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              onUnitClick(unit);
+                            }}
+                            className={cn(
+                              "w-full aspect-square rounded-md transition-all text-[10px] font-bold text-white",
+                              "hover:scale-110 hover:z-10 hover:shadow-lg",
+                              "focus:outline-none focus:ring-2 focus:ring-white/50",
+                              "flex items-center justify-center"
+                            )}
+                            style={{ backgroundColor: getStatusColor(unit.status) }}
+                          >
+                            {unit.unit_number}
+                          </button>
+                        </TooltipTrigger>
+                        <TooltipContent side="top" className="max-w-[200px] z-[100]">
+                          <div className="text-xs space-y-1">
+                            <p className="font-bold">وحدة #{unit.unit_number}</p>
+                            <p>المساحة: {unit.area_m2} م²</p>
+                            <p>السعر: {formatCurrency(unit.price)} د.ع</p>
+                            <p>
+                              الحالة:{" "}
+                              <span className={cn(
+                                "font-semibold",
+                                unit.status === "available" && "text-emerald-600",
+                                unit.status === "reserved" && "text-amber-600",
+                                unit.status === "sold" && "text-rose-600"
+                              )}>
+                                {unit.status === "available" ? "متاح" : unit.status === "reserved" ? "محجوز" : "مباع"}
+                              </span>
+                            </p>
+                            {unit.buyer_name && <p>المشتري: {unit.buyer_name}</p>}
+                          </div>
+                        </TooltipContent>
+                      </Tooltip>
+                    ))}
+                  </div>
+                  
+                  {blockUnits.length > 9 && (
+                    <div className="mt-2 text-center">
+                      <button
+                        onClick={() => {
+                          // Click first remaining unit
+                          if (blockUnits[9]) onUnitClick(blockUnits[9]);
+                        }}
+                        className="text-[10px] text-white/80 hover:text-white underline"
+                      >
+                        +{blockUnits.length - 9} وحدات أخرى
+                      </button>
+                    </div>
+                  )}
+                </div>
+
+                {/* Block Stats Footer */}
+                <div className="p-2 border-t border-white/20 flex justify-center gap-2">
+                  {stats.available > 0 && (
+                    <span className="text-[9px] text-white/90 flex items-center gap-0.5">
+                      <span className="w-2 h-2 rounded-full bg-emerald-400"></span>
+                      {stats.available}
+                    </span>
+                  )}
+                  {stats.reserved > 0 && (
+                    <span className="text-[9px] text-white/90 flex items-center gap-0.5">
+                      <span className="w-2 h-2 rounded-full bg-amber-400"></span>
+                      {stats.reserved}
+                    </span>
+                  )}
+                  {stats.sold > 0 && (
+                    <span className="text-[9px] text-white/90 flex items-center gap-0.5">
+                      <span className="w-2 h-2 rounded-full bg-rose-400"></span>
+                      {stats.sold}
+                    </span>
+                  )}
                 </div>
               </div>
             );
@@ -144,22 +236,30 @@ export function MapView({ units, onUnitClick }: MapViewProps) {
       </div>
 
       {/* Legend */}
-      <div className="absolute bottom-4 left-4 bg-background/90 backdrop-blur-sm rounded-lg p-3 shadow-lg border">
-        <div className="flex items-center gap-4 text-xs">
-          <div className="flex items-center gap-1.5">
-            <div className="w-3 h-3 rounded-sm bg-emerald-500" />
-            <span>متاح</span>
+      <div className="p-4 border-t bg-muted/30">
+        <div className="flex flex-wrap items-center justify-center gap-4 text-sm">
+          <div className="flex items-center gap-2">
+            <div className="w-4 h-4 rounded-md bg-emerald-500 shadow-sm" />
+            <span className="text-muted-foreground">متاح</span>
           </div>
-          <div className="flex items-center gap-1.5">
-            <div className="w-3 h-3 rounded-sm bg-amber-500" />
-            <span>محجوز</span>
+          <div className="flex items-center gap-2">
+            <div className="w-4 h-4 rounded-md bg-amber-500 shadow-sm" />
+            <span className="text-muted-foreground">محجوز</span>
           </div>
-          <div className="flex items-center gap-1.5">
-            <div className="w-3 h-3 rounded-sm bg-rose-500" />
-            <span>مباع</span>
+          <div className="flex items-center gap-2">
+            <div className="w-4 h-4 rounded-md bg-rose-500 shadow-sm" />
+            <span className="text-muted-foreground">مباع</span>
           </div>
         </div>
       </div>
-    </div>
+      
+      {/* Fullscreen Overlay Background */}
+      {isFullscreen && (
+        <div 
+          className="fixed inset-0 bg-background/80 backdrop-blur-sm -z-10"
+          onClick={() => setIsFullscreen(false)}
+        />
+      )}
+    </Card>
   );
 }

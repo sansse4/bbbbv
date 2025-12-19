@@ -12,6 +12,7 @@ import { format } from "date-fns";
 import { ar } from "date-fns/locale";
 import { Home, MapPin, Ruler, DollarSign, User, Phone, Briefcase, Calculator, FileText, Clock, Edit, Save, X, CheckCircle, ShoppingCart, Timer, TimerOff } from "lucide-react";
 import { Separator } from "@/components/ui/separator";
+import { Card } from "@/components/ui/card";
 
 interface UnitDetailDrawerProps {
   unit: Unit | null;
@@ -105,15 +106,19 @@ export function UnitDetailDrawer({ unit, open, onOpenChange }: UnitDetailDrawerP
   return (
     <Sheet open={open} onOpenChange={onOpenChange}>
       <SheetContent className="w-full sm:max-w-lg overflow-y-auto">
-        <SheetHeader className="text-right">
-          <SheetTitle className="flex items-center gap-2 text-xl">
-            <Home className="h-5 w-5 text-primary" />
-            وحدة رقم {unit.unit_number}
-          </SheetTitle>
-          <SheetDescription className="flex items-center gap-2">
-            <MapPin className="h-4 w-4" />
-            البلوك {unit.block_number}
-          </SheetDescription>
+        <SheetHeader className="text-right pb-4 border-b">
+          <div className="flex items-center gap-3">
+            <div className="h-14 w-14 rounded-xl bg-primary/10 flex items-center justify-center">
+              <Home className="h-7 w-7 text-primary" />
+            </div>
+            <div>
+              <SheetTitle className="text-xl">وحدة رقم {unit.unit_number}</SheetTitle>
+              <SheetDescription className="flex items-center gap-1.5 mt-1">
+                <MapPin className="h-3.5 w-3.5" />
+                البلوك {unit.block_number}
+              </SheetDescription>
+            </div>
+          </div>
         </SheetHeader>
 
         <div className="mt-6 space-y-6">
