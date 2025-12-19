@@ -1,6 +1,6 @@
 import { NavLink } from "@/components/NavLink";
 import { useLocation } from "react-router-dom";
-import { LayoutDashboard, Image, TrendingUp, Phone, Users, ClipboardCheck, UserCircle, Home, MapIcon } from "lucide-react";
+import { LayoutDashboard, Image, TrendingUp, Phone, Users, ClipboardCheck, UserCircle, Home, MapIcon, CalendarClock } from "lucide-react";
 import roayaLogo from "@/assets/roaya-logo.png";
 import { Sidebar, SidebarContent, SidebarGroup, SidebarGroupContent, SidebarGroupLabel, SidebarMenu, SidebarMenuButton, SidebarMenuItem, useSidebar } from "@/components/ui/sidebar";
 import { useAuth } from "@/contexts/AuthContext";
@@ -39,6 +39,11 @@ const menuItems = [{
   title: "Call Center",
   url: "/call-center",
   icon: Phone,
+  department: "Call Center"
+}, {
+  title: "حجز المواعيد",
+  url: "/appointments",
+  icon: CalendarClock,
   department: "Call Center"
 }, {
   title: "Reception",

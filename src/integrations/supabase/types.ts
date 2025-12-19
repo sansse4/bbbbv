@@ -14,6 +14,59 @@ export type Database = {
   }
   public: {
     Tables: {
+      appointments: {
+        Row: {
+          appointment_date: string
+          appointment_time: string
+          appointment_type: string | null
+          assigned_sales_employee: string | null
+          created_at: string
+          created_by: string
+          customer_name: string
+          customer_phone: string
+          id: string
+          notes: string | null
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          appointment_date: string
+          appointment_time: string
+          appointment_type?: string | null
+          assigned_sales_employee?: string | null
+          created_at?: string
+          created_by: string
+          customer_name: string
+          customer_phone: string
+          id?: string
+          notes?: string | null
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          appointment_date?: string
+          appointment_time?: string
+          appointment_type?: string | null
+          assigned_sales_employee?: string | null
+          created_at?: string
+          created_by?: string
+          customer_name?: string
+          customer_phone?: string
+          id?: string
+          notes?: string | null
+          status?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "appointments_assigned_sales_employee_fkey"
+            columns: ["assigned_sales_employee"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       assistant_manager_departments: {
         Row: {
           created_at: string | null

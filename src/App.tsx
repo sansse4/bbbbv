@@ -21,6 +21,7 @@ import UserManagement from "./pages/UserManagement";
 import Employees from "./pages/Employees";
 import EmployeeProfile from "./pages/EmployeeProfile";
 import Map from "./pages/Map";
+import Appointments from "./pages/Appointments";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient({
@@ -60,6 +61,7 @@ function App() {
                               <Route path="/media" element={<Media />} />
                               <Route path="/sales" element={<Sales />} />
                               <Route path="/call-center" element={<CallCenter />} />
+                              <Route path="/appointments" element={<Appointments />} />
                               <Route path="/reception" element={<Reception />} />
                               <Route path="/users" element={<UserManagement />} />
                               <Route path="/employees" element={<Employees />} />
