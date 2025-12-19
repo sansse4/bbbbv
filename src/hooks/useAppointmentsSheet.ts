@@ -5,15 +5,13 @@ const SHEET_API_URL = "https://script.google.com/macros/s/AKfycbxWlVYJZ1FKg7Tf-x
 
 export interface SheetAppointment {
   customerName: string;
+  employeeName: string;
   customerPhone: string;
   appointmentDate: string;
   appointmentTime: string;
   appointmentType: string;
-  assignedEmployee: string;
-  status: string;
+  assignedSalesEmployee: string;
   notes: string;
-  createdBy: string;
-  createdAt: string;
 }
 
 export function useAppointmentsSheet() {
@@ -26,16 +24,14 @@ export function useAppointmentsSheet() {
     try {
       const params = new URLSearchParams({
         action: "add",
-        customerName: appointment.customerName,
-        customerPhone: appointment.customerPhone,
-        appointmentDate: appointment.appointmentDate,
-        appointmentTime: appointment.appointmentTime,
-        appointmentType: appointment.appointmentType || "",
-        assignedEmployee: appointment.assignedEmployee || "",
-        status: appointment.status,
-        notes: appointment.notes || "",
-        createdBy: appointment.createdBy,
-        createdAt: appointment.createdAt
+        "اسم العميل": appointment.customerName,
+        "اسم الموظف": appointment.employeeName,
+        "رقم الهاتف": appointment.customerPhone,
+        "تاريخ الموعد": appointment.appointmentDate,
+        "وقت الموعد": appointment.appointmentTime,
+        "نوع الموعد": appointment.appointmentType || "",
+        "موظف المبيعات المسؤول": appointment.assignedSalesEmployee || "",
+        "ملاحظات": appointment.notes || ""
       });
 
       console.log("Sending to Google Sheet:", params.toString());

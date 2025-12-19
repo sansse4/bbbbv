@@ -165,15 +165,13 @@ export default function Appointments() {
       // Send to Google Sheet
       const sheetData: SheetAppointment = {
         customerName: variables.customer_name,
+        employeeName: getCreatorName(variables.created_by),
         customerPhone: variables.customer_phone,
         appointmentDate: variables.appointment_date,
         appointmentTime: variables.appointment_time,
         appointmentType: variables.appointment_type || "",
-        assignedEmployee: getSalesEmployeeName(variables.assigned_sales_employee),
-        status: variables.status,
-        notes: variables.notes || "",
-        createdBy: getCreatorName(variables.created_by),
-        createdAt: new Date().toISOString()
+        assignedSalesEmployee: getSalesEmployeeName(variables.assigned_sales_employee),
+        notes: variables.notes || ""
       };
       await sendToSheet(sheetData);
       
@@ -687,8 +685,7 @@ export default function Appointments() {
                         <TableHead>الوقت</TableHead>
                         <TableHead>النوع</TableHead>
                         <TableHead>موظف المبيعات</TableHead>
-                        <TableHead>الحالة</TableHead>
-                        <TableHead>تم الحجز بواسطة</TableHead>
+                        <TableHead>الموظف</TableHead>
                       </TableRow>
                     </TableHeader>
                     <TableBody>
@@ -699,9 +696,8 @@ export default function Appointments() {
                           <TableCell>{result.appointmentDate}</TableCell>
                           <TableCell>{result.appointmentTime}</TableCell>
                           <TableCell>{result.appointmentType || "-"}</TableCell>
-                          <TableCell>{result.assignedEmployee || "-"}</TableCell>
-                          <TableCell>{result.status}</TableCell>
-                          <TableCell className="text-muted-foreground">{result.createdBy}</TableCell>
+                          <TableCell>{result.assignedSalesEmployee || "-"}</TableCell>
+                          <TableCell>{result.employeeName || "-"}</TableCell>
                         </TableRow>
                       ))}
                     </TableBody>
