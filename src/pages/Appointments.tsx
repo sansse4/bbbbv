@@ -31,7 +31,14 @@ interface Appointment {
   status: string;
   created_by: string;
   created_at: string;
+  reminder_minutes: number;
 }
+
+const reminderOptions = [
+  { value: 30, label: "30 دقيقة" },
+  { value: 60, label: "ساعة واحدة" },
+  { value: 120, label: "ساعتين" },
+];
 
 interface Profile {
   id: string;
@@ -83,6 +90,7 @@ export default function Appointments() {
   const [assignedEmployee, setAssignedEmployee] = useState("");
   const [notes, setNotes] = useState("");
   const [status, setStatus] = useState("scheduled");
+  const [reminderMinutes, setReminderMinutes] = useState(60);
 
   // Fetch appointments with creator info
   const { data: appointments = [], isLoading } = useQuery({
@@ -241,6 +249,7 @@ export default function Appointments() {
     setAssignedEmployee("");
     setNotes("");
     setStatus("scheduled");
+    setReminderMinutes(60);
   };
 
   const handleEdit = (appointment: Appointment) => {
@@ -253,6 +262,7 @@ export default function Appointments() {
     setAssignedEmployee(appointment.assigned_sales_employee || "");
     setNotes(appointment.notes || "");
     setStatus(appointment.status);
+    setReminderMinutes(appointment.reminder_minutes || 60);
     setIsDialogOpen(true);
   };
 
@@ -273,7 +283,8 @@ export default function Appointments() {
       assigned_sales_employee: assignedEmployee || null,
       notes: notes || null,
       status,
-      created_by: user?.id || ""
+      created_by: user?.id || "",
+      reminder_minutes: reminderMinutes
     };
 
     if (editingAppointment) {
@@ -521,6 +532,22 @@ export default function Appointments() {
                       {salesEmployees.map((employee) => (
                         <SelectItem key={employee.id} value={employee.id}>
                           {employee.full_name}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="reminderMinutes">وقت التذكير قبل الموعد</Label>
+                  <Select value={String(reminderMinutes)} onValueChange={(val) => setReminderMinutes(Number(val))}>
+                    <SelectTrigger>
+                      <SelectValue placeholder="اختر وقت التذكير" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {reminderOptions.map((option) => (
+                        <SelectItem key={option.value} value={String(option.value)}>
+                          {option.label}
                         </SelectItem>
                       ))}
                     </SelectContent>
