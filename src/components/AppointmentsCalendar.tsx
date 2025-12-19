@@ -2,7 +2,7 @@ import { useState, useMemo } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { ChevronLeft, ChevronRight, Calendar } from "lucide-react";
+import { ChevronLeft, ChevronRight, Calendar, Plus } from "lucide-react";
 import { format, startOfMonth, endOfMonth, eachDayOfInterval, isSameMonth, isSameDay, addMonths, subMonths, isToday } from "date-fns";
 import { ar } from "date-fns/locale";
 
@@ -196,13 +196,23 @@ export function AppointmentsCalendar({
 
       {/* Selected date appointments */}
       <Card>
-        <CardHeader>
+        <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
           <CardTitle className="text-lg">
             {selectedDate 
               ? `مواعيد ${format(selectedDate, "dd MMMM yyyy", { locale: ar })}`
               : "اختر يوماً لعرض المواعيد"
             }
           </CardTitle>
+          {selectedDate && (
+            <Button 
+              size="sm" 
+              onClick={() => onAddNewAppointment(format(selectedDate, "yyyy-MM-dd"))}
+              className="gap-1"
+            >
+              <Plus className="h-4 w-4" />
+              موعد جديد
+            </Button>
+          )}
         </CardHeader>
         <CardContent>
           {!selectedDate ? (
@@ -211,7 +221,7 @@ export function AppointmentsCalendar({
             </p>
           ) : selectedDateAppointments.length === 0 ? (
             <p className="text-muted-foreground text-center py-8">
-              لا توجد مواعيد في هذا اليوم
+              لا توجد مواعيد في هذا اليوم - اضغط على "موعد جديد" للإضافة
             </p>
           ) : (
             <div className="space-y-3 max-h-[400px] overflow-y-auto">
