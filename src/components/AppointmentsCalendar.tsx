@@ -23,6 +23,7 @@ interface Appointment {
 interface AppointmentsCalendarProps {
   appointments: Appointment[];
   onSelectAppointment: (appointment: Appointment) => void;
+  onAddNewAppointment: (date: string) => void;
   getSalesEmployeeName: (id: string | null) => string;
   getCreatorName: (id: string) => string;
 }
@@ -48,11 +49,20 @@ const weekDays = ["الأحد", "الاثنين", "الثلاثاء", "الأر�
 export function AppointmentsCalendar({ 
   appointments, 
   onSelectAppointment,
+  onAddNewAppointment,
   getSalesEmployeeName,
   getCreatorName
 }: AppointmentsCalendarProps) {
   const [currentMonth, setCurrentMonth] = useState(new Date());
   const [selectedDate, setSelectedDate] = useState<Date | null>(null);
+
+  const handleDayClick = (day: Date, dayAppointments: Appointment[]) => {
+    setSelectedDate(day);
+    if (dayAppointments.length === 0) {
+      // No appointments - open new appointment dialog with this date
+      onAddNewAppointment(format(day, "yyyy-MM-dd"));
+    }
+  };
 
   const monthStart = startOfMonth(currentMonth);
   const monthEnd = endOfMonth(currentMonth);
@@ -139,15 +149,19 @@ export function AppointmentsCalendar({
               return (
                 <button
                   key={day.toISOString()}
-                  onClick={() => setSelectedDate(day)}
+                  onClick={() => handleDayClick(day, dayAppointments)}
                   className={`
                     aspect-square p-1 rounded-lg border transition-all relative
-                    ${isSelected ? "border-primary bg-primary/10 ring-2 ring-primary" : "border-transparent hover:bg-muted"}
-                    ${isToday(day) ? "bg-accent" : ""}
+                    ${hasAppointments 
+                      ? "bg-red-500/20 border-red-500 hover:bg-red-500/30" 
+                      : "border-transparent hover:bg-muted"
+                    }
+                    ${isSelected ? "ring-2 ring-primary" : ""}
+                    ${isToday(day) && !hasAppointments ? "bg-accent" : ""}
                     ${!isSameMonth(day, currentMonth) ? "text-muted-foreground/50" : ""}
                   `}
                 >
-                  <span className={`text-sm ${isToday(day) ? "font-bold" : ""}`}>
+                  <span className={`text-sm ${isToday(day) ? "font-bold" : ""} ${hasAppointments ? "text-red-700 dark:text-red-300" : ""}`}>
                     {format(day, "d")}
                   </span>
                   {hasAppointments && (

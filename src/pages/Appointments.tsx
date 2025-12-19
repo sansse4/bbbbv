@@ -323,6 +323,14 @@ export default function Appointments() {
     setShowSheetResults(true);
   };
 
+  // Handle adding new appointment from calendar
+  const handleAddNewAppointment = (date: string) => {
+    setEditingAppointment(null);
+    resetForm();
+    setAppointmentDate(date);
+    setIsDialogOpen(true);
+  };
+
   return (
     <div className="space-y-6" dir="rtl">
       {/* Header */}
@@ -615,6 +623,7 @@ export default function Appointments() {
         <AppointmentsCalendar
           appointments={appointments}
           onSelectAppointment={handleEdit}
+          onAddNewAppointment={handleAddNewAppointment}
           getSalesEmployeeName={getSalesEmployeeName}
           getCreatorName={getCreatorName}
         />
