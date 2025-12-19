@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
@@ -11,10 +11,11 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { toast } from "@/hooks/use-toast";
-import { Calendar, Clock, User, Phone, Plus, Edit, Trash2, CalendarDays } from "lucide-react";
+import { Calendar, Clock, Plus, Edit, Trash2, CalendarDays, List, LayoutGrid } from "lucide-react";
 import { format } from "date-fns";
-import { ar } from "date-fns/locale";
+import { AppointmentsCalendar } from "@/components/AppointmentsCalendar";
 
 interface Appointment {
   id: string;
@@ -57,6 +58,7 @@ export default function Appointments() {
   const queryClient = useQueryClient();
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [editingAppointment, setEditingAppointment] = useState<Appointment | null>(null);
+  const [viewMode, setViewMode] = useState<"calendar" | "table">("calendar");
   
   // Form state
   const [customerName, setCustomerName] = useState("");
@@ -96,6 +98,21 @@ export default function Appointments() {
     }
   });
 
+  // Send notification to sales employee
+  const sendNotification = async (employeeId: string, appointmentData: { customer_name: string; appointment_date: string; appointment_time: string }) => {
+    try {
+      await supabase.from("notifications").insert({
+        user_id: employeeId,
+        title: "موعد جديد",
+        message: `تم تعيين موعد جديد لك مع العميل ${appointmentData.customer_name} بتاريخ ${appointmentData.appointment_date} الساعة ${appointmentData.appointment_time}`,
+        type: "appointment",
+        reference_id: null
+      });
+    } catch (error) {
+      console.error("Error sending notification:", error);
+    }
+  };
+
   // Create appointment mutation
   const createMutation = useMutation({
     mutationFn: async (appointment: Omit<Appointment, "id" | "created_at">) => {
@@ -108,8 +125,18 @@ export default function Appointments() {
       if (error) throw error;
       return data;
     },
-    onSuccess: () => {
+    onSuccess: async (data, variables) => {
       queryClient.invalidateQueries({ queryKey: ["appointments"] });
+      
+      // Send notification if sales employee is assigned
+      if (variables.assigned_sales_employee) {
+        await sendNotification(variables.assigned_sales_employee, {
+          customer_name: variables.customer_name,
+          appointment_date: variables.appointment_date,
+          appointment_time: variables.appointment_time
+        });
+      }
+      
       toast({ title: "تم إضافة الموعد بنجاح" });
       resetForm();
       setIsDialogOpen(false);
@@ -132,8 +159,19 @@ export default function Appointments() {
       if (error) throw error;
       return data;
     },
-    onSuccess: () => {
+    onSuccess: async (data, variables) => {
       queryClient.invalidateQueries({ queryKey: ["appointments"] });
+      
+      // Send notification if sales employee changed
+      if (variables.assigned_sales_employee && 
+          editingAppointment?.assigned_sales_employee !== variables.assigned_sales_employee) {
+        await sendNotification(variables.assigned_sales_employee, {
+          customer_name: variables.customer_name || editingAppointment?.customer_name || "",
+          appointment_date: variables.appointment_date || editingAppointment?.appointment_date || "",
+          appointment_time: variables.appointment_time || editingAppointment?.appointment_time || ""
+        });
+      }
+      
       toast({ title: "تم تحديث الموعد بنجاح" });
       resetForm();
       setIsDialogOpen(false);
@@ -244,147 +282,171 @@ export default function Appointments() {
           <p className="text-muted-foreground">إدارة مواعيد العملاء</p>
         </div>
         
-        <Dialog open={isDialogOpen} onOpenChange={(open) => {
-          setIsDialogOpen(open);
-          if (!open) {
-            resetForm();
-            setEditingAppointment(null);
-          }
-        }}>
-          <DialogTrigger asChild>
-            <Button className="gap-2">
-              <Plus className="h-4 w-4" />
-              موعد جديد
+        <div className="flex items-center gap-2">
+          {/* View Toggle */}
+          <div className="flex border rounded-lg p-1">
+            <Button
+              variant={viewMode === "calendar" ? "default" : "ghost"}
+              size="sm"
+              onClick={() => setViewMode("calendar")}
+              className="gap-1"
+            >
+              <LayoutGrid className="h-4 w-4" />
+              تقويم
             </Button>
-          </DialogTrigger>
-          <DialogContent className="max-w-lg">
-            <DialogHeader>
-              <DialogTitle>
-                {editingAppointment ? "تعديل الموعد" : "إضافة موعد جديد"}
-              </DialogTitle>
-            </DialogHeader>
-            
-            <form onSubmit={handleSubmit} className="space-y-4">
-              <div className="grid grid-cols-2 gap-4">
-                <div className="space-y-2">
-                  <Label htmlFor="customerName">اسم العميل *</Label>
-                  <Input
-                    id="customerName"
-                    value={customerName}
-                    onChange={(e) => setCustomerName(e.target.value)}
-                    placeholder="أدخل اسم العميل"
-                    required
-                  />
+            <Button
+              variant={viewMode === "table" ? "default" : "ghost"}
+              size="sm"
+              onClick={() => setViewMode("table")}
+              className="gap-1"
+            >
+              <List className="h-4 w-4" />
+              جدول
+            </Button>
+          </div>
+          
+          <Dialog open={isDialogOpen} onOpenChange={(open) => {
+            setIsDialogOpen(open);
+            if (!open) {
+              resetForm();
+              setEditingAppointment(null);
+            }
+          }}>
+            <DialogTrigger asChild>
+              <Button className="gap-2">
+                <Plus className="h-4 w-4" />
+                موعد جديد
+              </Button>
+            </DialogTrigger>
+            <DialogContent className="max-w-lg">
+              <DialogHeader>
+                <DialogTitle>
+                  {editingAppointment ? "تعديل الموعد" : "إضافة موعد جديد"}
+                </DialogTitle>
+              </DialogHeader>
+              
+              <form onSubmit={handleSubmit} className="space-y-4">
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="customerName">اسم العميل *</Label>
+                    <Input
+                      id="customerName"
+                      value={customerName}
+                      onChange={(e) => setCustomerName(e.target.value)}
+                      placeholder="أدخل اسم العميل"
+                      required
+                    />
+                  </div>
+                  
+                  <div className="space-y-2">
+                    <Label htmlFor="customerPhone">رقم الهاتف *</Label>
+                    <Input
+                      id="customerPhone"
+                      value={customerPhone}
+                      onChange={(e) => setCustomerPhone(e.target.value)}
+                      placeholder="أدخل رقم الهاتف"
+                      required
+                    />
+                  </div>
                 </div>
-                
-                <div className="space-y-2">
-                  <Label htmlFor="customerPhone">رقم الهاتف *</Label>
-                  <Input
-                    id="customerPhone"
-                    value={customerPhone}
-                    onChange={(e) => setCustomerPhone(e.target.value)}
-                    placeholder="أدخل رقم الهاتف"
-                    required
-                  />
-                </div>
-              </div>
 
-              <div className="grid grid-cols-2 gap-4">
-                <div className="space-y-2">
-                  <Label htmlFor="appointmentDate">تاريخ الموعد *</Label>
-                  <Input
-                    id="appointmentDate"
-                    type="date"
-                    value={appointmentDate}
-                    onChange={(e) => setAppointmentDate(e.target.value)}
-                    required
-                  />
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="appointmentDate">تاريخ الموعد *</Label>
+                    <Input
+                      id="appointmentDate"
+                      type="date"
+                      value={appointmentDate}
+                      onChange={(e) => setAppointmentDate(e.target.value)}
+                      required
+                    />
+                  </div>
+                  
+                  <div className="space-y-2">
+                    <Label htmlFor="appointmentTime">وقت الموعد *</Label>
+                    <Input
+                      id="appointmentTime"
+                      type="time"
+                      value={appointmentTime}
+                      onChange={(e) => setAppointmentTime(e.target.value)}
+                      required
+                    />
+                  </div>
                 </div>
-                
-                <div className="space-y-2">
-                  <Label htmlFor="appointmentTime">وقت الموعد *</Label>
-                  <Input
-                    id="appointmentTime"
-                    type="time"
-                    value={appointmentTime}
-                    onChange={(e) => setAppointmentTime(e.target.value)}
-                    required
-                  />
-                </div>
-              </div>
 
-              <div className="grid grid-cols-2 gap-4">
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="appointmentType">نوع الموعد</Label>
+                    <Select value={appointmentType} onValueChange={setAppointmentType}>
+                      <SelectTrigger>
+                        <SelectValue placeholder="اختر نوع الموعد" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {appointmentTypes.map((type) => (
+                          <SelectItem key={type} value={type}>
+                            {type}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  
+                  <div className="space-y-2">
+                    <Label htmlFor="status">الحالة</Label>
+                    <Select value={status} onValueChange={setStatus}>
+                      <SelectTrigger>
+                        <SelectValue placeholder="اختر الحالة" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {appointmentStatuses.map((s) => (
+                          <SelectItem key={s.value} value={s.value}>
+                            {s.label}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                </div>
+
                 <div className="space-y-2">
-                  <Label htmlFor="appointmentType">نوع الموعد</Label>
-                  <Select value={appointmentType} onValueChange={setAppointmentType}>
+                  <Label htmlFor="assignedEmployee">موظف المبيعات المسؤول</Label>
+                  <Select value={assignedEmployee} onValueChange={setAssignedEmployee}>
                     <SelectTrigger>
-                      <SelectValue placeholder="اختر نوع الموعد" />
+                      <SelectValue placeholder="اختر موظف المبيعات" />
                     </SelectTrigger>
                     <SelectContent>
-                      {appointmentTypes.map((type) => (
-                        <SelectItem key={type} value={type}>
-                          {type}
+                      {salesEmployees.map((employee) => (
+                        <SelectItem key={employee.id} value={employee.id}>
+                          {employee.full_name}
                         </SelectItem>
                       ))}
                     </SelectContent>
                   </Select>
                 </div>
-                
+
                 <div className="space-y-2">
-                  <Label htmlFor="status">الحالة</Label>
-                  <Select value={status} onValueChange={setStatus}>
-                    <SelectTrigger>
-                      <SelectValue placeholder="اختر الحالة" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {appointmentStatuses.map((s) => (
-                        <SelectItem key={s.value} value={s.value}>
-                          {s.label}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
+                  <Label htmlFor="notes">ملاحظات</Label>
+                  <Textarea
+                    id="notes"
+                    value={notes}
+                    onChange={(e) => setNotes(e.target.value)}
+                    placeholder="أضف ملاحظات..."
+                    rows={3}
+                  />
                 </div>
-              </div>
 
-              <div className="space-y-2">
-                <Label htmlFor="assignedEmployee">موظف المبيعات المسؤول</Label>
-                <Select value={assignedEmployee} onValueChange={setAssignedEmployee}>
-                  <SelectTrigger>
-                    <SelectValue placeholder="اختر موظف المبيعات" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {salesEmployees.map((employee) => (
-                      <SelectItem key={employee.id} value={employee.id}>
-                        {employee.full_name}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-
-              <div className="space-y-2">
-                <Label htmlFor="notes">ملاحظات</Label>
-                <Textarea
-                  id="notes"
-                  value={notes}
-                  onChange={(e) => setNotes(e.target.value)}
-                  placeholder="أضف ملاحظات..."
-                  rows={3}
-                />
-              </div>
-
-              <div className="flex justify-end gap-2">
-                <Button type="button" variant="outline" onClick={() => setIsDialogOpen(false)}>
-                  إلغاء
-                </Button>
-                <Button type="submit" disabled={createMutation.isPending || updateMutation.isPending}>
-                  {editingAppointment ? "تحديث" : "إضافة"}
-                </Button>
-              </div>
-            </form>
-          </DialogContent>
-        </Dialog>
+                <div className="flex justify-end gap-2">
+                  <Button type="button" variant="outline" onClick={() => setIsDialogOpen(false)}>
+                    إلغاء
+                  </Button>
+                  <Button type="submit" disabled={createMutation.isPending || updateMutation.isPending}>
+                    {editingAppointment ? "تحديث" : "إضافة"}
+                  </Button>
+                </div>
+              </form>
+            </DialogContent>
+          </Dialog>
+        </div>
       </div>
 
       {/* Status Cards */}
@@ -402,80 +464,92 @@ export default function Appointments() {
         ))}
       </div>
 
-      {/* Appointments Table */}
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <Calendar className="h-5 w-5" />
-            قائمة المواعيد
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          {isLoading ? (
-            <div className="text-center py-8 text-muted-foreground">جاري التحميل...</div>
-          ) : appointments.length === 0 ? (
-            <div className="text-center py-8 text-muted-foreground">لا توجد مواعيد</div>
-          ) : (
-            <div className="overflow-x-auto">
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead>اسم العميل</TableHead>
-                    <TableHead>الهاتف</TableHead>
-                    <TableHead>التاريخ</TableHead>
-                    <TableHead>الوقت</TableHead>
-                    <TableHead>النوع</TableHead>
-                    <TableHead>موظف المبيعات</TableHead>
-                    <TableHead>الحالة</TableHead>
-                    <TableHead>الإجراءات</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {appointments.map((appointment) => (
-                    <TableRow key={appointment.id}>
-                      <TableCell className="font-medium">{appointment.customer_name}</TableCell>
-                      <TableCell>
-                        <a href={`tel:${appointment.customer_phone}`} className="text-primary hover:underline">
-                          {appointment.customer_phone}
-                        </a>
-                      </TableCell>
-                      <TableCell>
-                        {format(new Date(appointment.appointment_date), "dd/MM/yyyy")}
-                      </TableCell>
-                      <TableCell>{appointment.appointment_time}</TableCell>
-                      <TableCell>{appointment.appointment_type || "-"}</TableCell>
-                      <TableCell>{getSalesEmployeeName(appointment.assigned_sales_employee)}</TableCell>
-                      <TableCell>{getStatusBadge(appointment.status)}</TableCell>
-                      <TableCell>
-                        <div className="flex gap-2">
-                          <Button
-                            variant="ghost"
-                            size="icon"
-                            onClick={() => handleEdit(appointment)}
-                          >
-                            <Edit className="h-4 w-4" />
-                          </Button>
-                          <Button
-                            variant="ghost"
-                            size="icon"
-                            onClick={() => {
-                              if (confirm("هل أنت متأكد من حذف هذا الموعد؟")) {
-                                deleteMutation.mutate(appointment.id);
-                              }
-                            }}
-                          >
-                            <Trash2 className="h-4 w-4 text-destructive" />
-                          </Button>
-                        </div>
-                      </TableCell>
+      {/* Calendar or Table View */}
+      {isLoading ? (
+        <Card>
+          <CardContent className="p-8 text-center text-muted-foreground">
+            جاري التحميل...
+          </CardContent>
+        </Card>
+      ) : viewMode === "calendar" ? (
+        <AppointmentsCalendar
+          appointments={appointments}
+          onSelectAppointment={handleEdit}
+          getSalesEmployeeName={getSalesEmployeeName}
+        />
+      ) : (
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <Calendar className="h-5 w-5" />
+              قائمة المواعيد
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            {appointments.length === 0 ? (
+              <div className="text-center py-8 text-muted-foreground">لا توجد مواعيد</div>
+            ) : (
+              <div className="overflow-x-auto">
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead>اسم العميل</TableHead>
+                      <TableHead>الهاتف</TableHead>
+                      <TableHead>التاريخ</TableHead>
+                      <TableHead>الوقت</TableHead>
+                      <TableHead>النوع</TableHead>
+                      <TableHead>موظف المبيعات</TableHead>
+                      <TableHead>الحالة</TableHead>
+                      <TableHead>الإجراءات</TableHead>
                     </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
-            </div>
-          )}
-        </CardContent>
-      </Card>
+                  </TableHeader>
+                  <TableBody>
+                    {appointments.map((appointment) => (
+                      <TableRow key={appointment.id}>
+                        <TableCell className="font-medium">{appointment.customer_name}</TableCell>
+                        <TableCell>
+                          <a href={`tel:${appointment.customer_phone}`} className="text-primary hover:underline">
+                            {appointment.customer_phone}
+                          </a>
+                        </TableCell>
+                        <TableCell>
+                          {format(new Date(appointment.appointment_date), "dd/MM/yyyy")}
+                        </TableCell>
+                        <TableCell>{appointment.appointment_time}</TableCell>
+                        <TableCell>{appointment.appointment_type || "-"}</TableCell>
+                        <TableCell>{getSalesEmployeeName(appointment.assigned_sales_employee)}</TableCell>
+                        <TableCell>{getStatusBadge(appointment.status)}</TableCell>
+                        <TableCell>
+                          <div className="flex gap-2">
+                            <Button
+                              variant="ghost"
+                              size="icon"
+                              onClick={() => handleEdit(appointment)}
+                            >
+                              <Edit className="h-4 w-4" />
+                            </Button>
+                            <Button
+                              variant="ghost"
+                              size="icon"
+                              onClick={() => {
+                                if (confirm("هل أنت متأكد من حذف هذا الموعد؟")) {
+                                  deleteMutation.mutate(appointment.id);
+                                }
+                              }}
+                            >
+                              <Trash2 className="h-4 w-4 text-destructive" />
+                            </Button>
+                          </div>
+                        </TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
+              </div>
+            )}
+          </CardContent>
+        </Card>
+      )}
     </div>
   );
 }
