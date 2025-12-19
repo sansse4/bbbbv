@@ -13,9 +13,10 @@ import { Badge } from "@/components/ui/badge";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { toast } from "@/hooks/use-toast";
-import { Calendar, Clock, Plus, Edit, Trash2, CalendarDays, List, LayoutGrid } from "lucide-react";
+import { Calendar, Clock, Plus, Edit, Trash2, CalendarDays, List, LayoutGrid, Search, FileSpreadsheet, Loader2 } from "lucide-react";
 import { format } from "date-fns";
 import { AppointmentsCalendar } from "@/components/AppointmentsCalendar";
+import { useAppointmentsSheet, SheetAppointment } from "@/hooks/useAppointmentsSheet";
 
 interface Appointment {
   id: string;
@@ -59,6 +60,18 @@ export default function Appointments() {
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [editingAppointment, setEditingAppointment] = useState<Appointment | null>(null);
   const [viewMode, setViewMode] = useState<"calendar" | "table">("calendar");
+  const [sheetSearchTerm, setSheetSearchTerm] = useState("");
+  const [showSheetResults, setShowSheetResults] = useState(false);
+  
+  // Google Sheet integration
+  const { 
+    isLoading: sheetLoading, 
+    searchResults: sheetResults, 
+    sendToSheet, 
+    searchInSheet, 
+    fetchFromSheet,
+    clearSearchResults 
+  } = useAppointmentsSheet();
   
   // Form state
   const [customerName, setCustomerName] = useState("");
@@ -138,6 +151,21 @@ export default function Appointments() {
           appointment_time: variables.appointment_time
         });
       }
+      
+      // Send to Google Sheet
+      const sheetData: SheetAppointment = {
+        customerName: variables.customer_name,
+        customerPhone: variables.customer_phone,
+        appointmentDate: variables.appointment_date,
+        appointmentTime: variables.appointment_time,
+        appointmentType: variables.appointment_type || "",
+        assignedEmployee: getSalesEmployeeName(variables.assigned_sales_employee),
+        status: variables.status,
+        notes: variables.notes || "",
+        createdBy: getCreatorName(variables.created_by),
+        createdAt: new Date().toISOString()
+      };
+      await sendToSheet(sheetData);
       
       toast({ title: "تم إضافة الموعد بنجاح" });
       resetForm();
@@ -279,6 +307,21 @@ export default function Appointments() {
     ...s,
     count: appointments.filter(a => a.status === s.value).length
   }));
+
+  // Handle sheet search
+  const handleSheetSearch = async () => {
+    if (!sheetSearchTerm.trim()) {
+      toast({ title: "يرجى إدخال كلمة البحث", variant: "destructive" });
+      return;
+    }
+    await searchInSheet(sheetSearchTerm);
+    setShowSheetResults(true);
+  };
+
+  const handleFetchAllFromSheet = async () => {
+    await fetchFromSheet();
+    setShowSheetResults(true);
+  };
 
   return (
     <div className="space-y-6" dir="rtl">
@@ -470,6 +513,96 @@ export default function Appointments() {
           </Card>
         ))}
       </div>
+
+      {/* Google Sheet Search Section */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <FileSpreadsheet className="h-5 w-5" />
+            البحث في جوجل شيت
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="flex flex-col md:flex-row gap-4">
+            <div className="flex-1">
+              <Input
+                placeholder="ابحث باسم العميل أو رقم الهاتف..."
+                value={sheetSearchTerm}
+                onChange={(e) => setSheetSearchTerm(e.target.value)}
+                onKeyDown={(e) => e.key === "Enter" && handleSheetSearch()}
+              />
+            </div>
+            <div className="flex gap-2">
+              <Button onClick={handleSheetSearch} disabled={sheetLoading} className="gap-2">
+                {sheetLoading ? <Loader2 className="h-4 w-4 animate-spin" /> : <Search className="h-4 w-4" />}
+                بحث
+              </Button>
+              <Button variant="outline" onClick={handleFetchAllFromSheet} disabled={sheetLoading}>
+                عرض الكل
+              </Button>
+              {showSheetResults && (
+                <Button 
+                  variant="ghost" 
+                  onClick={() => {
+                    setShowSheetResults(false);
+                    clearSearchResults();
+                    setSheetSearchTerm("");
+                  }}
+                >
+                  إخفاء
+                </Button>
+              )}
+            </div>
+          </div>
+
+          {/* Sheet Search Results */}
+          {showSheetResults && (
+            <div className="mt-4">
+              {sheetLoading ? (
+                <div className="text-center py-4 text-muted-foreground">
+                  <Loader2 className="h-6 w-6 animate-spin mx-auto mb-2" />
+                  جاري البحث...
+                </div>
+              ) : sheetResults.length === 0 ? (
+                <div className="text-center py-4 text-muted-foreground">
+                  لا توجد نتائج
+                </div>
+              ) : (
+                <div className="overflow-x-auto border rounded-lg">
+                  <Table>
+                    <TableHeader>
+                      <TableRow>
+                        <TableHead>اسم العميل</TableHead>
+                        <TableHead>الهاتف</TableHead>
+                        <TableHead>التاريخ</TableHead>
+                        <TableHead>الوقت</TableHead>
+                        <TableHead>النوع</TableHead>
+                        <TableHead>موظف المبيعات</TableHead>
+                        <TableHead>الحالة</TableHead>
+                        <TableHead>تم الحجز بواسطة</TableHead>
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      {sheetResults.map((result, index) => (
+                        <TableRow key={index}>
+                          <TableCell className="font-medium">{result.customerName}</TableCell>
+                          <TableCell>{result.customerPhone}</TableCell>
+                          <TableCell>{result.appointmentDate}</TableCell>
+                          <TableCell>{result.appointmentTime}</TableCell>
+                          <TableCell>{result.appointmentType || "-"}</TableCell>
+                          <TableCell>{result.assignedEmployee || "-"}</TableCell>
+                          <TableCell>{result.status}</TableCell>
+                          <TableCell className="text-muted-foreground">{result.createdBy}</TableCell>
+                        </TableRow>
+                      ))}
+                    </TableBody>
+                  </Table>
+                </div>
+              )}
+            </div>
+          )}
+        </CardContent>
+      </Card>
 
       {/* Calendar or Table View */}
       {isLoading ? (
