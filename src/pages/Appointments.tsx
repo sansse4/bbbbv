@@ -68,6 +68,7 @@ export default function Appointments() {
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [editingAppointment, setEditingAppointment] = useState<Appointment | null>(null);
   const [viewMode, setViewMode] = useState<"calendar" | "table">("calendar");
+  const [selectedStatusFilter, setSelectedStatusFilter] = useState<string | null>(null);
   const [sheetSearchTerm, setSheetSearchTerm] = useState("");
   const [showSheetResults, setShowSheetResults] = useState(false);
   
@@ -319,6 +320,12 @@ export default function Appointments() {
     ...s,
     count: appointments.filter(a => a.status === s.value).length
   }));
+
+  // Filter appointments by selected status
+  const filteredAppointments = useMemo(() => {
+    if (!selectedStatusFilter) return appointments;
+    return appointments.filter(a => a.status === selectedStatusFilter);
+  }, [appointments, selectedStatusFilter]);
 
   // Check for time conflicts
   const conflictingAppointments = useMemo(() => {
@@ -582,7 +589,17 @@ export default function Appointments() {
       {/* Status Cards */}
       <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
         {statusCounts.map((status) => (
-          <Card key={status.value}>
+          <Card 
+            key={status.value} 
+            className={`cursor-pointer transition-all hover:scale-105 hover:shadow-md ${
+              selectedStatusFilter === status.value 
+                ? 'ring-2 ring-primary ring-offset-2' 
+                : ''
+            }`}
+            onClick={() => setSelectedStatusFilter(
+              selectedStatusFilter === status.value ? null : status.value
+            )}
+          >
             <CardContent className="p-4 text-center">
               <div className={`inline-flex items-center justify-center w-10 h-10 rounded-full ${status.color} text-white mb-2`}>
                 <CalendarDays className="h-5 w-5" />
@@ -593,6 +610,18 @@ export default function Appointments() {
           </Card>
         ))}
       </div>
+
+      {/* Clear Filter Button */}
+      {selectedStatusFilter && (
+        <div className="flex items-center gap-2">
+          <Badge variant="secondary" className="gap-1">
+            فلتر: {appointmentStatuses.find(s => s.value === selectedStatusFilter)?.label}
+          </Badge>
+          <Button variant="ghost" size="sm" onClick={() => setSelectedStatusFilter(null)}>
+            مسح الفلتر
+          </Button>
+        </div>
+      )}
 
       {/* Google Sheet Search Section */}
       <Card>
@@ -693,7 +722,7 @@ export default function Appointments() {
         </Card>
       ) : viewMode === "calendar" ? (
         <AppointmentsCalendar
-          appointments={appointments}
+          appointments={filteredAppointments}
           onSelectAppointment={handleEdit}
           onAddNewAppointment={handleAddNewAppointment}
           getSalesEmployeeName={getSalesEmployeeName}
@@ -708,7 +737,7 @@ export default function Appointments() {
             </CardTitle>
           </CardHeader>
           <CardContent>
-            {appointments.length === 0 ? (
+            {filteredAppointments.length === 0 ? (
               <div className="text-center py-8 text-muted-foreground">لا توجد مواعيد</div>
             ) : (
               <div className="overflow-x-auto">
@@ -727,7 +756,7 @@ export default function Appointments() {
                     </TableRow>
                   </TableHeader>
                   <TableBody>
-                    {appointments.map((appointment) => (
+                    {filteredAppointments.map((appointment) => (
                       <TableRow key={appointment.id}>
                         <TableCell className="font-medium">{appointment.customer_name}</TableCell>
                         <TableCell>
