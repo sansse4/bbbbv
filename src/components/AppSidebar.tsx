@@ -44,7 +44,7 @@ const menuItems = [{
   title: "حجز المواعيد",
   url: "/appointments",
   icon: CalendarClock,
-  department: "Call Center"
+  departments: ["Call Center", "Reception"]
 }, {
   title: "Reception",
   url: "/reception",
@@ -112,8 +112,10 @@ export function AppSidebar() {
         if (item.url === '/employees') return true;
         // Show User Management for assistant managers
         if (item.url === '/users') return true;
-        // Show departments they supervise
+        // Show departments they supervise (single department)
         if (item.department && supervisedDepartments.includes(item.department)) return true;
+        // Show items with multiple departments if any is supervised
+        if (item.departments && item.departments.some(d => supervisedDepartments.includes(d))) return true;
         // Hide main dashboard from assistant managers
         if (item.adminOnly) return false;
         return false;
@@ -125,8 +127,10 @@ export function AppSidebar() {
     return menuItems.filter(item => {
       // Show My Dashboard for employees
       if (item.forEmployees) return true;
-      // Show their own department
+      // Show their own department (single department)
       if (item.department && item.department === userDepartment) return true;
+      // Show items with multiple departments if user's department is included
+      if (item.departments && userDepartment && item.departments.includes(userDepartment)) return true;
       // Hide admin-only items
       if (item.adminOnly) return false;
       return false;
