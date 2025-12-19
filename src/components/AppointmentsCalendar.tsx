@@ -24,6 +24,7 @@ interface AppointmentsCalendarProps {
   appointments: Appointment[];
   onSelectAppointment: (appointment: Appointment) => void;
   getSalesEmployeeName: (id: string | null) => string;
+  getCreatorName: (id: string) => string;
 }
 
 const statusColors: Record<string, string> = {
@@ -47,7 +48,8 @@ const weekDays = ["الأحد", "الاثنين", "الثلاثاء", "الأر�
 export function AppointmentsCalendar({ 
   appointments, 
   onSelectAppointment,
-  getSalesEmployeeName 
+  getSalesEmployeeName,
+  getCreatorName
 }: AppointmentsCalendarProps) {
   const [currentMonth, setCurrentMonth] = useState(new Date());
   const [selectedDate, setSelectedDate] = useState<Date | null>(null);
@@ -214,9 +216,12 @@ export function AppointmentsCalendar({
                         {apt.appointment_type && (
                           <p className="text-xs text-muted-foreground mt-1">{apt.appointment_type}</p>
                         )}
+                        <p className="text-xs text-muted-foreground mt-1">
+                          حجز بواسطة: {getCreatorName(apt.created_by)}
+                        </p>
                         {apt.assigned_sales_employee && (
                           <p className="text-xs text-primary mt-1">
-                            موظف المبيعات: {getSalesEmployeeName(apt.assigned_sales_employee)}
+                            معين إلى: {getSalesEmployeeName(apt.assigned_sales_employee)}
                           </p>
                         )}
                       </div>
