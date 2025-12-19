@@ -38,13 +38,23 @@ export function useAppointmentsSheet() {
         createdAt: appointment.createdAt
       });
 
-      const response = await fetch(`${SHEET_API_URL}?${params.toString()}`, {
-        method: "GET",
-        mode: "no-cors"
-      });
-
-      toast({ title: "تم إرسال البيانات إلى جوجل شيت" });
-      return true;
+      console.log("Sending to Google Sheet:", params.toString());
+      
+      const response = await fetch(`${SHEET_API_URL}?${params.toString()}`);
+      
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+      
+      const data = await response.json();
+      console.log("Google Sheet response:", data);
+      
+      if (data.success) {
+        toast({ title: "تم إرسال البيانات إلى جوجل شيت" });
+        return true;
+      } else {
+        throw new Error(data.error || "Unknown error");
+      }
     } catch (error) {
       console.error("Error sending to sheet:", error);
       toast({ 
