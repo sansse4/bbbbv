@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
@@ -12,8 +12,9 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Badge } from "@/components/ui/badge";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Alert, AlertDescription } from "@/components/ui/alert";
 import { toast } from "@/hooks/use-toast";
-import { Calendar, Clock, Plus, Edit, Trash2, CalendarDays, List, LayoutGrid, Search, FileSpreadsheet, Loader2 } from "lucide-react";
+import { Calendar, Clock, Plus, Edit, Trash2, CalendarDays, List, LayoutGrid, Search, FileSpreadsheet, Loader2, AlertTriangle } from "lucide-react";
 import { format } from "date-fns";
 import { AppointmentsCalendar } from "@/components/AppointmentsCalendar";
 import { useAppointmentsSheet, SheetAppointment } from "@/hooks/useAppointmentsSheet";
@@ -308,6 +309,31 @@ export default function Appointments() {
     count: appointments.filter(a => a.status === s.value).length
   }));
 
+  // Check for time conflicts
+  const conflictingAppointments = useMemo(() => {
+    if (!appointmentDate || !appointmentTime) return [];
+    
+    return appointments.filter(apt => {
+      // Skip the current appointment being edited
+      if (editingAppointment && apt.id === editingAppointment.id) return false;
+      
+      // Check if same date
+      if (apt.appointment_date !== appointmentDate) return false;
+      
+      // Check if time is within 30 minutes of existing appointment
+      const [newHour, newMin] = appointmentTime.split(':').map(Number);
+      const [aptHour, aptMin] = apt.appointment_time.split(':').map(Number);
+      
+      const newTimeInMinutes = newHour * 60 + newMin;
+      const aptTimeInMinutes = aptHour * 60 + aptMin;
+      
+      // Consider conflict if within 30 minutes
+      return Math.abs(newTimeInMinutes - aptTimeInMinutes) < 30;
+    });
+  }, [appointmentDate, appointmentTime, appointments, editingAppointment]);
+
+  const hasTimeConflict = conflictingAppointments.length > 0;
+
   // Handle sheet search
   const handleSheetSearch = async () => {
     if (!sheetSearchTerm.trim()) {
@@ -431,6 +457,25 @@ export default function Appointments() {
                     />
                   </div>
                 </div>
+
+                {/* Time Conflict Warning */}
+                {hasTimeConflict && (
+                  <Alert variant="destructive" className="border-yellow-500 bg-yellow-50 dark:bg-yellow-900/20">
+                    <AlertTriangle className="h-4 w-4 text-yellow-600" />
+                    <AlertDescription className="text-yellow-700 dark:text-yellow-400">
+                      <span className="font-semibold">تحذير: تعارض في الوقت!</span>
+                      <br />
+                      يوجد موعد آخر في وقت قريب:
+                      <ul className="mt-1 list-disc list-inside">
+                        {conflictingAppointments.map(apt => (
+                          <li key={apt.id}>
+                            {apt.customer_name} - الساعة {apt.appointment_time}
+                          </li>
+                        ))}
+                      </ul>
+                    </AlertDescription>
+                  </Alert>
+                )}
 
                 <div className="grid grid-cols-2 gap-4">
                   <div className="space-y-2">
