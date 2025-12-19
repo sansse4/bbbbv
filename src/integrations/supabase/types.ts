@@ -26,6 +26,7 @@ export type Database = {
           customer_phone: string
           id: string
           notes: string | null
+          reminder_sent: boolean | null
           status: string
           updated_at: string
         }
@@ -40,6 +41,7 @@ export type Database = {
           customer_phone: string
           id?: string
           notes?: string | null
+          reminder_sent?: boolean | null
           status?: string
           updated_at?: string
         }
@@ -54,6 +56,7 @@ export type Database = {
           customer_phone?: string
           id?: string
           notes?: string | null
+          reminder_sent?: boolean | null
           status?: string
           updated_at?: string
         }
