@@ -57,17 +57,19 @@ export default function Map() {
     });
   }, [units, getSoldUnitInfo]);
 
-  // Calculate stats based on merged data
+  // Calculate stats based on Google Sheet data (use sheet as source of truth for sold)
   const mergedStats = useMemo(() => {
-    if (!stats) return null;
+    if (!mergedUnits.length) return stats;
     
-    const sheetSoldCount = soldUnits.size;
-    return {
-      ...stats,
-      sold: stats.sold + sheetSoldCount,
-      available: Math.max(0, stats.available - sheetSoldCount),
-    };
-  }, [stats, soldUnits]);
+    // Count from merged units (which already has Google Sheet data applied)
+    const residential = mergedUnits.filter(u => u.is_residential);
+    const total = residential.length;
+    const sold = residential.filter(u => u.status === "sold").length;
+    const reserved = residential.filter(u => u.status === "reserved").length;
+    const available = residential.filter(u => u.status === "available").length;
+    
+    return { total, available, reserved, sold };
+  }, [mergedUnits, stats]);
 
   const handleRefresh = useCallback(() => {
     refetchUnits();
