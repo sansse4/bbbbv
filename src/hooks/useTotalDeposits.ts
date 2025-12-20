@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback } from "react";
 
-const DEPOSITS_SHEET_URL = "https://script.google.com/macros/s/AKfycbxbB7cwLB1e4hjA_PoOl4wYdAf-grjGueA7kRGL2L2akYneeB1UzglbyGABYkR5L9OVuw/exec";
+// استخدام نفس رابط جوجل شيت المبيعات
+const SALES_SHEET_URL = "https://script.google.com/macros/s/AKfycbwSMozG5H01u1uVrX4wgXWyr6CHocUuqkAofnowdqBaZSVDJkoj2rOe1g58l4gQ6TPw/exec";
 
 interface DepositsData {
   total: number;
@@ -8,6 +9,14 @@ interface DepositsData {
   error: string | null;
   refetch: () => void;
 }
+
+// Helper to parse number from string or number
+const parseNumber = (value: number | string | undefined): number => {
+  if (value === undefined || value === "" || value === null) return 0;
+  if (typeof value === "number") return value;
+  const parsed = parseFloat(String(value).replace(/,/g, ""));
+  return isNaN(parsed) ? 0 : parsed;
+};
 
 export function useTotalDeposits(): DepositsData {
   const [total, setTotal] = useState<number>(0);
@@ -19,29 +28,25 @@ export function useTotalDeposits(): DepositsData {
     setError(null);
     
     try {
-      console.log("Fetching deposits from:", DEPOSITS_SHEET_URL);
+      console.log("Fetching deposits from:", SALES_SHEET_URL);
       
-      const response = await fetch(DEPOSITS_SHEET_URL);
+      const response = await fetch(SALES_SHEET_URL);
       
       if (!response.ok) {
         throw new Error("فشل في جلب بيانات المقدمات");
       }
       
       const data = await response.json();
-      console.log("Deposits API response:", data);
+      console.log("Sales API response for deposits:", data);
       
-      // Extract downPayment from totals object
-      if (data.success === true && data.totals?.downPayment !== undefined) {
-        setTotal(Number(data.totals.downPayment) || 0);
-      } else if (data.totals?.downPayment !== undefined) {
-        setTotal(Number(data.totals.downPayment) || 0);
-      } else if (data.success === false) {
-        console.error("API Error:", data.message);
-        setError(data.message || "خطأ في جلب البيانات");
-        setTotal(0);
-      } else {
-        setTotal(0);
-      }
+      // استخراج مجموع المقدمات من عمود "قيمة المقدمة"
+      const rows = data.rows || data.data || [];
+      const totalDeposits = rows.reduce((sum: number, row: Record<string, unknown>) => {
+        const depositValue = row["قيمة المقدمة"];
+        return sum + parseNumber(depositValue as string | number | undefined);
+      }, 0);
+      
+      setTotal(totalDeposits);
     } catch (err) {
       console.error("Error fetching deposits:", err);
       setError(err instanceof Error ? err.message : "حدث خطأ أثناء جلب البيانات");
