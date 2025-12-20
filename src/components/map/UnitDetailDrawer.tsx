@@ -7,10 +7,11 @@ import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { UnitStatusBadge } from "./UnitStatusBadge";
 import { Unit, UnitStatus, useUpdateUnit } from "@/hooks/useUnits";
+import { SoldUnitInfo } from "@/hooks/useSoldUnitsFromSheet";
 import { useAuth } from "@/contexts/AuthContext";
 import { format } from "date-fns";
 import { ar } from "date-fns/locale";
-import { Home, MapPin, Ruler, DollarSign, User, Phone, Briefcase, Calculator, FileText, Clock, Edit, Save, X, CheckCircle, ShoppingCart, Timer, TimerOff } from "lucide-react";
+import { Home, MapPin, Ruler, DollarSign, User, Phone, Briefcase, Calculator, FileText, Clock, Edit, Save, X, CheckCircle, ShoppingCart, Timer, TimerOff, Calendar } from "lucide-react";
 import { Separator } from "@/components/ui/separator";
 import { Card } from "@/components/ui/card";
 
@@ -18,9 +19,10 @@ interface UnitDetailDrawerProps {
   unit: Unit | null;
   open: boolean;
   onOpenChange: (open: boolean) => void;
+  getSoldUnitInfo?: (unitNumber: number | string) => SoldUnitInfo | undefined;
 }
 
-export function UnitDetailDrawer({ unit, open, onOpenChange }: UnitDetailDrawerProps) {
+export function UnitDetailDrawer({ unit, open, onOpenChange, getSoldUnitInfo }: UnitDetailDrawerProps) {
   const { role } = useAuth();
   const isAdmin = role?.role === "admin";
   const updateUnit = useUpdateUnit();
@@ -189,51 +191,91 @@ export function UnitDetailDrawer({ unit, open, onOpenChange }: UnitDetailDrawerP
 
           <Separator />
 
-          {/* Buyer Info - Only show to admin or if editing */}
-          {(isAdmin || unit.buyer_name) && (
-            <>
-              <div className="space-y-4">
-                <h4 className="font-semibold text-foreground">معلومات المشتري</h4>
-                
-                <div className="space-y-3">
-                  <div className="space-y-1">
-                    <Label className="flex items-center gap-2 text-sm text-muted-foreground">
-                      <User className="h-4 w-4" />
-                      اسم المشتري
-                    </Label>
-                    {isEditing ? (
-                      <Input
-                        value={editForm.buyer_name || ""}
-                        onChange={(e) => setEditForm({ ...editForm, buyer_name: e.target.value })}
-                      />
-                    ) : (
-                      <p className="font-medium">{unit.buyer_name || "—"}</p>
-                    )}
-                  </div>
+          {/* Buyer Info - Show Google Sheet data if available */}
+          {(() => {
+            const sheetInfo = getSoldUnitInfo?.(unit.unit_number);
+            const hasBuyerInfo = sheetInfo || isAdmin || unit.buyer_name;
+            
+            if (!hasBuyerInfo) return null;
+            
+            return (
+              <>
+                <div className="space-y-4">
+                  <h4 className="font-semibold text-foreground">معلومات المشتري</h4>
+                  
+                  {/* Google Sheet Sale Info */}
+                  {sheetInfo && (
+                    <Card className="p-3 bg-rose-50 dark:bg-rose-950/30 border-rose-200 dark:border-rose-800">
+                      <div className="space-y-2">
+                        <div className="flex items-center gap-2 text-rose-700 dark:text-rose-400">
+                          <User className="h-4 w-4" />
+                          <span className="font-semibold">{sheetInfo.buyerName}</span>
+                        </div>
+                        {sheetInfo.saleDate && (
+                          <div className="flex items-center gap-2 text-rose-600 dark:text-rose-500 text-sm">
+                            <Calendar className="h-4 w-4" />
+                            <span>تاريخ البيع: {sheetInfo.saleDate}</span>
+                          </div>
+                        )}
+                        {sheetInfo.salesPerson && (
+                          <div className="flex items-center gap-2 text-rose-600 dark:text-rose-500 text-sm">
+                            <Briefcase className="h-4 w-4" />
+                            <span>موظف المبيعات: {sheetInfo.salesPerson}</span>
+                          </div>
+                        )}
+                        {sheetInfo.accountantName && (
+                          <div className="flex items-center gap-2 text-rose-600 dark:text-rose-500 text-sm">
+                            <Calculator className="h-4 w-4" />
+                            <span>المحاسب: {sheetInfo.accountantName}</span>
+                          </div>
+                        )}
+                      </div>
+                    </Card>
+                  )}
+                  
+                  {/* Fallback to database info if no sheet data */}
+                  {!sheetInfo && (
+                    <div className="space-y-3">
+                      <div className="space-y-1">
+                        <Label className="flex items-center gap-2 text-sm text-muted-foreground">
+                          <User className="h-4 w-4" />
+                          اسم المشتري
+                        </Label>
+                        {isEditing ? (
+                          <Input
+                            value={editForm.buyer_name || ""}
+                            onChange={(e) => setEditForm({ ...editForm, buyer_name: e.target.value })}
+                          />
+                        ) : (
+                          <p className="font-medium">{unit.buyer_name || "—"}</p>
+                        )}
+                      </div>
 
-                  {isAdmin && (
-                    <div className="space-y-1">
-                      <Label className="flex items-center gap-2 text-sm text-muted-foreground">
-                        <Phone className="h-4 w-4" />
-                        رقم الهاتف
-                      </Label>
-                      {isEditing ? (
-                        <Input
-                          value={editForm.buyer_phone || ""}
-                          onChange={(e) => setEditForm({ ...editForm, buyer_phone: e.target.value })}
-                          dir="ltr"
-                        />
-                      ) : (
-                        <p className="font-medium" dir="ltr">{unit.buyer_phone || "—"}</p>
+                      {isAdmin && (
+                        <div className="space-y-1">
+                          <Label className="flex items-center gap-2 text-sm text-muted-foreground">
+                            <Phone className="h-4 w-4" />
+                            رقم الهاتف
+                          </Label>
+                          {isEditing ? (
+                            <Input
+                              value={editForm.buyer_phone || ""}
+                              onChange={(e) => setEditForm({ ...editForm, buyer_phone: e.target.value })}
+                              dir="ltr"
+                            />
+                          ) : (
+                            <p className="font-medium" dir="ltr">{unit.buyer_phone || "—"}</p>
+                          )}
+                        </div>
                       )}
                     </div>
                   )}
                 </div>
-              </div>
 
-              <Separator />
-            </>
-          )}
+                <Separator />
+              </>
+            );
+          })()}
 
           {/* Staff Info */}
           <div className="space-y-4">

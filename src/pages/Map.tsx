@@ -1,5 +1,6 @@
 import { useState, useMemo, useCallback } from "react";
 import { useUnits, useUnitStats, UnitFilters, Unit } from "@/hooks/useUnits";
+import { useSoldUnitsFromSheet } from "@/hooks/useSoldUnitsFromSheet";
 import { MapHeader } from "@/components/map/MapHeader";
 import { MapView } from "@/components/map/MapView";
 import { GridView } from "@/components/map/GridView";
@@ -31,13 +32,48 @@ export default function Map() {
 
   const { data: units, isLoading: unitsLoading, refetch: refetchUnits } = useUnits(effectiveFilters);
   const { data: stats, isLoading: statsLoading, refetch: refetchStats } = useUnitStats();
+  const { soldUnits, isLoading: sheetLoading, refetch: refetchSheet, getSoldUnitInfo } = useSoldUnitsFromSheet();
 
   const queryClient = useQueryClient();
+
+  // Merge units with Google Sheet data - mark as sold if unit number exists in sheet
+  const mergedUnits = useMemo(() => {
+    if (!units) return [];
+    
+    return units.map(unit => {
+      const sheetInfo = getSoldUnitInfo(unit.unit_number);
+      if (sheetInfo) {
+        return {
+          ...unit,
+          status: "sold" as const,
+          buyer_name: sheetInfo.buyerName || unit.buyer_name,
+          sales_employee: sheetInfo.salesPerson || unit.sales_employee,
+          accountant_name: sheetInfo.accountantName || unit.accountant_name,
+          // Store sale date in notes if available
+          sheet_sale_date: sheetInfo.saleDate,
+        };
+      }
+      return unit;
+    });
+  }, [units, getSoldUnitInfo]);
+
+  // Calculate stats based on merged data
+  const mergedStats = useMemo(() => {
+    if (!stats) return null;
+    
+    const sheetSoldCount = soldUnits.size;
+    return {
+      ...stats,
+      sold: stats.sold + sheetSoldCount,
+      available: Math.max(0, stats.available - sheetSoldCount),
+    };
+  }, [stats, soldUnits]);
 
   const handleRefresh = useCallback(() => {
     refetchUnits();
     refetchStats();
-  }, [refetchUnits, refetchStats]);
+    refetchSheet();
+  }, [refetchUnits, refetchStats, refetchSheet]);
 
   const handleUnitClick = useCallback((unit: Unit) => {
     setSelectedUnit(unit);
@@ -65,8 +101,8 @@ export default function Map() {
 
       {/* Header with Stats & Filters */}
       <MapHeader
-        stats={stats}
-        isLoading={statsLoading}
+        stats={mergedStats}
+        isLoading={statsLoading || sheetLoading}
         filters={filters}
         onFiltersChange={setFilters}
         view={view}
@@ -75,15 +111,15 @@ export default function Map() {
       />
 
       {/* Main View */}
-      {unitsLoading ? (
+      {unitsLoading || sheetLoading ? (
         <div className="space-y-4">
           <Skeleton className="h-[500px] w-full rounded-xl" />
         </div>
-      ) : units && units.length > 0 ? (
+      ) : mergedUnits && mergedUnits.length > 0 ? (
         view === "map" ? (
-          <MapView units={units} onUnitClick={handleUnitClick} />
+          <MapView units={mergedUnits} onUnitClick={handleUnitClick} />
         ) : (
-          <GridView units={units} onUnitClick={handleUnitClick} />
+          <GridView units={mergedUnits} onUnitClick={handleUnitClick} getSoldUnitInfo={getSoldUnitInfo} />
         )
       ) : (
         <div className="flex flex-col items-center justify-center h-[400px] text-center">
@@ -97,6 +133,7 @@ export default function Map() {
         unit={selectedUnit}
         open={drawerOpen}
         onOpenChange={handleDrawerClose}
+        getSoldUnitInfo={getSoldUnitInfo}
       />
     </div>
   );
