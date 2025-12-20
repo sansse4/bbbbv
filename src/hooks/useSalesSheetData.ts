@@ -130,17 +130,15 @@ export const useSalesSheetData = (filters?: SalesFilters) => {
           roayaCommission: mappedRows.reduce((sum, r) => sum + parseNumber(r.roayaCommission), 0),
         };
         
-        // Count unique buyer names (excluding empty names)
-        const uniqueBuyerNames = new Set(
-          mappedRows
-            .map(r => r.buyerName?.toString().trim())
-            .filter(name => name && name.length > 0)
-        );
+        // Count total buyer names (excluding empty names) - مجموع المشترين
+        const totalBuyerNames = mappedRows
+          .map(r => r.buyerName?.toString().trim())
+          .filter(name => name && name.length > 0);
         
         setData({
           success: true,
           totals,
-          customersCount: uniqueBuyerNames.size,
+          customersCount: totalBuyerNames.length,
           rows: mappedRows,
         });
       } else {
