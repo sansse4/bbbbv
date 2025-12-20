@@ -61,6 +61,8 @@ export function useSoldUnitsFromSheet() {
         }
       });
 
+      console.log("Google Sheet sold units count:", soldUnitsMap.size);
+      console.log("Unit numbers from sheet:", Array.from(soldUnitsMap.keys()));
       setSoldUnits(soldUnitsMap);
     } catch (err) {
       console.error("Error fetching sold units:", err);
