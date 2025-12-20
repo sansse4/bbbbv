@@ -1,20 +1,22 @@
 import { useMemo, useState, useCallback } from "react";
 import { Unit } from "@/hooks/useUnits";
+import { SoldUnitInfo } from "@/hooks/useSoldUnitsFromSheet";
 import { getStatusBgClass } from "./UnitStatusBadge";
 import { cn } from "@/lib/utils";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { LayoutGrid, Timer, ChevronDown, ChevronUp } from "lucide-react";
+import { LayoutGrid, Timer, ChevronDown, ChevronUp, User, Calendar } from "lucide-react";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 
 interface GridViewProps {
   units: Unit[];
   onUnitClick: (unit: Unit) => void;
+  getSoldUnitInfo?: (unitNumber: number | string) => SoldUnitInfo | undefined;
 }
 
-export function GridView({ units, onUnitClick }: GridViewProps) {
+export function GridView({ units, onUnitClick, getSoldUnitInfo }: GridViewProps) {
   const [expandedBlocks, setExpandedBlocks] = useState<Set<number>>(new Set([1, 2, 3, 4, 5, 6, 7]));
 
   // Group units by block
@@ -197,7 +199,7 @@ export function GridView({ units, onUnitClick }: GridViewProps) {
                               )}
                             </button>
                           </TooltipTrigger>
-                          <TooltipContent side="top" className="max-w-[220px] z-[100]">
+                          <TooltipContent side="top" className="max-w-[260px] z-[100]">
                             <div className="text-xs space-y-1.5">
                               <p className="font-bold text-sm">وحدة #{unit.unit_number}</p>
                               <div className="grid grid-cols-2 gap-x-3 gap-y-1">
@@ -222,9 +224,30 @@ export function GridView({ units, onUnitClick }: GridViewProps) {
                                   ⏱️ حجز مؤقت: {timeRemaining} متبقي
                                 </p>
                               )}
-                              {unit.buyer_name && (
-                                <p className="pt-1 border-t">المشتري: {unit.buyer_name}</p>
-                              )}
+                              {/* Show Google Sheet buyer info */}
+                              {(() => {
+                                const sheetInfo = getSoldUnitInfo?.(unit.unit_number);
+                                if (sheetInfo) {
+                                  return (
+                                    <div className="pt-2 border-t space-y-1">
+                                      <p className="flex items-center gap-1 text-rose-600 font-semibold">
+                                        <User className="h-3 w-3" />
+                                        {sheetInfo.buyerName}
+                                      </p>
+                                      {sheetInfo.saleDate && (
+                                        <p className="flex items-center gap-1 text-muted-foreground">
+                                          <Calendar className="h-3 w-3" />
+                                          {sheetInfo.saleDate}
+                                        </p>
+                                      )}
+                                    </div>
+                                  );
+                                }
+                                if (unit.buyer_name) {
+                                  return <p className="pt-1 border-t">المشتري: {unit.buyer_name}</p>;
+                                }
+                                return null;
+                              })()}
                             </div>
                           </TooltipContent>
                         </Tooltip>
