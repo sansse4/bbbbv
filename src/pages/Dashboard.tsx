@@ -3,6 +3,7 @@ import { format } from "date-fns";
 import { ar } from "date-fns/locale";
 import { MetricCard } from "@/components/MetricCard";
 import { InteractiveSitePlan } from "@/components/InteractiveSitePlan";
+import { SalesTable } from "@/components/SalesTable";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Calendar } from "@/components/ui/calendar";
@@ -350,6 +351,9 @@ const Dashboard = () => {
           )}
         </CardContent>
       </Card>
+
+      {/* Sales Details Table */}
+      <SalesTable rows={rows} isLoading={salesLoading} />
 
       {/* Interactive Site Plan - Prominent Display */}
       <div className="my-8">
