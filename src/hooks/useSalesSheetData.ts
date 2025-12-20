@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback } from "react";
 
-const SALES_SHEET_URL = "https://script.google.com/macros/s/AKfycbxbB7cwLB1e4hjA_PoOl4wYdAf-grjGueA7kRGL2L2akYneeB1UzglbyGABYkR5L9OVuw/exec";
+const SALES_SHEET_URL = "https://script.google.com/macros/s/AKfycbwSMozG5H01u1uVrX4wgXWyr6CHocUuqkAofnowdqBaZSVDJkoj2rOe1g58l4gQ6TPw/exec";
 
 export interface SalesRow {
   serial: number | string;
