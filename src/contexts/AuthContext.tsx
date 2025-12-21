@@ -153,17 +153,19 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     if (!role) return false;
     if (role.role === 'admin' || role.role === 'assistant_manager') return true;
 
+    // Paths accessible to all authenticated users
+    const publicPaths = ['/my-dashboard', '/map', '/appointments', '/employees'];
+    if (publicPaths.includes(path)) return true;
+
     // Map paths to departments
     const pathDepartmentMap: { [key: string]: string } = {
       '/media': 'Media',
       '/sales': 'Sales',
       '/call-center': 'Call Center',
+      '/reception': 'Reception',
       '/contracts': 'Contract Registration',
       '/analytics': 'Growth Analytics',
     };
-
-    // My Dashboard is accessible to all authenticated employees
-    if (path === '/my-dashboard') return true;
 
     // Main dashboard is only for admins and assistant managers
     if (path === '/') return false;
