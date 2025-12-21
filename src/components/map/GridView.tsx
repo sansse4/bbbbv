@@ -93,30 +93,31 @@ export function GridView({ units, onUnitClick, getSoldUnitInfo }: GridViewProps)
 
   return (
     <Card className="overflow-hidden">
-      {/* Header */}
-      <div className="flex items-center justify-between p-4 border-b bg-muted/30">
+      {/* Header - Sticky within card */}
+      <div className="sticky top-0 z-10 flex items-center justify-between p-3 sm:p-4 border-b bg-background/95 backdrop-blur-sm">
         <div className="flex items-center gap-2">
-          <LayoutGrid className="h-5 w-5 text-primary" />
-          <span className="font-semibold">عرض الشبكة</span>
+          <LayoutGrid className="h-4 w-4 sm:h-5 sm:w-5 text-primary" />
+          <span className="font-semibold text-sm sm:text-base">عرض الشبكة</span>
         </div>
         <div className="flex gap-2">
           <button
             onClick={expandAll}
-            className="text-xs text-primary hover:underline"
+            className="text-xs text-primary hover:underline active:opacity-70 transition-opacity"
           >
             توسيع الكل
           </button>
           <span className="text-muted-foreground">|</span>
           <button
             onClick={collapseAll}
-            className="text-xs text-primary hover:underline"
+            className="text-xs text-primary hover:underline active:opacity-70 transition-opacity"
           >
             طي الكل
           </button>
         </div>
       </div>
 
-      <ScrollArea className="h-[calc(100vh-420px)] min-h-[400px]">
+      {/* Smooth scrolling container */}
+      <div className="max-h-[calc(100vh-300px)] sm:max-h-[calc(100vh-350px)] overflow-y-auto scroll-smooth overscroll-contain">
         <div className="p-4 space-y-3">
           {Object.entries(unitsByBlock).map(([block, blockUnits]) => {
             const blockNum = Number(block);
@@ -170,8 +171,8 @@ export function GridView({ units, onUnitClick, getSoldUnitInfo }: GridViewProps)
                 </CollapsibleTrigger>
 
                 {/* Units Grid */}
-                <CollapsibleContent>
-                  <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 xl:grid-cols-8 gap-2 p-3 mt-2 bg-muted/20 rounded-lg border">
+                <CollapsibleContent className="animate-accordion-down">
+                  <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-6 xl:grid-cols-8 gap-1.5 sm:gap-2 p-2 sm:p-3 mt-2 bg-muted/20 rounded-lg border">
                     {blockUnits.map((unit) => {
                       const hasTemporaryHold = unit.status === "reserved" && unit.reservation_expires_at && !isReservationExpired(unit);
                       const timeRemaining = unit.reservation_expires_at ? getTimeRemaining(unit.reservation_expires_at) : null;
@@ -182,15 +183,15 @@ export function GridView({ units, onUnitClick, getSoldUnitInfo }: GridViewProps)
                             <button
                               onClick={() => onUnitClick(unit)}
                               className={cn(
-                                "w-full p-3 rounded-xl text-white font-semibold transition-all",
-                                "hover:scale-[1.03] hover:shadow-lg focus:outline-none focus:ring-2 focus:ring-primary/50",
-                                "flex flex-col items-center justify-center min-h-[90px] gap-1.5",
-                                "shadow-sm",
+                                "w-full p-2 sm:p-3 rounded-lg sm:rounded-xl text-white font-semibold transition-all duration-200",
+                                "active:scale-95 sm:hover:scale-[1.03] hover:shadow-lg focus:outline-none focus:ring-2 focus:ring-primary/50",
+                                "flex flex-col items-center justify-center min-h-[70px] sm:min-h-[90px] gap-1 sm:gap-1.5",
+                                "shadow-sm touch-manipulation",
                                 getStatusBgClass(unit.status)
                               )}
                             >
-                              <span className="text-xl font-bold">{unit.unit_number}</span>
-                              <span className="text-[11px] opacity-90">{unit.area_m2} م²</span>
+                              <span className="text-base sm:text-xl font-bold">{unit.unit_number}</span>
+                              <span className="text-[9px] sm:text-[11px] opacity-90">{unit.area_m2} م²</span>
                               {hasTemporaryHold && timeRemaining && (
                                 <span className="text-[10px] bg-white/25 rounded-full px-2 py-0.5 flex items-center gap-1">
                                   <Timer className="h-3 w-3" />
@@ -259,21 +260,21 @@ export function GridView({ units, onUnitClick, getSoldUnitInfo }: GridViewProps)
             );
           })}
         </div>
-      </ScrollArea>
+      </div>
 
-      {/* Legend Footer */}
-      <div className="p-4 border-t bg-muted/30">
-        <div className="flex flex-wrap items-center justify-center gap-6 text-sm">
-          <div className="flex items-center gap-2">
-            <div className="w-4 h-4 rounded-md bg-emerald-500 shadow-sm" />
+      {/* Legend Footer - Compact on mobile */}
+      <div className="p-2 sm:p-4 border-t bg-muted/30">
+        <div className="flex flex-wrap items-center justify-center gap-3 sm:gap-6 text-xs sm:text-sm">
+          <div className="flex items-center gap-1.5 sm:gap-2">
+            <div className="w-3 h-3 sm:w-4 sm:h-4 rounded-md bg-emerald-500 shadow-sm" />
             <span className="text-muted-foreground">متاح</span>
           </div>
-          <div className="flex items-center gap-2">
-            <div className="w-4 h-4 rounded-md bg-amber-500 shadow-sm" />
+          <div className="flex items-center gap-1.5 sm:gap-2">
+            <div className="w-3 h-3 sm:w-4 sm:h-4 rounded-md bg-amber-500 shadow-sm" />
             <span className="text-muted-foreground">محجوز</span>
           </div>
-          <div className="flex items-center gap-2">
-            <div className="w-4 h-4 rounded-md bg-rose-500 shadow-sm" />
+          <div className="flex items-center gap-1.5 sm:gap-2">
+            <div className="w-3 h-3 sm:w-4 sm:h-4 rounded-md bg-rose-500 shadow-sm" />
             <span className="text-muted-foreground">مباع</span>
           </div>
         </div>

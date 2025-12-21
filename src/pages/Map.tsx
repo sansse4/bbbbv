@@ -92,43 +92,47 @@ export default function Map() {
   }, [queryClient]);
 
   return (
-    <div className="space-y-6">
-      {/* Page Title */}
-      <div>
-        <h1 className="text-3xl font-bold text-foreground">خريطة المجمع السكني</h1>
-        <p className="text-muted-foreground mt-1">
-          عرض تفاعلي لجميع الوحدات السكنية في المشروع
-        </p>
+    <div className="min-h-screen pb-6">
+      {/* Sticky Header with Stats & Filters */}
+      <div className="sticky top-0 z-20 bg-background/95 backdrop-blur-md border-b shadow-sm -mx-4 px-4 sm:-mx-6 sm:px-6 pt-4 pb-4">
+        {/* Page Title - Compact on mobile */}
+        <div className="mb-3">
+          <h1 className="text-xl sm:text-2xl lg:text-3xl font-bold text-foreground">خريطة المجمع السكني</h1>
+          <p className="text-xs sm:text-sm text-muted-foreground mt-0.5">
+            عرض تفاعلي لجميع الوحدات السكنية
+          </p>
+        </div>
+
+        <MapHeader
+          stats={mergedStats}
+          isLoading={statsLoading || sheetLoading}
+          filters={filters}
+          onFiltersChange={setFilters}
+          view={view}
+          onViewChange={setView}
+          onRefresh={handleRefresh}
+        />
       </div>
 
-      {/* Header with Stats & Filters */}
-      <MapHeader
-        stats={mergedStats}
-        isLoading={statsLoading || sheetLoading}
-        filters={filters}
-        onFiltersChange={setFilters}
-        view={view}
-        onViewChange={setView}
-        onRefresh={handleRefresh}
-      />
-
-      {/* Main View */}
-      {unitsLoading || sheetLoading ? (
-        <div className="space-y-4">
-          <Skeleton className="h-[500px] w-full rounded-xl" />
-        </div>
-      ) : mergedUnits && mergedUnits.length > 0 ? (
-        view === "map" ? (
-          <MapView units={mergedUnits} onUnitClick={handleUnitClick} />
+      {/* Main View - Smooth scroll container */}
+      <div className="mt-4 scroll-smooth">
+        {unitsLoading || sheetLoading ? (
+          <div className="space-y-4">
+            <Skeleton className="h-[500px] w-full rounded-xl" />
+          </div>
+        ) : mergedUnits && mergedUnits.length > 0 ? (
+          view === "map" ? (
+            <MapView units={mergedUnits} onUnitClick={handleUnitClick} />
+          ) : (
+            <GridView units={mergedUnits} onUnitClick={handleUnitClick} getSoldUnitInfo={getSoldUnitInfo} />
+          )
         ) : (
-          <GridView units={mergedUnits} onUnitClick={handleUnitClick} getSoldUnitInfo={getSoldUnitInfo} />
-        )
-      ) : (
-        <div className="flex flex-col items-center justify-center h-[400px] text-center">
-          <p className="text-muted-foreground text-lg">لا توجد وحدات تطابق معايير البحث</p>
-          <p className="text-sm text-muted-foreground/70 mt-1">حاول تغيير الفلاتر أو مصطلح البحث</p>
-        </div>
-      )}
+          <div className="flex flex-col items-center justify-center h-[400px] text-center">
+            <p className="text-muted-foreground text-lg">لا توجد وحدات تطابق معايير البحث</p>
+            <p className="text-sm text-muted-foreground/70 mt-1">حاول تغيير الفلاتر أو مصطلح البحث</p>
+          </div>
+        )}
+      </div>
 
       {/* Unit Detail Drawer */}
       <UnitDetailDrawer
