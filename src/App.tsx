@@ -8,6 +8,7 @@ import { SidebarProvider } from "@/components/ui/sidebar";
 import { AppSidebar } from "@/components/AppSidebar";
 import { Header } from "@/components/Header";
 import { AuthProvider } from "@/contexts/AuthContext";
+import { DashboardSettingsProvider } from "@/contexts/DashboardSettingsContext";
 import { ProtectedRoute } from "@/components/ProtectedRoute";
 import { PageTransition } from "@/components/PageTransition";
 import Dashboard from "./pages/Dashboard";
@@ -47,32 +48,34 @@ function App() {
               path="/*"
               element={
                 <ProtectedRoute>
-                  <SidebarProvider>
-                    <div className="min-h-screen flex w-full bg-background">
-                      <AppSidebar />
-                      <div className="flex-1 flex flex-col w-full">
-                        <Header />
-                        <main className="flex-1 p-3 md:p-6 overflow-auto">
-                          <PageTransition>
-                            <Routes>
-                              <Route path="/" element={<Dashboard />} />
-                              <Route path="/my-dashboard" element={<MyDashboard />} />
-                              <Route path="/map" element={<Map />} />
-                              <Route path="/media" element={<Media />} />
-                              <Route path="/sales" element={<Sales />} />
-                              <Route path="/call-center" element={<CallCenter />} />
-                              <Route path="/appointments" element={<Appointments />} />
-                              <Route path="/reception" element={<Reception />} />
-                              <Route path="/users" element={<UserManagement />} />
-                              <Route path="/employees" element={<Employees />} />
-                              <Route path="/employees/:employeeId" element={<EmployeeProfile />} />
-                              <Route path="*" element={<NotFound />} />
-                            </Routes>
-                          </PageTransition>
-                        </main>
+                  <DashboardSettingsProvider>
+                    <SidebarProvider>
+                      <div className="min-h-screen flex w-full bg-background">
+                        <AppSidebar />
+                        <div className="flex-1 flex flex-col w-full">
+                          <Header />
+                          <main className="flex-1 p-3 md:p-6 overflow-auto">
+                            <PageTransition>
+                              <Routes>
+                                <Route path="/" element={<Dashboard />} />
+                                <Route path="/my-dashboard" element={<MyDashboard />} />
+                                <Route path="/map" element={<Map />} />
+                                <Route path="/media" element={<Media />} />
+                                <Route path="/sales" element={<Sales />} />
+                                <Route path="/call-center" element={<CallCenter />} />
+                                <Route path="/appointments" element={<Appointments />} />
+                                <Route path="/reception" element={<Reception />} />
+                                <Route path="/users" element={<UserManagement />} />
+                                <Route path="/employees" element={<Employees />} />
+                                <Route path="/employees/:employeeId" element={<EmployeeProfile />} />
+                                <Route path="*" element={<NotFound />} />
+                              </Routes>
+                            </PageTransition>
+                          </main>
+                        </div>
                       </div>
-                    </div>
-                  </SidebarProvider>
+                    </SidebarProvider>
+                  </DashboardSettingsProvider>
                 </ProtectedRoute>
               }
             />
