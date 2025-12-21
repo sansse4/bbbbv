@@ -92,7 +92,7 @@ export function GridView({ units, onUnitClick, getSoldUnitInfo }: GridViewProps)
   }, []);
 
   return (
-    <Card className="overflow-hidden flex flex-col h-[calc(100vh-140px)]">
+    <Card className="overflow-hidden flex flex-col h-[calc(100vh-80px)]">
       {/* Header - Sticky within card */}
       <div className="sticky top-0 z-10 flex items-center justify-between p-2 sm:p-3 border-b bg-background/95 backdrop-blur-sm flex-shrink-0">
         <div className="flex items-center gap-2">
