@@ -1,4 +1,4 @@
-import { Search, Settings, User, LogOut } from "lucide-react";
+import { Search, Settings, User, LogOut, Eye, EyeOff, LayoutGrid, LayoutList } from "lucide-react";
 import { SidebarTrigger } from "@/components/ui/sidebar";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -14,9 +14,11 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { useAuth } from "@/contexts/AuthContext";
 import NotificationBell from "@/components/NotificationBell";
+import { useDashboardSettings } from "@/contexts/DashboardSettingsContext";
 
 export function Header() {
   const { profile, role, signOut } = useAuth();
+  const { settings, toggleShowData, toggleShowIcons } = useDashboardSettings();
   
   const getInitials = (name: string) => {
     return name
@@ -42,9 +44,36 @@ export function Header() {
 
       <div className="flex items-center gap-2">
         <NotificationBell />
-        <Button variant="ghost" size="icon">
-          <Settings className="h-5 w-5" />
-        </Button>
+        
+        {/* Settings Dropdown */}
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <Button variant="ghost" size="icon">
+              <Settings className="h-5 w-5" />
+            </Button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align="end" className="w-56">
+            <DropdownMenuLabel>إعدادات لوحة التحكم</DropdownMenuLabel>
+            <DropdownMenuSeparator />
+            <DropdownMenuItem onClick={toggleShowData} className="cursor-pointer">
+              {settings.showData ? (
+                <Eye className="ml-2 h-4 w-4" />
+              ) : (
+                <EyeOff className="ml-2 h-4 w-4" />
+              )}
+              <span>{settings.showData ? "إخفاء البيانات" : "إظهار البيانات"}</span>
+            </DropdownMenuItem>
+            <DropdownMenuItem onClick={toggleShowIcons} className="cursor-pointer">
+              {settings.showIcons ? (
+                <LayoutGrid className="ml-2 h-4 w-4" />
+              ) : (
+                <LayoutList className="ml-2 h-4 w-4" />
+              )}
+              <span>{settings.showIcons ? "إخفاء الأيقونات" : "إظهار الأيقونات"}</span>
+            </DropdownMenuItem>
+          </DropdownMenuContent>
+        </DropdownMenu>
+
         <ThemeToggle />
         
         <DropdownMenu>

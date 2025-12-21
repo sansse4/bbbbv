@@ -13,6 +13,7 @@ import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover
 import { useTotalDeposits } from "@/hooks/useTotalDeposits";
 import { useSalesSheetData } from "@/hooks/useSalesSheetData";
 import { useFinanceSummary } from "@/hooks/useFinanceSummary";
+import { useDashboardSettings } from "@/contexts/DashboardSettingsContext";
 import { cn } from "@/lib/utils";
 import {
   Users,
@@ -50,6 +51,7 @@ const COLORS = ["hsl(var(--chart-1))", "hsl(var(--chart-2))", "hsl(var(--chart-3
 const Dashboard = () => {
   const [dateFrom, setDateFrom] = useState<Date | undefined>(undefined);
   const [dateTo, setDateTo] = useState<Date | undefined>(undefined);
+  const { settings } = useDashboardSettings();
 
   const { total: totalDeposits, isLoading: depositsLoading, refetch: refetchDeposits } = useTotalDeposits();
   const { data: financeSummary, isLoading: financeLoading, error: financeError, refetch: refetchFinance } = useFinanceSummary();
@@ -206,13 +208,15 @@ const Dashboard = () => {
               <div className="flex-1">
                 <p className="text-sm font-medium text-muted-foreground mb-2">مجموع المقدمات</p>
                 <h3 className="text-3xl font-bold text-foreground mb-1">
-                  {depositsLoading ? "..." : formatCurrency(totalDeposits)}
+                  {settings.showData ? (depositsLoading ? "..." : formatCurrency(totalDeposits)) : "••••••"}
                 </h3>
               </div>
               <div className="flex flex-col items-center gap-2">
-                <div className="h-12 w-12 rounded-lg bg-primary/10 flex items-center justify-center">
-                  <DollarSign className="h-6 w-6 text-primary" />
-                </div>
+                {settings.showIcons && (
+                  <div className="h-12 w-12 rounded-lg bg-primary/10 flex items-center justify-center">
+                    <DollarSign className="h-6 w-6 text-primary" />
+                  </div>
+                )}
                 <Button
                   variant="outline"
                   size="sm"
@@ -257,13 +261,15 @@ const Dashboard = () => {
               <Card className="bg-muted/30">
                 <CardContent className="p-4">
                   <div className="flex items-center gap-3">
-                    <div className="h-10 w-10 rounded-lg bg-primary/10 flex items-center justify-center">
-                      <Banknote className="h-5 w-5 text-primary" />
-                    </div>
+                    {settings.showIcons && (
+                      <div className="h-10 w-10 rounded-lg bg-primary/10 flex items-center justify-center">
+                        <Banknote className="h-5 w-5 text-primary" />
+                      </div>
+                    )}
                     <div>
                       <p className="text-xs text-muted-foreground">السعر الحقيقي</p>
                       <p className="text-lg font-bold">
-                        {financeLoading ? "..." : formatCurrency(financeSummary?.total_real_price || 0)}
+                        {settings.showData ? (financeLoading ? "..." : formatCurrency(financeSummary?.total_real_price || 0)) : "••••••"}
                       </p>
                     </div>
                   </div>
@@ -273,13 +279,15 @@ const Dashboard = () => {
               <Card className="bg-muted/30">
                 <CardContent className="p-4">
                   <div className="flex items-center gap-3">
-                    <div className="h-10 w-10 rounded-lg bg-chart-1/10 flex items-center justify-center">
-                      <DollarSign className="h-5 w-5 text-chart-1" />
-                    </div>
+                    {settings.showIcons && (
+                      <div className="h-10 w-10 rounded-lg bg-chart-1/10 flex items-center justify-center">
+                        <DollarSign className="h-5 w-5 text-chart-1" />
+                      </div>
+                    )}
                     <div>
                       <p className="text-xs text-muted-foreground">سعر البيع</p>
                       <p className="text-lg font-bold">
-                        {financeLoading ? "..." : formatCurrency(financeSummary?.total_sale_price || 0)}
+                        {settings.showData ? (financeLoading ? "..." : formatCurrency(financeSummary?.total_sale_price || 0)) : "••••••"}
                       </p>
                     </div>
                   </div>
@@ -289,13 +297,15 @@ const Dashboard = () => {
               <Card className="bg-muted/30">
                 <CardContent className="p-4">
                   <div className="flex items-center gap-3">
-                    <div className="h-10 w-10 rounded-lg bg-chart-2/10 flex items-center justify-center">
-                      <DollarSign className="h-5 w-5 text-chart-2" />
-                    </div>
+                    {settings.showIcons && (
+                      <div className="h-10 w-10 rounded-lg bg-chart-2/10 flex items-center justify-center">
+                        <DollarSign className="h-5 w-5 text-chart-2" />
+                      </div>
+                    )}
                     <div>
                       <p className="text-xs text-muted-foreground">قيمة المقدمة</p>
                       <p className="text-lg font-bold">
-                        {financeLoading ? "..." : formatCurrency(financeSummary?.total_down_payment || 0)}
+                        {settings.showData ? (financeLoading ? "..." : formatCurrency(financeSummary?.total_down_payment || 0)) : "••••••"}
                       </p>
                     </div>
                   </div>
@@ -305,13 +315,15 @@ const Dashboard = () => {
               <Card className="bg-muted/30">
                 <CardContent className="p-4">
                   <div className="flex items-center gap-3">
-                    <div className="h-10 w-10 rounded-lg bg-chart-3/10 flex items-center justify-center">
-                      <Percent className="h-5 w-5 text-chart-3" />
-                    </div>
+                    {settings.showIcons && (
+                      <div className="h-10 w-10 rounded-lg bg-chart-3/10 flex items-center justify-center">
+                        <Percent className="h-5 w-5 text-chart-3" />
+                      </div>
+                    )}
                     <div>
                       <p className="text-xs text-muted-foreground">العمولة الإدارية</p>
                       <p className="text-lg font-bold">
-                        {financeLoading ? "..." : formatCurrency(financeSummary?.total_admin_commission || 0)}
+                        {settings.showData ? (financeLoading ? "..." : formatCurrency(financeSummary?.total_admin_commission || 0)) : "••••••"}
                       </p>
                     </div>
                   </div>
@@ -321,13 +333,15 @@ const Dashboard = () => {
               <Card className="bg-muted/30">
                 <CardContent className="p-4">
                   <div className="flex items-center gap-3">
-                    <div className="h-10 w-10 rounded-lg bg-chart-4/10 flex items-center justify-center">
-                      <Building2 className="h-5 w-5 text-chart-4" />
-                    </div>
+                    {settings.showIcons && (
+                      <div className="h-10 w-10 rounded-lg bg-chart-4/10 flex items-center justify-center">
+                        <Building2 className="h-5 w-5 text-chart-4" />
+                      </div>
+                    )}
                     <div>
                       <p className="text-xs text-muted-foreground">عمولة شركة رؤية</p>
                       <p className="text-lg font-bold">
-                        {financeLoading ? "..." : formatCurrency(financeSummary?.total_roaya_commission || 0)}
+                        {settings.showData ? (financeLoading ? "..." : formatCurrency(financeSummary?.total_roaya_commission || 0)) : "••••••"}
                       </p>
                     </div>
                   </div>
@@ -337,13 +351,15 @@ const Dashboard = () => {
               <Card className="bg-success/10 border-success/20">
                 <CardContent className="p-4">
                   <div className="flex items-center gap-3">
-                    <div className="h-10 w-10 rounded-lg bg-success/20 flex items-center justify-center">
-                      <Receipt className="h-5 w-5 text-success" />
-                    </div>
+                    {settings.showIcons && (
+                      <div className="h-10 w-10 rounded-lg bg-success/20 flex items-center justify-center">
+                        <Receipt className="h-5 w-5 text-success" />
+                      </div>
+                    )}
                     <div>
                       <p className="text-xs text-muted-foreground">صافي الدخل</p>
                       <p className="text-lg font-bold text-success">
-                        {financeLoading ? "..." : formatCurrency(financeSummary?.net_income || 0)}
+                        {settings.showData ? (financeLoading ? "..." : formatCurrency(financeSummary?.net_income || 0)) : "••••••"}
                       </p>
                     </div>
                   </div>
