@@ -3,7 +3,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { UnitFilters, UnitStatus } from "@/hooks/useUnits";
-import { Search, Map, LayoutGrid, Home, CheckCircle, Clock, ShoppingCart, RefreshCw, TrendingUp } from "lucide-react";
+import { Search, Map, LayoutGrid, Home, CheckCircle, Clock, FileText, RefreshCw, TrendingUp } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 interface MapHeaderProps {
@@ -89,7 +89,7 @@ export function MapHeader({
           <CardContent className="p-4 relative">
             <div className="flex items-center gap-3">
               <div className="h-12 w-12 rounded-xl bg-rose-500/10 flex items-center justify-center shadow-inner">
-                <ShoppingCart className="h-6 w-6 text-rose-600" />
+                <FileText className="h-6 w-6 text-rose-600" />
               </div>
               <div className="flex-1">
                 <div className="flex items-center justify-between">
