@@ -222,7 +222,11 @@ export const LeadsTracker = () => {
                   </TableHeader>
                   <TableBody>
                     {leads.map((lead) => (
-                      <TableRow key={lead.id}>
+                      <TableRow 
+                        key={lead.id} 
+                        className="cursor-pointer hover:bg-muted/50 transition-colors"
+                        onClick={() => openEditDialog(lead)}
+                      >
                         <TableCell className="font-medium">{lead.name}</TableCell>
                         <TableCell>{lead.address || "-"}</TableCell>
                         <TableCell dir="ltr">{lead.phone}</TableCell>
@@ -232,33 +236,14 @@ export const LeadsTracker = () => {
                         <TableCell>{lead.houseNumber || "-"}</TableCell>
                         <TableCell>
                           {isReceived(lead.phone) ? (
-                            <Button
-                              variant="ghost"
-                              size="sm"
-                              className="px-2 py-1 h-auto text-xs bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200 hover:bg-green-200 dark:hover:bg-green-800"
-                              onClick={() => openEditDialog(lead)}
-                            >
+                            <span className="inline-flex items-center px-2 py-1 text-xs bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200 rounded-md">
                               <CheckCircle className="h-3 w-3 ml-1" />
                               تم الاستلام
-                              <Edit className="h-3 w-3 mr-1" />
-                            </Button>
+                            </span>
                           ) : (
-                            <Button
-                              variant="outline"
-                              size="sm"
-                              className="text-xs h-7 px-2 text-orange-600 border-orange-300 hover:bg-orange-50 dark:text-orange-400 dark:border-orange-600 dark:hover:bg-orange-950"
-                              onClick={() => openEditDialog(lead)}
-                              disabled={updatingPhone === lead.phone}
-                            >
-                              {updatingPhone === lead.phone ? (
-                                <Loader2 className="h-3 w-3 animate-spin" />
-                              ) : (
-                                <>
-                                  انقر للتعديل
-                                  <Edit className="h-3 w-3 mr-1" />
-                                </>
-                              )}
-                            </Button>
+                            <span className="inline-flex items-center px-2 py-1 text-xs text-orange-600 bg-orange-50 dark:text-orange-400 dark:bg-orange-950 rounded-md border border-orange-300 dark:border-orange-600">
+                              قيد الانتظار
+                            </span>
                           )}
                         </TableCell>
                       </TableRow>
@@ -270,9 +255,23 @@ export const LeadsTracker = () => {
               {/* Mobile Card View */}
               <div className="md:hidden space-y-3">
                 {leads.map((lead) => (
-                  <Card key={lead.id} className="p-4">
+                  <Card 
+                    key={lead.id} 
+                    className="p-4 cursor-pointer hover:bg-muted/50 transition-colors"
+                    onClick={() => openEditDialog(lead)}
+                  >
                     <div className="flex justify-between items-start mb-3">
                       <h3 className="font-semibold">{lead.name}</h3>
+                      {isReceived(lead.phone) ? (
+                        <span className="inline-flex items-center px-2 py-1 text-xs bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200 rounded-md">
+                          <CheckCircle className="h-3 w-3 ml-1" />
+                          تم الاستلام
+                        </span>
+                      ) : (
+                        <span className="inline-flex items-center px-2 py-1 text-xs text-orange-600 bg-orange-50 dark:text-orange-400 dark:bg-orange-950 rounded-md border border-orange-300 dark:border-orange-600">
+                          قيد الانتظار
+                        </span>
+                      )}
                     </div>
                     
                     <div className="flex items-center gap-1 text-sm text-muted-foreground mb-2">
@@ -306,37 +305,6 @@ export const LeadsTracker = () => {
                           <Home className="h-3 w-3" />
                           {lead.houseNumber}
                         </div>
-                      )}
-                    </div>
-                    <div className="mt-2">
-                      {isReceived(lead.phone) ? (
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          className="px-2 py-1 h-auto text-xs bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200 hover:bg-green-200 dark:hover:bg-green-800"
-                          onClick={() => openEditDialog(lead)}
-                        >
-                          <CheckCircle className="h-3 w-3 ml-1" />
-                          تم الاستلام
-                          <Edit className="h-3 w-3 mr-1" />
-                        </Button>
-                      ) : (
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          className="text-xs h-7 px-2 text-orange-600 border-orange-300 hover:bg-orange-50 dark:text-orange-400 dark:border-orange-600 dark:hover:bg-orange-950"
-                          onClick={() => openEditDialog(lead)}
-                          disabled={updatingPhone === lead.phone}
-                        >
-                          {updatingPhone === lead.phone ? (
-                            <Loader2 className="h-3 w-3 animate-spin" />
-                          ) : (
-                            <>
-                              انقر للتعديل
-                              <Edit className="h-3 w-3 mr-1" />
-                            </>
-                          )}
-                        </Button>
                       )}
                     </div>
                   </Card>
