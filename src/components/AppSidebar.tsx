@@ -24,7 +24,13 @@ const menuItems = [{
   url: "/map",
   icon: MapIcon,
   department: null,
-  adminOnly: true
+  forAll: true
+}, {
+  title: "حجز المواعيد",
+  url: "/appointments",
+  icon: CalendarClock,
+  department: null,
+  forAll: true
 }, {
   title: "Media",
   url: "/media",
@@ -40,11 +46,6 @@ const menuItems = [{
   url: "/call-center",
   icon: Phone,
   department: "Call Center"
-}, {
-  title: "حجز المواعيد",
-  url: "/appointments",
-  icon: CalendarClock,
-  departments: ["Call Center", "Reception"]
 }, {
   title: "Reception",
   url: "/reception",
@@ -103,34 +104,34 @@ export function AppSidebar() {
       return menuItems.filter(item => !item.forEmployees);
     }
 
-    // Assistant manager sees their supervised departments + employees + user management + my dashboard
+    // Assistant manager sees their supervised departments + employees + user management + my dashboard + forAll items
     if (role.role === 'assistant_manager') {
       return menuItems.filter(item => {
         // Show My Dashboard for assistant managers
         if (item.forEmployees) return true;
+        // Show items available for all users
+        if (item.forAll) return true;
         // Always show Employees
         if (item.url === '/employees') return true;
         // Show User Management for assistant managers
         if (item.url === '/users') return true;
         // Show departments they supervise (single department)
         if (item.department && supervisedDepartments.includes(item.department)) return true;
-        // Show items with multiple departments if any is supervised
-        if (item.departments && item.departments.some(d => supervisedDepartments.includes(d))) return true;
         // Hide main dashboard from assistant managers
         if (item.adminOnly) return false;
         return false;
       });
     }
 
-    // Regular employees - show their department + my dashboard only
+    // Regular employees - show their department + my dashboard + forAll items
     const userDepartment = profile?.department;
     return menuItems.filter(item => {
       // Show My Dashboard for employees
       if (item.forEmployees) return true;
+      // Show items available for all users
+      if (item.forAll) return true;
       // Show their own department (single department)
       if (item.department && item.department === userDepartment) return true;
-      // Show items with multiple departments if user's department is included
-      if (item.departments && userDepartment && item.departments.includes(userDepartment)) return true;
       // Hide admin-only items
       if (item.adminOnly) return false;
       return false;
