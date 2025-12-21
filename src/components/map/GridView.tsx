@@ -92,12 +92,12 @@ export function GridView({ units, onUnitClick, getSoldUnitInfo }: GridViewProps)
   }, []);
 
   return (
-    <Card className="overflow-hidden">
+    <Card className="overflow-hidden flex flex-col h-[calc(100vh-140px)]">
       {/* Header - Sticky within card */}
-      <div className="sticky top-0 z-10 flex items-center justify-between p-3 sm:p-4 border-b bg-background/95 backdrop-blur-sm">
+      <div className="sticky top-0 z-10 flex items-center justify-between p-2 sm:p-3 border-b bg-background/95 backdrop-blur-sm flex-shrink-0">
         <div className="flex items-center gap-2">
           <LayoutGrid className="h-4 w-4 sm:h-5 sm:w-5 text-primary" />
-          <span className="font-semibold text-sm sm:text-base">عرض الشبكة</span>
+          <span className="font-semibold text-sm sm:text-base">الخريطة</span>
         </div>
         <div className="flex gap-2">
           <button
@@ -116,9 +116,9 @@ export function GridView({ units, onUnitClick, getSoldUnitInfo }: GridViewProps)
         </div>
       </div>
 
-      {/* Smooth scrolling container */}
-      <div className="max-h-[calc(100vh-300px)] sm:max-h-[calc(100vh-350px)] overflow-y-auto scroll-smooth overscroll-contain">
-        <div className="p-4 space-y-3">
+      {/* Smooth scrolling container - Takes remaining height */}
+      <div className="flex-1 overflow-y-auto scroll-smooth overscroll-contain">
+        <div className="p-3 sm:p-4 space-y-3">
           {Object.entries(unitsByBlock).map(([block, blockUnits]) => {
             const blockNum = Number(block);
             const isExpanded = expandedBlocks.has(blockNum);
@@ -262,19 +262,19 @@ export function GridView({ units, onUnitClick, getSoldUnitInfo }: GridViewProps)
         </div>
       </div>
 
-      {/* Legend Footer - Compact on mobile */}
-      <div className="p-2 sm:p-4 border-t bg-muted/30">
-        <div className="flex flex-wrap items-center justify-center gap-3 sm:gap-6 text-xs sm:text-sm">
-          <div className="flex items-center gap-1.5 sm:gap-2">
-            <div className="w-3 h-3 sm:w-4 sm:h-4 rounded-md bg-emerald-500 shadow-sm" />
+      {/* Legend Footer - Compact */}
+      <div className="p-1.5 sm:p-2 border-t bg-muted/30 flex-shrink-0">
+        <div className="flex flex-wrap items-center justify-center gap-3 sm:gap-5 text-[10px] sm:text-xs">
+          <div className="flex items-center gap-1">
+            <div className="w-2.5 h-2.5 sm:w-3 sm:h-3 rounded bg-emerald-500" />
             <span className="text-muted-foreground">متاح</span>
           </div>
-          <div className="flex items-center gap-1.5 sm:gap-2">
-            <div className="w-3 h-3 sm:w-4 sm:h-4 rounded-md bg-amber-500 shadow-sm" />
+          <div className="flex items-center gap-1">
+            <div className="w-2.5 h-2.5 sm:w-3 sm:h-3 rounded bg-amber-500" />
             <span className="text-muted-foreground">محجوز</span>
           </div>
-          <div className="flex items-center gap-1.5 sm:gap-2">
-            <div className="w-3 h-3 sm:w-4 sm:h-4 rounded-md bg-rose-500 shadow-sm" />
+          <div className="flex items-center gap-1">
+            <div className="w-2.5 h-2.5 sm:w-3 sm:h-3 rounded bg-rose-500" />
             <span className="text-muted-foreground">مباع</span>
           </div>
         </div>
