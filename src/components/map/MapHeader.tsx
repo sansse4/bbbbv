@@ -33,28 +33,25 @@ export function MapHeader({
     <div className="space-y-2">
       {/* Compact Stats Row */}
       <div className="flex gap-2 overflow-x-auto scrollbar-hide items-center">
-        <div className="flex items-center gap-1.5 px-2 py-1 rounded-lg bg-primary/10 text-primary text-xs font-medium whitespace-nowrap">
-          <Home className="h-3.5 w-3.5" />
+        <div className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-primary/10 text-primary text-xs font-medium whitespace-nowrap">
+          <Home className="h-5 w-5" />
           <span>{isLoading ? "..." : stats?.total || 0}</span>
           <span className="text-muted-foreground">إجمالي</span>
         </div>
-        <div className="flex items-center gap-1.5 px-2 py-1 rounded-lg bg-emerald-500/10 text-emerald-600 text-xs font-medium whitespace-nowrap">
-          <CheckCircle className="h-3.5 w-3.5" />
+        <div className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-emerald-500/10 text-emerald-600 text-xs font-medium whitespace-nowrap">
+          <CheckCircle className="h-5 w-5" />
           <span>{isLoading ? "..." : stats?.available || 0}</span>
           <span className="text-muted-foreground">متاح</span>
         </div>
-        <div className="flex items-center gap-1.5 px-2 py-1 rounded-lg bg-amber-500/10 text-amber-600 text-xs font-medium whitespace-nowrap">
-          <Clock className="h-3.5 w-3.5" />
+        <div className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-amber-500/10 text-amber-600 text-xs font-medium whitespace-nowrap">
+          <Clock className="h-5 w-5" />
           <span>{isLoading ? "..." : stats?.reserved || 0}</span>
           <span className="text-muted-foreground">محجوز</span>
         </div>
-        <div className="flex items-center gap-1.5 px-2 py-1 rounded-lg bg-rose-500/10 text-rose-600 text-xs font-medium whitespace-nowrap">
-          <FileText className="h-3.5 w-3.5" />
+        <div className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-rose-500/10 text-rose-600 text-xs font-medium whitespace-nowrap">
+          <FileText className="h-5 w-5" />
           <span>{isLoading ? "..." : stats?.sold || 0}</span>
           <span className="text-muted-foreground">مباع</span>
-          {!isLoading && stats && (
-            <span className="text-muted-foreground/70">({soldPercentage}%)</span>
-          )}
         </div>
       </div>
 
