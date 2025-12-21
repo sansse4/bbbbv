@@ -20,8 +20,8 @@ interface FinanceSummary {
   cached_at?: string;
 }
 
-// Google Sheets endpoint - using the existing dashboard sales sheet
-const GOOGLE_SHEETS_URL = "https://script.google.com/macros/s/AKfycbxbB7cwLB1e4hjA_PoOl4wYdAf-grjGueA7kRGL2L2akYneeB1UzglbyGABYkR5L9OVuw/exec";
+// Google Sheets endpoint - using the same sheet as the Map section
+const GOOGLE_SHEETS_URL = "https://script.google.com/macros/s/AKfycbwSMozG5H01u1uVrX4wgXWyr6CHocUuqkAofnowdqBaZSVDJkoj2rOe1g58l4gQ6TPw/exec";
 
 serve(async (req) => {
   // Handle CORS preflight requests
