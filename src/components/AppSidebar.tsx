@@ -65,7 +65,7 @@ const menuItems = [{
 }];
 
 export function AppSidebar() {
-  const { open } = useSidebar();
+  const { open, setOpen } = useSidebar();
   const location = useLocation();
   const currentPath = location.pathname;
   const { role, profile, user } = useAuth();
@@ -93,6 +93,10 @@ export function AppSidebar() {
   const isActive = (path: string) => {
     if (path === "/") return currentPath === "/";
     return currentPath.startsWith(path);
+  };
+
+  const handleMenuClick = () => {
+    setOpen(false);
   };
 
   // Filter menu items based on role and department
@@ -164,6 +168,7 @@ export function AppSidebar() {
                       end={item.url === "/"} 
                       className="hover:bg-sidebar-accent transition-all duration-200" 
                       activeClassName="bg-sidebar-accent text-sidebar-primary font-medium"
+                      onClick={handleMenuClick}
                     >
                       <item.icon className={`h-5 w-5 transition-all duration-300 ${!open && 'scale-110'}`} />
                       <span className={`transition-all duration-300 ${open ? 'opacity-100 translate-x-0' : 'opacity-0 -translate-x-2 absolute'}`}>
