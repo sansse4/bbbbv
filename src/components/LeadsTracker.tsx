@@ -5,13 +5,11 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
+  Accordion,
+  AccordionContent,
+  AccordionItem,
+  AccordionTrigger,
+} from "@/components/ui/accordion";
 import {
   Dialog,
   DialogContent,
@@ -21,7 +19,7 @@ import {
 } from "@/components/ui/dialog";
 import { useImportedSales, ImportedSale } from "@/hooks/useImportedSales";
 import { useAuth } from "@/contexts/AuthContext";
-import { Users, Phone, Home, RefreshCw, MapPin, Briefcase, CheckCircle, Loader2, Edit } from "lucide-react";
+import { Users, Phone, Home, RefreshCw, MapPin, Briefcase, CheckCircle, Loader2, Edit, ChevronDown } from "lucide-react";
 import { toast } from "sonner";
 
 const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbw8PkmPH44CUvyaRdSne88de834CGKVlDDS9us34uLudfFV4itSMu4eLuKtvo0BmNgd/exec";
@@ -204,64 +202,24 @@ export const LeadsTracker = () => {
               لا يوجد عملاء محتملين حالياً
             </div>
           ) : (
-            <div className="space-y-4">
-              {/* Desktop Table View */}
-              <div className="hidden md:block overflow-x-auto">
-                <Table>
-                  <TableHeader>
-                    <TableRow>
-                      <TableHead>الاسم</TableHead>
-                      <TableHead>العنوان</TableHead>
-                      <TableHead>الهاتف</TableHead>
-                      <TableHead>المهنة</TableHead>
-                      <TableHead>عدد افراد الاسرة</TableHead>
-                      <TableHead>فئة الدار</TableHead>
-                      <TableHead>رقم الدار</TableHead>
-                      <TableHead>حالة الزبون</TableHead>
-                    </TableRow>
-                  </TableHeader>
-                  <TableBody>
-                    {leads.map((lead) => (
-                      <TableRow 
-                        key={lead.id} 
-                        className="cursor-pointer hover:bg-muted/50 transition-colors"
-                        onClick={() => openEditDialog(lead)}
-                      >
-                        <TableCell className="font-medium">{lead.name}</TableCell>
-                        <TableCell>{lead.address || "-"}</TableCell>
-                        <TableCell dir="ltr">{lead.phone}</TableCell>
-                        <TableCell>{lead.profession || "-"}</TableCell>
-                        <TableCell>{lead.familyMembers || "-"}</TableCell>
-                        <TableCell>{lead.houseCategory || "-"}</TableCell>
-                        <TableCell>{lead.houseNumber || "-"}</TableCell>
-                        <TableCell>
-                          {isReceived(lead.phone) ? (
-                            <span className="inline-flex items-center px-2 py-1 text-xs bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200 rounded-md">
-                              <CheckCircle className="h-3 w-3 ml-1" />
-                              تم الاستلام
-                            </span>
-                          ) : (
-                            <span className="inline-flex items-center px-2 py-1 text-xs text-orange-600 bg-orange-50 dark:text-orange-400 dark:bg-orange-950 rounded-md border border-orange-300 dark:border-orange-600">
-                              قيد الانتظار
-                            </span>
-                          )}
-                        </TableCell>
-                      </TableRow>
-                    ))}
-                  </TableBody>
-                </Table>
-              </div>
-
-              {/* Mobile Card View */}
-              <div className="md:hidden space-y-3">
-                {leads.map((lead) => (
-                  <Card 
-                    key={lead.id} 
-                    className="p-4 cursor-pointer hover:bg-muted/50 transition-colors"
-                    onClick={() => openEditDialog(lead)}
-                  >
-                    <div className="flex justify-between items-start mb-3">
-                      <h3 className="font-semibold">{lead.name}</h3>
+            <Accordion type="single" collapsible className="w-full space-y-2">
+              {leads.map((lead) => (
+                <AccordionItem 
+                  key={lead.id} 
+                  value={lead.id}
+                  className="border rounded-lg px-4 bg-card"
+                >
+                  <AccordionTrigger className="hover:no-underline py-4">
+                    <div className="flex items-center justify-between w-full ml-4">
+                      <div className="flex items-center gap-3">
+                        <div className="text-right">
+                          <span className="font-semibold text-foreground">{lead.name}</span>
+                          <div className="flex items-center gap-1 text-sm text-muted-foreground">
+                            <Phone className="h-3 w-3" />
+                            <span dir="ltr">{lead.phone}</span>
+                          </div>
+                        </div>
+                      </div>
                       {isReceived(lead.phone) ? (
                         <span className="inline-flex items-center px-2 py-1 text-xs bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200 rounded-md">
                           <CheckCircle className="h-3 w-3 ml-1" />
@@ -273,44 +231,77 @@ export const LeadsTracker = () => {
                         </span>
                       )}
                     </div>
-                    
-                    <div className="flex items-center gap-1 text-sm text-muted-foreground mb-2">
-                      <Phone className="h-3 w-3" />
-                      <span dir="ltr">{lead.phone}</span>
-                    </div>
-                    
-                    {lead.address && (
-                      <div className="flex items-center gap-1 text-sm text-muted-foreground mb-2">
-                        <MapPin className="h-3 w-3" />
-                        {lead.address}
+                  </AccordionTrigger>
+                  <AccordionContent className="pt-2 pb-4">
+                    <div className="space-y-4">
+                      {/* Lead Details Grid */}
+                      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 p-4 bg-muted/50 rounded-lg">
+                        {lead.address && (
+                          <div className="flex items-center gap-2">
+                            <MapPin className="h-4 w-4 text-muted-foreground" />
+                            <div>
+                              <p className="text-xs text-muted-foreground">العنوان</p>
+                              <p className="font-medium">{lead.address}</p>
+                            </div>
+                          </div>
+                        )}
+                        {lead.profession && (
+                          <div className="flex items-center gap-2">
+                            <Briefcase className="h-4 w-4 text-muted-foreground" />
+                            <div>
+                              <p className="text-xs text-muted-foreground">المهنة</p>
+                              <p className="font-medium">{lead.profession}</p>
+                            </div>
+                          </div>
+                        )}
+                        {lead.familyMembers && (
+                          <div className="flex items-center gap-2">
+                            <Users className="h-4 w-4 text-muted-foreground" />
+                            <div>
+                              <p className="text-xs text-muted-foreground">عدد أفراد الأسرة</p>
+                              <p className="font-medium">{lead.familyMembers}</p>
+                            </div>
+                          </div>
+                        )}
+                        {lead.houseCategory && (
+                          <div className="flex items-center gap-2">
+                            <Home className="h-4 w-4 text-muted-foreground" />
+                            <div>
+                              <p className="text-xs text-muted-foreground">فئة الدار</p>
+                              <p className="font-medium">{lead.houseCategory}</p>
+                            </div>
+                          </div>
+                        )}
+                        {lead.houseNumber && (
+                          <div className="flex items-center gap-2">
+                            <Home className="h-4 w-4 text-muted-foreground" />
+                            <div>
+                              <p className="text-xs text-muted-foreground">رقم الدار</p>
+                              <p className="font-medium">{lead.houseNumber}</p>
+                            </div>
+                          </div>
+                        )}
                       </div>
-                    )}
-                    
-                    {lead.profession && (
-                      <div className="flex items-center gap-1 text-sm text-muted-foreground mb-2">
-                        <Briefcase className="h-3 w-3" />
-                        {lead.profession}
+                      
+                      {/* Action Button */}
+                      <div className="flex justify-end">
+                        <Button 
+                          variant="default" 
+                          size="sm"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            openEditDialog(lead);
+                          }}
+                        >
+                          <Edit className="h-4 w-4 ml-2" />
+                          تعديل البيانات
+                        </Button>
                       </div>
-                    )}
-                    
-                    <div className="grid grid-cols-2 gap-2 text-sm text-muted-foreground">
-                      {lead.familyMembers && (
-                        <div>أفراد الأسرة: {lead.familyMembers}</div>
-                      )}
-                      {lead.houseCategory && (
-                        <div>فئة الدار: {lead.houseCategory}</div>
-                      )}
-                      {lead.houseNumber && (
-                        <div className="flex items-center gap-1">
-                          <Home className="h-3 w-3" />
-                          {lead.houseNumber}
-                        </div>
-                      )}
                     </div>
-                  </Card>
-                ))}
-              </div>
-            </div>
+                  </AccordionContent>
+                </AccordionItem>
+              ))}
+            </Accordion>
           )}
         </CardContent>
       </Card>
