@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 import { Bell } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
@@ -19,13 +20,42 @@ interface Notification {
   type: string;
   is_read: boolean;
   created_at: string;
+  reference_id: string | null;
 }
+
+// Map notification types to routes
+const getNotificationRoute = (type: string): string | null => {
+  const routeMap: Record<string, string> = {
+    'lead_assigned': '/sales',
+    'new_lead': '/sales',
+    'sale': '/sales',
+    'appointment': '/appointments',
+    'call': '/call-center',
+  };
+  return routeMap[type] || null;
+};
 
 export default function NotificationBell() {
   const [notifications, setNotifications] = useState<Notification[]>([]);
   const [unreadCount, setUnreadCount] = useState(0);
   const [open, setOpen] = useState(false);
   const { user } = useAuth();
+  const navigate = useNavigate();
+
+  // Handle notification click - navigate to relevant page
+  const handleNotificationClick = async (notification: Notification) => {
+    // Mark as read if not already
+    if (!notification.is_read) {
+      await markAsRead(notification.id);
+    }
+    
+    // Get the route for this notification type
+    const route = getNotificationRoute(notification.type);
+    if (route) {
+      setOpen(false); // Close the popover
+      navigate(route);
+    }
+  };
 
   // Fetch notifications
   useEffect(() => {
@@ -150,7 +180,7 @@ export default function NotificationBell() {
                   className={`p-4 cursor-pointer hover:bg-muted/50 transition-colors ${
                     !notification.is_read ? "bg-primary/5" : ""
                   }`}
-                  onClick={() => !notification.is_read && markAsRead(notification.id)}
+                  onClick={() => handleNotificationClick(notification)}
                 >
                   <div className="flex items-start gap-3">
                     <div
