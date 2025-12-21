@@ -71,54 +71,56 @@ export function Header() {
       <div className="flex items-center gap-2">
         <NotificationBell />
         
-        {/* Settings Dropdown */}
-        <DropdownMenu>
-          <DropdownMenuTrigger asChild>
-            <Button variant="ghost" size="icon">
-              <Settings className="h-5 w-5" />
-            </Button>
-          </DropdownMenuTrigger>
-          <DropdownMenuContent align="end" className="w-72">
-            <DropdownMenuLabel>إعدادات لوحة التحكم</DropdownMenuLabel>
-            <DropdownMenuSeparator />
-            
-            <div className="flex gap-2 px-2 py-1.5">
-              <Button variant="outline" size="sm" className="flex-1 text-xs" onClick={showAllSections}>
-                <Eye className="h-3 w-3 ml-1" />
-                إظهار الكل
+        {/* Settings Dropdown - Only visible for admins */}
+        {role?.role === 'admin' && (
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button variant="ghost" size="icon">
+                <Settings className="h-5 w-5" />
               </Button>
-              <Button variant="outline" size="sm" className="flex-1 text-xs" onClick={hideAllSections}>
-                <EyeOff className="h-3 w-3 ml-1" />
-                إخفاء الكل
-              </Button>
-            </div>
-            
-            <DropdownMenuSeparator />
-            
-            <ScrollArea className="h-64">
-              {categories.map(category => (
-                <div key={category}>
-                  <DropdownMenuLabel className="text-xs text-muted-foreground">{category}</DropdownMenuLabel>
-                  {Object.entries(visibilityLabels)
-                    .filter(([_, value]) => value.category === category)
-                    .map(([key, value]) => (
-                      <DropdownMenuItem
-                        key={key}
-                        className="cursor-pointer flex items-center justify-between"
-                        onSelect={(e) => e.preventDefault()}
-                      >
-                        <span className="text-sm">{value.label}</span>
-                        <Switch
-                          checked={visibility[key as keyof typeof visibility]}
-                          onCheckedChange={() => toggleVisibility(key as keyof typeof visibility)}
-                        />
-                      </DropdownMenuItem>
-                    ))}
-                </div>
-              ))}
-            </ScrollArea>
-          </DropdownMenuContent>
-        </DropdownMenu>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end" className="w-72">
+              <DropdownMenuLabel>إعدادات لوحة التحكم</DropdownMenuLabel>
+              <DropdownMenuSeparator />
+              
+              <div className="flex gap-2 px-2 py-1.5">
+                <Button variant="outline" size="sm" className="flex-1 text-xs" onClick={showAllSections}>
+                  <Eye className="h-3 w-3 ml-1" />
+                  إظهار الكل
+                </Button>
+                <Button variant="outline" size="sm" className="flex-1 text-xs" onClick={hideAllSections}>
+                  <EyeOff className="h-3 w-3 ml-1" />
+                  إخفاء الكل
+                </Button>
+              </div>
+              
+              <DropdownMenuSeparator />
+              
+              <ScrollArea className="h-64">
+                {categories.map(category => (
+                  <div key={category}>
+                    <DropdownMenuLabel className="text-xs text-muted-foreground">{category}</DropdownMenuLabel>
+                    {Object.entries(visibilityLabels)
+                      .filter(([_, value]) => value.category === category)
+                      .map(([key, value]) => (
+                        <DropdownMenuItem
+                          key={key}
+                          className="cursor-pointer flex items-center justify-between"
+                          onSelect={(e) => e.preventDefault()}
+                        >
+                          <span className="text-sm">{value.label}</span>
+                          <Switch
+                            checked={visibility[key as keyof typeof visibility]}
+                            onCheckedChange={() => toggleVisibility(key as keyof typeof visibility)}
+                          />
+                        </DropdownMenuItem>
+                      ))}
+                  </div>
+                ))}
+              </ScrollArea>
+            </DropdownMenuContent>
+          </DropdownMenu>
+        )}
 
         <ThemeToggle />
         
