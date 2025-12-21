@@ -4,6 +4,8 @@ import { ar } from "date-fns/locale";
 import { MetricCard } from "@/components/MetricCard";
 import { InteractiveSitePlan } from "@/components/InteractiveSitePlan";
 import { SalesTable } from "@/components/SalesTable";
+import { CollapsibleCallsList } from "@/components/CollapsibleCallsList";
+import { CollapsibleLeadsList } from "@/components/CollapsibleLeadsList";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Calendar } from "@/components/ui/calendar";
@@ -354,6 +356,12 @@ const Dashboard = () => {
 
       {/* Sales Details Table */}
       <SalesTable rows={rows} isLoading={salesLoading} />
+
+      {/* Reception and Call Center Data - Collapsible Lists */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <CollapsibleLeadsList />
+        <CollapsibleCallsList />
+      </div>
 
       {/* Interactive Site Plan - Prominent Display */}
       <div className="my-8">
