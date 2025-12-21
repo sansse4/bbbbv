@@ -1,34 +1,83 @@
-import { createContext, useContext, useState, ReactNode } from "react";
+import { createContext, useContext, useState, ReactNode, useEffect } from "react";
 
-interface DashboardSettings {
-  showData: boolean;
-  showIcons: boolean;
+interface DashboardVisibility {
+  // Metric Cards
+  showCustomersCard: boolean;
+  showSalesCard: boolean;
+  showRealPriceCard: boolean;
+  showDepositsCard: boolean;
+  // Financial Summary
+  showFinancialSummary: boolean;
+  showFinanceRealPrice: boolean;
+  showFinanceSalePrice: boolean;
+  showFinanceDownPayment: boolean;
+  showFinanceAdminCommission: boolean;
+  showFinanceRoayaCommission: boolean;
+  showFinanceNetIncome: boolean;
+  // Sections
+  showSalesTable: boolean;
+  showLeadsList: boolean;
+  showCallsList: boolean;
+  showSitePlan: boolean;
+  showCharts: boolean;
 }
 
 interface DashboardSettingsContextType {
-  settings: DashboardSettings;
-  toggleShowData: () => void;
-  toggleShowIcons: () => void;
+  visibility: DashboardVisibility;
+  toggleVisibility: (key: keyof DashboardVisibility) => void;
+  showAllSections: () => void;
+  hideAllSections: () => void;
 }
+
+const defaultVisibility: DashboardVisibility = {
+  showCustomersCard: true,
+  showSalesCard: true,
+  showRealPriceCard: true,
+  showDepositsCard: true,
+  showFinancialSummary: true,
+  showFinanceRealPrice: true,
+  showFinanceSalePrice: true,
+  showFinanceDownPayment: true,
+  showFinanceAdminCommission: true,
+  showFinanceRoayaCommission: true,
+  showFinanceNetIncome: true,
+  showSalesTable: true,
+  showLeadsList: true,
+  showCallsList: true,
+  showSitePlan: true,
+  showCharts: true,
+};
 
 const DashboardSettingsContext = createContext<DashboardSettingsContextType | undefined>(undefined);
 
 export function DashboardSettingsProvider({ children }: { children: ReactNode }) {
-  const [settings, setSettings] = useState<DashboardSettings>({
-    showData: true,
-    showIcons: true,
+  const [visibility, setVisibility] = useState<DashboardVisibility>(() => {
+    const saved = localStorage.getItem("dashboardVisibility");
+    return saved ? JSON.parse(saved) : defaultVisibility;
   });
 
-  const toggleShowData = () => {
-    setSettings(prev => ({ ...prev, showData: !prev.showData }));
+  useEffect(() => {
+    localStorage.setItem("dashboardVisibility", JSON.stringify(visibility));
+  }, [visibility]);
+
+  const toggleVisibility = (key: keyof DashboardVisibility) => {
+    setVisibility(prev => ({ ...prev, [key]: !prev[key] }));
   };
 
-  const toggleShowIcons = () => {
-    setSettings(prev => ({ ...prev, showIcons: !prev.showIcons }));
+  const showAllSections = () => {
+    setVisibility(defaultVisibility);
+  };
+
+  const hideAllSections = () => {
+    const allHidden = Object.keys(defaultVisibility).reduce((acc, key) => {
+      acc[key as keyof DashboardVisibility] = false;
+      return acc;
+    }, {} as DashboardVisibility);
+    setVisibility(allHidden);
   };
 
   return (
-    <DashboardSettingsContext.Provider value={{ settings, toggleShowData, toggleShowIcons }}>
+    <DashboardSettingsContext.Provider value={{ visibility, toggleVisibility, showAllSections, hideAllSections }}>
       {children}
     </DashboardSettingsContext.Provider>
   );

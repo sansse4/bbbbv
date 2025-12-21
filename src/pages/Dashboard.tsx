@@ -51,7 +51,7 @@ const COLORS = ["hsl(var(--chart-1))", "hsl(var(--chart-2))", "hsl(var(--chart-3
 const Dashboard = () => {
   const [dateFrom, setDateFrom] = useState<Date | undefined>(undefined);
   const [dateTo, setDateTo] = useState<Date | undefined>(undefined);
-  const { settings } = useDashboardSettings();
+  const { visibility } = useDashboardSettings();
 
   const { total: totalDeposits, isLoading: depositsLoading, refetch: refetchDeposits } = useTotalDeposits();
   const { data: financeSummary, isLoading: financeLoading, error: financeError, refetch: refetchFinance } = useFinanceSummary();
@@ -187,300 +187,318 @@ const Dashboard = () => {
 
       {/* Metrics Grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-        <MetricCard
-          title="عدد العملاء"
-          value={salesLoading ? "..." : customersCount.toString()}
-          icon={Users}
-        />
-        <MetricCard
-          title="إجمالي المبيعات"
-          value={salesLoading ? "..." : formatCurrency(totals?.salePrice || 0)}
-          icon={DollarSign}
-        />
-        <MetricCard
-          title="السعر الحقيقي"
-          value={salesLoading ? "..." : formatCurrency(totals?.realPrice || 0)}
-          icon={Banknote}
-        />
-        <Card className="hover:shadow-lg transition-shadow bg-primary/5 border-primary/20">
-          <CardContent className="p-6">
-            <div className="flex items-start justify-between">
-              <div className="flex-1">
-                <p className="text-sm font-medium text-muted-foreground mb-2">مجموع المقدمات</p>
-                <h3 className="text-3xl font-bold text-foreground mb-1">
-                  {settings.showData ? (depositsLoading ? "..." : formatCurrency(totalDeposits)) : "••••••"}
-                </h3>
-              </div>
-              <div className="flex flex-col items-center gap-2">
-                {settings.showIcons && (
+        {visibility.showCustomersCard && (
+          <MetricCard
+            title="عدد العملاء"
+            value={salesLoading ? "..." : customersCount.toString()}
+            icon={Users}
+          />
+        )}
+        {visibility.showSalesCard && (
+          <MetricCard
+            title="إجمالي المبيعات"
+            value={salesLoading ? "..." : formatCurrency(totals?.salePrice || 0)}
+            icon={DollarSign}
+          />
+        )}
+        {visibility.showRealPriceCard && (
+          <MetricCard
+            title="السعر الحقيقي"
+            value={salesLoading ? "..." : formatCurrency(totals?.realPrice || 0)}
+            icon={Banknote}
+          />
+        )}
+        {visibility.showDepositsCard && (
+          <Card className="hover:shadow-lg transition-shadow bg-primary/5 border-primary/20">
+            <CardContent className="p-6">
+              <div className="flex items-start justify-between">
+                <div className="flex-1">
+                  <p className="text-sm font-medium text-muted-foreground mb-2">مجموع المقدمات</p>
+                  <h3 className="text-3xl font-bold text-foreground mb-1">
+                    {depositsLoading ? "..." : formatCurrency(totalDeposits)}
+                  </h3>
+                </div>
+                <div className="flex flex-col items-center gap-2">
                   <div className="h-12 w-12 rounded-lg bg-primary/10 flex items-center justify-center">
                     <DollarSign className="h-6 w-6 text-primary" />
                   </div>
-                )}
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={handleRefreshAll}
-                  disabled={depositsLoading || salesLoading}
-                  className="text-xs"
-                >
-                  <RefreshCw className={`h-3 w-3 mr-1 ${depositsLoading || salesLoading ? "animate-spin" : ""}`} />
-                  تحديث
-                </Button>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={handleRefreshAll}
+                    disabled={depositsLoading || salesLoading}
+                    className="text-xs"
+                  >
+                    <RefreshCw className={`h-3 w-3 mr-1 ${depositsLoading || salesLoading ? "animate-spin" : ""}`} />
+                    تحديث
+                  </Button>
+                </div>
               </div>
-            </div>
-          </CardContent>
-        </Card>
+            </CardContent>
+          </Card>
+        )}
       </div>
 
       {/* Financial Summary Section */}
-      <Card className="border-primary/20">
-        <CardHeader className="flex flex-row items-center justify-between">
-          <CardTitle className="flex items-center gap-2">
-            <Calculator className="h-5 w-5 text-primary" />
-            ملخص مالي
-          </CardTitle>
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={refetchFinance}
-            disabled={financeLoading}
-          >
-            <RefreshCw className={cn("h-4 w-4 ml-1", financeLoading && "animate-spin")} />
-            تحديث
-          </Button>
-        </CardHeader>
-        <CardContent>
-          {financeError ? (
-            <div className="p-4 text-center text-destructive bg-destructive/10 rounded-lg">
-              <p>خطأ في جلب البيانات المالية</p>
-              <p className="text-sm text-muted-foreground mt-1">{financeError}</p>
-            </div>
-          ) : (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-4">
-              <Card className="bg-muted/30">
-                <CardContent className="p-4">
-                  <div className="flex items-center gap-3">
-                    {settings.showIcons && (
-                      <div className="h-10 w-10 rounded-lg bg-primary/10 flex items-center justify-center">
-                        <Banknote className="h-5 w-5 text-primary" />
+      {visibility.showFinancialSummary && (
+        <Card className="border-primary/20">
+          <CardHeader className="flex flex-row items-center justify-between">
+            <CardTitle className="flex items-center gap-2">
+              <Calculator className="h-5 w-5 text-primary" />
+              ملخص مالي
+            </CardTitle>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={refetchFinance}
+              disabled={financeLoading}
+            >
+              <RefreshCw className={cn("h-4 w-4 ml-1", financeLoading && "animate-spin")} />
+              تحديث
+            </Button>
+          </CardHeader>
+          <CardContent>
+            {financeError ? (
+              <div className="p-4 text-center text-destructive bg-destructive/10 rounded-lg">
+                <p>خطأ في جلب البيانات المالية</p>
+                <p className="text-sm text-muted-foreground mt-1">{financeError}</p>
+              </div>
+            ) : (
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-4">
+                {visibility.showFinanceRealPrice && (
+                  <Card className="bg-muted/30">
+                    <CardContent className="p-4">
+                      <div className="flex items-center gap-3">
+                        <div className="h-10 w-10 rounded-lg bg-primary/10 flex items-center justify-center">
+                          <Banknote className="h-5 w-5 text-primary" />
+                        </div>
+                        <div>
+                          <p className="text-xs text-muted-foreground">السعر الحقيقي</p>
+                          <p className="text-lg font-bold">
+                            {financeLoading ? "..." : formatCurrency(financeSummary?.total_real_price || 0)}
+                          </p>
+                        </div>
                       </div>
-                    )}
-                    <div>
-                      <p className="text-xs text-muted-foreground">السعر الحقيقي</p>
-                      <p className="text-lg font-bold">
-                        {settings.showData ? (financeLoading ? "..." : formatCurrency(financeSummary?.total_real_price || 0)) : "••••••"}
-                      </p>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-              
-              <Card className="bg-muted/30">
-                <CardContent className="p-4">
-                  <div className="flex items-center gap-3">
-                    {settings.showIcons && (
-                      <div className="h-10 w-10 rounded-lg bg-chart-1/10 flex items-center justify-center">
-                        <DollarSign className="h-5 w-5 text-chart-1" />
+                    </CardContent>
+                  </Card>
+                )}
+                
+                {visibility.showFinanceSalePrice && (
+                  <Card className="bg-muted/30">
+                    <CardContent className="p-4">
+                      <div className="flex items-center gap-3">
+                        <div className="h-10 w-10 rounded-lg bg-chart-1/10 flex items-center justify-center">
+                          <DollarSign className="h-5 w-5 text-chart-1" />
+                        </div>
+                        <div>
+                          <p className="text-xs text-muted-foreground">سعر البيع</p>
+                          <p className="text-lg font-bold">
+                            {financeLoading ? "..." : formatCurrency(financeSummary?.total_sale_price || 0)}
+                          </p>
+                        </div>
                       </div>
-                    )}
-                    <div>
-                      <p className="text-xs text-muted-foreground">سعر البيع</p>
-                      <p className="text-lg font-bold">
-                        {settings.showData ? (financeLoading ? "..." : formatCurrency(financeSummary?.total_sale_price || 0)) : "••••••"}
-                      </p>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-              
-              <Card className="bg-muted/30">
-                <CardContent className="p-4">
-                  <div className="flex items-center gap-3">
-                    {settings.showIcons && (
-                      <div className="h-10 w-10 rounded-lg bg-chart-2/10 flex items-center justify-center">
-                        <DollarSign className="h-5 w-5 text-chart-2" />
+                    </CardContent>
+                  </Card>
+                )}
+                
+                {visibility.showFinanceDownPayment && (
+                  <Card className="bg-muted/30">
+                    <CardContent className="p-4">
+                      <div className="flex items-center gap-3">
+                        <div className="h-10 w-10 rounded-lg bg-chart-2/10 flex items-center justify-center">
+                          <DollarSign className="h-5 w-5 text-chart-2" />
+                        </div>
+                        <div>
+                          <p className="text-xs text-muted-foreground">قيمة المقدمة</p>
+                          <p className="text-lg font-bold">
+                            {financeLoading ? "..." : formatCurrency(financeSummary?.total_down_payment || 0)}
+                          </p>
+                        </div>
                       </div>
-                    )}
-                    <div>
-                      <p className="text-xs text-muted-foreground">قيمة المقدمة</p>
-                      <p className="text-lg font-bold">
-                        {settings.showData ? (financeLoading ? "..." : formatCurrency(financeSummary?.total_down_payment || 0)) : "••••••"}
-                      </p>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-              
-              <Card className="bg-muted/30">
-                <CardContent className="p-4">
-                  <div className="flex items-center gap-3">
-                    {settings.showIcons && (
-                      <div className="h-10 w-10 rounded-lg bg-chart-3/10 flex items-center justify-center">
-                        <Percent className="h-5 w-5 text-chart-3" />
+                    </CardContent>
+                  </Card>
+                )}
+                
+                {visibility.showFinanceAdminCommission && (
+                  <Card className="bg-muted/30">
+                    <CardContent className="p-4">
+                      <div className="flex items-center gap-3">
+                        <div className="h-10 w-10 rounded-lg bg-chart-3/10 flex items-center justify-center">
+                          <Percent className="h-5 w-5 text-chart-3" />
+                        </div>
+                        <div>
+                          <p className="text-xs text-muted-foreground">العمولة الإدارية</p>
+                          <p className="text-lg font-bold">
+                            {financeLoading ? "..." : formatCurrency(financeSummary?.total_admin_commission || 0)}
+                          </p>
+                        </div>
                       </div>
-                    )}
-                    <div>
-                      <p className="text-xs text-muted-foreground">العمولة الإدارية</p>
-                      <p className="text-lg font-bold">
-                        {settings.showData ? (financeLoading ? "..." : formatCurrency(financeSummary?.total_admin_commission || 0)) : "••••••"}
-                      </p>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-              
-              <Card className="bg-muted/30">
-                <CardContent className="p-4">
-                  <div className="flex items-center gap-3">
-                    {settings.showIcons && (
-                      <div className="h-10 w-10 rounded-lg bg-chart-4/10 flex items-center justify-center">
-                        <Building2 className="h-5 w-5 text-chart-4" />
+                    </CardContent>
+                  </Card>
+                )}
+                
+                {visibility.showFinanceRoayaCommission && (
+                  <Card className="bg-muted/30">
+                    <CardContent className="p-4">
+                      <div className="flex items-center gap-3">
+                        <div className="h-10 w-10 rounded-lg bg-chart-4/10 flex items-center justify-center">
+                          <Building2 className="h-5 w-5 text-chart-4" />
+                        </div>
+                        <div>
+                          <p className="text-xs text-muted-foreground">عمولة شركة رؤية</p>
+                          <p className="text-lg font-bold">
+                            {financeLoading ? "..." : formatCurrency(financeSummary?.total_roaya_commission || 0)}
+                          </p>
+                        </div>
                       </div>
-                    )}
-                    <div>
-                      <p className="text-xs text-muted-foreground">عمولة شركة رؤية</p>
-                      <p className="text-lg font-bold">
-                        {settings.showData ? (financeLoading ? "..." : formatCurrency(financeSummary?.total_roaya_commission || 0)) : "••••••"}
-                      </p>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-              
-              <Card className="bg-success/10 border-success/20">
-                <CardContent className="p-4">
-                  <div className="flex items-center gap-3">
-                    {settings.showIcons && (
-                      <div className="h-10 w-10 rounded-lg bg-success/20 flex items-center justify-center">
-                        <Receipt className="h-5 w-5 text-success" />
+                    </CardContent>
+                  </Card>
+                )}
+                
+                {visibility.showFinanceNetIncome && (
+                  <Card className="bg-success/10 border-success/20">
+                    <CardContent className="p-4">
+                      <div className="flex items-center gap-3">
+                        <div className="h-10 w-10 rounded-lg bg-success/20 flex items-center justify-center">
+                          <Receipt className="h-5 w-5 text-success" />
+                        </div>
+                        <div>
+                          <p className="text-xs text-muted-foreground">صافي الدخل</p>
+                          <p className="text-lg font-bold text-success">
+                            {financeLoading ? "..." : formatCurrency(financeSummary?.net_income || 0)}
+                          </p>
+                        </div>
                       </div>
-                    )}
-                    <div>
-                      <p className="text-xs text-muted-foreground">صافي الدخل</p>
-                      <p className="text-lg font-bold text-success">
-                        {settings.showData ? (financeLoading ? "..." : formatCurrency(financeSummary?.net_income || 0)) : "••••••"}
-                      </p>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-            </div>
-          )}
-        </CardContent>
-      </Card>
+                    </CardContent>
+                  </Card>
+                )}
+              </div>
+            )}
+          </CardContent>
+        </Card>
+      )}
 
       {/* Sales Details Table */}
-      <SalesTable rows={rows} isLoading={salesLoading} />
+      {visibility.showSalesTable && (
+        <SalesTable rows={rows} isLoading={salesLoading} />
+      )}
 
       {/* Reception and Call Center Data - Collapsible Lists */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <CollapsibleLeadsList />
-        <CollapsibleCallsList />
-      </div>
+      {(visibility.showLeadsList || visibility.showCallsList) && (
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          {visibility.showLeadsList && <CollapsibleLeadsList />}
+          {visibility.showCallsList && <CollapsibleCallsList />}
+        </div>
+      )}
 
       {/* Interactive Site Plan - Prominent Display */}
-      <div className="my-8">
-        <InteractiveSitePlan />
-      </div>
+      {visibility.showSitePlan && (
+        <div className="my-8">
+          <InteractiveSitePlan />
+        </div>
+      )}
 
-      {/* Charts Row 1 */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <TrendingUp className="h-5 w-5 text-primary" />
-              أداء موظفي المبيعات
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <ResponsiveContainer width="100%" height={300}>
-              <BarChart data={salesByPerson}>
-                <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
-                <XAxis dataKey="name" stroke="hsl(var(--muted-foreground))" />
-                <YAxis stroke="hsl(var(--muted-foreground))" />
-                <Tooltip
-                  contentStyle={{
-                    backgroundColor: "hsl(var(--card))",
-                    border: "1px solid hsl(var(--border))",
-                    borderRadius: "var(--radius)",
-                  }}
-                  formatter={(value: number) => formatCurrency(value)}
-                />
-                <Legend />
-                <Bar dataKey="sales" name="عدد المبيعات" fill="hsl(var(--chart-1))" radius={[8, 8, 0, 0]} />
-              </BarChart>
-            </ResponsiveContainer>
-          </CardContent>
-        </Card>
+      {/* Charts */}
+      {visibility.showCharts && (
+        <>
+          {/* Charts Row 1 */}
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <TrendingUp className="h-5 w-5 text-primary" />
+                  أداء موظفي المبيعات
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <ResponsiveContainer width="100%" height={300}>
+                  <BarChart data={salesByPerson}>
+                    <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
+                    <XAxis dataKey="name" stroke="hsl(var(--muted-foreground))" />
+                    <YAxis stroke="hsl(var(--muted-foreground))" />
+                    <Tooltip
+                      contentStyle={{
+                        backgroundColor: "hsl(var(--card))",
+                        border: "1px solid hsl(var(--border))",
+                        borderRadius: "var(--radius)",
+                      }}
+                      formatter={(value: number) => formatCurrency(value)}
+                    />
+                    <Legend />
+                    <Bar dataKey="sales" name="عدد المبيعات" fill="hsl(var(--chart-1))" radius={[8, 8, 0, 0]} />
+                  </BarChart>
+                </ResponsiveContainer>
+              </CardContent>
+            </Card>
 
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <FileText className="h-5 w-5 text-accent" />
-              إيرادات حسب الموظف
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <ResponsiveContainer width="100%" height={300}>
-              <BarChart data={salesByPerson}>
-                <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
-                <XAxis dataKey="name" stroke="hsl(var(--muted-foreground))" />
-                <YAxis stroke="hsl(var(--muted-foreground))" tickFormatter={(value) => `${(value / 1000000000).toFixed(1)}B`} />
-                <Tooltip
-                  contentStyle={{
-                    backgroundColor: "hsl(var(--card))",
-                    border: "1px solid hsl(var(--border))",
-                    borderRadius: "var(--radius)",
-                  }}
-                  formatter={(value: number) => formatCurrency(value)}
-                />
-                <Bar dataKey="revenue" name="الإيرادات" fill="hsl(var(--chart-2))" radius={[8, 8, 0, 0]} />
-              </BarChart>
-            </ResponsiveContainer>
-          </CardContent>
-        </Card>
-      </div>
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <FileText className="h-5 w-5 text-accent" />
+                  إيرادات حسب الموظف
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <ResponsiveContainer width="100%" height={300}>
+                  <BarChart data={salesByPerson}>
+                    <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
+                    <XAxis dataKey="name" stroke="hsl(var(--muted-foreground))" />
+                    <YAxis stroke="hsl(var(--muted-foreground))" tickFormatter={(value) => `${(value / 1000000000).toFixed(1)}B`} />
+                    <Tooltip
+                      contentStyle={{
+                        backgroundColor: "hsl(var(--card))",
+                        border: "1px solid hsl(var(--border))",
+                        borderRadius: "var(--radius)",
+                      }}
+                      formatter={(value: number) => formatCurrency(value)}
+                    />
+                    <Bar dataKey="revenue" name="الإيرادات" fill="hsl(var(--chart-2))" radius={[8, 8, 0, 0]} />
+                  </BarChart>
+                </ResponsiveContainer>
+              </CardContent>
+            </Card>
+          </div>
 
-      {/* Charts Row 2 */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <Phone className="h-5 w-5 text-success" />
-              توزيع طرق الدفع
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <ResponsiveContainer width="100%" height={300}>
-              <PieChart>
-                <Pie
-                  data={paymentDistribution}
-                  cx="50%"
-                  cy="50%"
-                  labelLine={false}
-                  label={({ name, percent }) => `${name}: ${(percent * 100).toFixed(0)}%`}
-                  outerRadius={100}
-                  fill="#8884d8"
-                  dataKey="value"
-                >
-                  {paymentDistribution.map((entry, index) => (
-                    <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
-                  ))}
-                </Pie>
-                <Tooltip
-                  contentStyle={{
-                    backgroundColor: "hsl(var(--card))",
-                    border: "1px solid hsl(var(--border))",
-                    borderRadius: "var(--radius)",
-                  }}
-                />
-              </PieChart>
-            </ResponsiveContainer>
-          </CardContent>
-        </Card>
-
-      </div>
+          {/* Charts Row 2 */}
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <Phone className="h-5 w-5 text-success" />
+                  توزيع طرق الدفع
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <ResponsiveContainer width="100%" height={300}>
+                  <PieChart>
+                    <Pie
+                      data={paymentDistribution}
+                      cx="50%"
+                      cy="50%"
+                      labelLine={false}
+                      label={({ name, percent }) => `${name}: ${(percent * 100).toFixed(0)}%`}
+                      outerRadius={100}
+                      fill="#8884d8"
+                      dataKey="value"
+                    >
+                      {paymentDistribution.map((entry, index) => (
+                        <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                      ))}
+                    </Pie>
+                    <Tooltip
+                      contentStyle={{
+                        backgroundColor: "hsl(var(--card))",
+                        border: "1px solid hsl(var(--border))",
+                        borderRadius: "var(--radius)",
+                      }}
+                    />
+                  </PieChart>
+                </ResponsiveContainer>
+              </CardContent>
+            </Card>
+          </div>
+        </>
+      )}
     </div>
   );
 };
