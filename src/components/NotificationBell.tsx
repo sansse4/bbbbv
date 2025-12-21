@@ -26,6 +26,7 @@ interface Notification {
 // Map notification types to routes
 const getNotificationRoute = (type: string): string | null => {
   const routeMap: Record<string, string> = {
+    'lead': '/sales',
     'lead_assigned': '/sales',
     'new_lead': '/sales',
     'sale': '/sales',
