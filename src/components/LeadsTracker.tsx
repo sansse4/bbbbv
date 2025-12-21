@@ -42,6 +42,7 @@ export const LeadsTracker = () => {
     employeeName: "",
   });
   const [isSaving, setIsSaving] = useState(false);
+  const [isOpen, setIsOpen] = useState(false);
 
   // Load received status from localStorage
   useEffect(() => {
@@ -179,8 +180,6 @@ export const LeadsTracker = () => {
       </Card>
     );
   }
-
-  const [isOpen, setIsOpen] = useState(false);
 
   return (
     <>
