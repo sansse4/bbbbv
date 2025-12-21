@@ -5,11 +5,10 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import {
-  Accordion,
-  AccordionContent,
-  AccordionItem,
-  AccordionTrigger,
-} from "@/components/ui/accordion";
+  Collapsible,
+  CollapsibleContent,
+  CollapsibleTrigger,
+} from "@/components/ui/collapsible";
 import {
   Dialog,
   DialogContent,
@@ -181,129 +180,74 @@ export const LeadsTracker = () => {
     );
   }
 
+  const [isOpen, setIsOpen] = useState(false);
+
   return (
     <>
       <Card>
-        <CardHeader className="flex flex-row items-center justify-between">
-          <CardTitle className="flex items-center gap-2">
-            <Users className="h-5 w-5" />
-            العملاء المحتملين ({leads.length})
-          </CardTitle>
-          <Button variant="outline" size="sm" onClick={refetch}>
-            <RefreshCw className="h-4 w-4 ml-2" />
-            تحديث
-          </Button>
-        </CardHeader>
-        <CardContent>
-          {error ? (
-            <div className="text-center py-8 text-destructive">{error}</div>
-          ) : leads.length === 0 ? (
-            <div className="text-center py-8 text-muted-foreground">
-              لا يوجد عملاء محتملين حالياً
-            </div>
-          ) : (
-            <Accordion type="single" collapsible className="w-full space-y-2">
-              {leads.map((lead) => (
-                <AccordionItem 
-                  key={lead.id} 
-                  value={lead.id}
-                  className="border rounded-lg px-4 bg-card"
-                >
-                  <AccordionTrigger className="hover:no-underline py-4">
-                    <div className="flex items-center justify-between w-full ml-4">
-                      <div className="flex items-center gap-3">
-                        <div className="text-right">
-                          <span className="font-semibold text-foreground">{lead.name}</span>
-                          <div className="flex items-center gap-1 text-sm text-muted-foreground">
-                            <Phone className="h-3 w-3" />
-                            <span dir="ltr">{lead.phone}</span>
+        <Collapsible open={isOpen} onOpenChange={setIsOpen}>
+          <CardHeader className="flex flex-row items-center justify-between p-0">
+            <CollapsibleTrigger asChild>
+              <Button 
+                variant="ghost" 
+                className="flex-1 flex items-center justify-between p-6 h-auto hover:bg-muted/50 rounded-t-lg"
+              >
+                <CardTitle className="flex items-center gap-2 text-base font-semibold">
+                  <Users className="h-5 w-5" />
+                  العملاء المحتملين ({leads.length})
+                </CardTitle>
+                <ChevronDown className={`h-5 w-5 transition-transform duration-200 ${isOpen ? 'rotate-180' : ''}`} />
+              </Button>
+            </CollapsibleTrigger>
+            <Button variant="outline" size="sm" onClick={refetch} className="ml-4 mr-4">
+              <RefreshCw className="h-4 w-4 ml-2" />
+              تحديث
+            </Button>
+          </CardHeader>
+          <CollapsibleContent>
+            <CardContent>
+              {error ? (
+                <div className="text-center py-8 text-destructive">{error}</div>
+              ) : leads.length === 0 ? (
+                <div className="text-center py-8 text-muted-foreground">
+                  لا يوجد عملاء محتملين حالياً
+                </div>
+              ) : (
+                <div className="space-y-2">
+                  {leads.map((lead) => (
+                    <div
+                      key={lead.id}
+                      className="border rounded-lg p-4 bg-card hover:bg-muted/30 cursor-pointer transition-colors"
+                      onClick={() => openEditDialog(lead)}
+                    >
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center gap-3">
+                          <div className="text-right">
+                            <span className="font-semibold text-foreground">{lead.name}</span>
+                            <div className="flex items-center gap-1 text-sm text-muted-foreground">
+                              <Phone className="h-3 w-3" />
+                              <span dir="ltr">{lead.phone}</span>
+                            </div>
                           </div>
                         </div>
-                      </div>
-                      {isReceived(lead.phone) ? (
-                        <span className="inline-flex items-center px-2 py-1 text-xs bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200 rounded-md">
-                          <CheckCircle className="h-3 w-3 ml-1" />
-                          تم الاستلام
-                        </span>
-                      ) : (
-                        <span className="inline-flex items-center px-2 py-1 text-xs text-orange-600 bg-orange-50 dark:text-orange-400 dark:bg-orange-950 rounded-md border border-orange-300 dark:border-orange-600">
-                          قيد الانتظار
-                        </span>
-                      )}
-                    </div>
-                  </AccordionTrigger>
-                  <AccordionContent className="pt-2 pb-4">
-                    <div className="space-y-4">
-                      {/* Lead Details Grid */}
-                      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 p-4 bg-muted/50 rounded-lg">
-                        {lead.address && (
-                          <div className="flex items-center gap-2">
-                            <MapPin className="h-4 w-4 text-muted-foreground" />
-                            <div>
-                              <p className="text-xs text-muted-foreground">العنوان</p>
-                              <p className="font-medium">{lead.address}</p>
-                            </div>
-                          </div>
+                        {isReceived(lead.phone) ? (
+                          <span className="inline-flex items-center px-2 py-1 text-xs bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200 rounded-md">
+                            <CheckCircle className="h-3 w-3 ml-1" />
+                            تم الاستلام
+                          </span>
+                        ) : (
+                          <span className="inline-flex items-center px-2 py-1 text-xs text-orange-600 bg-orange-50 dark:text-orange-400 dark:bg-orange-950 rounded-md border border-orange-300 dark:border-orange-600">
+                            قيد الانتظار
+                          </span>
                         )}
-                        {lead.profession && (
-                          <div className="flex items-center gap-2">
-                            <Briefcase className="h-4 w-4 text-muted-foreground" />
-                            <div>
-                              <p className="text-xs text-muted-foreground">المهنة</p>
-                              <p className="font-medium">{lead.profession}</p>
-                            </div>
-                          </div>
-                        )}
-                        {lead.familyMembers && (
-                          <div className="flex items-center gap-2">
-                            <Users className="h-4 w-4 text-muted-foreground" />
-                            <div>
-                              <p className="text-xs text-muted-foreground">عدد أفراد الأسرة</p>
-                              <p className="font-medium">{lead.familyMembers}</p>
-                            </div>
-                          </div>
-                        )}
-                        {lead.houseCategory && (
-                          <div className="flex items-center gap-2">
-                            <Home className="h-4 w-4 text-muted-foreground" />
-                            <div>
-                              <p className="text-xs text-muted-foreground">فئة الدار</p>
-                              <p className="font-medium">{lead.houseCategory}</p>
-                            </div>
-                          </div>
-                        )}
-                        {lead.houseNumber && (
-                          <div className="flex items-center gap-2">
-                            <Home className="h-4 w-4 text-muted-foreground" />
-                            <div>
-                              <p className="text-xs text-muted-foreground">رقم الدار</p>
-                              <p className="font-medium">{lead.houseNumber}</p>
-                            </div>
-                          </div>
-                        )}
-                      </div>
-                      
-                      {/* Action Button */}
-                      <div className="flex justify-end">
-                        <Button 
-                          variant="default" 
-                          size="sm"
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            openEditDialog(lead);
-                          }}
-                        >
-                          <Edit className="h-4 w-4 ml-2" />
-                          تعديل البيانات
-                        </Button>
                       </div>
                     </div>
-                  </AccordionContent>
-                </AccordionItem>
-              ))}
-            </Accordion>
-          )}
-        </CardContent>
+                  ))}
+                </div>
+              )}
+            </CardContent>
+          </CollapsibleContent>
+        </Collapsible>
       </Card>
 
       {/* Edit Dialog */}
