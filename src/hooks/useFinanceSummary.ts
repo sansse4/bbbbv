@@ -24,7 +24,10 @@ export function useFinanceSummary(): UseFinanceSummaryReturn {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  const fetchData = useCallback(async () => {
+  const fetchData = useCallback(async (retryCount = 0) => {
+    const MAX_RETRIES = 3;
+    const RETRY_DELAY = 1000;
+
     setIsLoading(true);
     setError(null);
 
@@ -47,6 +50,14 @@ export function useFinanceSummary(): UseFinanceSummaryReturn {
       setData(responseData as FinanceSummary);
     } catch (err) {
       console.error("Error fetching finance summary:", err);
+      
+      // Retry logic
+      if (retryCount < MAX_RETRIES) {
+        console.log(`Retrying finance summary... attempt ${retryCount + 1} of ${MAX_RETRIES}`);
+        setTimeout(() => fetchData(retryCount + 1), RETRY_DELAY * (retryCount + 1));
+        return;
+      }
+      
       setError(err instanceof Error ? err.message : "حدث خطأ أثناء جلب البيانات المالية");
     } finally {
       setIsLoading(false);
@@ -57,5 +68,5 @@ export function useFinanceSummary(): UseFinanceSummaryReturn {
     fetchData();
   }, [fetchData]);
 
-  return { data, isLoading, error, refetch: fetchData };
+  return { data, isLoading, error, refetch: () => fetchData(0) };
 }
