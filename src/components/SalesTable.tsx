@@ -109,41 +109,85 @@ export const SalesTable = ({ rows, isLoading }: SalesTableProps) => {
 
     const doc = new jsPDF({ orientation: "landscape" });
     
-    // Add title
-    doc.setFontSize(18);
-    doc.text("Sales Details Report", 14, 22);
-    doc.setFontSize(11);
-    doc.text(`Generated: ${format(new Date(), "yyyy-MM-dd HH:mm")}`, 14, 30);
-    doc.text(`Total Records: ${filteredRows.length}`, 14, 36);
-
-    // Prepare table data
-    const tableData = filteredRows.map((row, index) => [
-      (index + 1).toString(),
-      row.buyerName || "-",
-      row.unitNo?.toString() || "-",
-      formatCurrency(row.area),
-      formatCurrency(row.salePrice),
-      formatCurrency(row.downPayment),
-      row.paymentType || "-",
-      row.salesPerson || "-",
-      row.accountantName || "-",
-      row.category || "-",
-      row.deliveryDate || "-",
-    ]);
-
-    // Add table
-    autoTable(doc, {
-      head: [["#", "Buyer Name", "Unit No", "Area (m2)", "Sale Price", "Down Payment", "Payment Type", "Sales Person", "Accountant", "Category", "Delivery Date"]],
-      body: tableData,
-      startY: 42,
-      styles: { fontSize: 8 },
-      headStyles: { fillColor: [99, 102, 241] },
-    });
-
-    // Save PDF
-    doc.save(`sales-report-${format(new Date(), "yyyy-MM-dd")}.pdf`);
+    // Add logo
+    const logoUrl = "/roaya-logo.png";
+    const img = new Image();
+    img.src = logoUrl;
     
-    toast({ title: "تم تحميل الملف بنجاح" });
+    // Calculate totals
+    const totalSalePrice = filteredRows.reduce((sum, row) => sum + (typeof row.salePrice === 'number' ? row.salePrice : 0), 0);
+    const totalDownPayment = filteredRows.reduce((sum, row) => sum + (typeof row.downPayment === 'number' ? row.downPayment : 0), 0);
+    const totalArea = filteredRows.reduce((sum, row) => sum + (typeof row.area === 'number' ? row.area : 0), 0);
+
+    const generatePDF = () => {
+      // Try to add logo
+      try {
+        doc.addImage(img, "PNG", 14, 10, 30, 30);
+      } catch {
+        // Logo failed to load, continue without it
+      }
+      
+      // Add title
+      doc.setFontSize(20);
+      doc.setTextColor(99, 102, 241);
+      doc.text("Roaya Real Estate", 50, 22);
+      doc.setFontSize(14);
+      doc.setTextColor(100, 100, 100);
+      doc.text("Sales Details Report", 50, 30);
+      doc.setFontSize(10);
+      doc.setTextColor(0, 0, 0);
+      doc.text(`Generated: ${format(new Date(), "yyyy-MM-dd HH:mm")}`, 50, 38);
+      doc.text(`Total Records: ${filteredRows.length}`, 150, 38);
+
+      // Prepare table data
+      const tableData = filteredRows.map((row, index) => [
+        (index + 1).toString(),
+        row.buyerName || "-",
+        row.unitNo?.toString() || "-",
+        formatCurrency(row.area),
+        formatCurrency(row.salePrice),
+        formatCurrency(row.downPayment),
+        row.paymentType || "-",
+        row.salesPerson || "-",
+        row.accountantName || "-",
+        row.category || "-",
+        row.deliveryDate || "-",
+      ]);
+
+      // Add table
+      autoTable(doc, {
+        head: [["#", "Buyer Name", "Unit No", "Area (m2)", "Sale Price", "Down Payment", "Payment Type", "Sales Person", "Accountant", "Category", "Delivery Date"]],
+        body: tableData,
+        startY: 45,
+        styles: { fontSize: 8 },
+        headStyles: { fillColor: [99, 102, 241] },
+      });
+
+      // Add summary section
+      const finalY = (doc as jsPDF & { lastAutoTable?: { finalY: number } }).lastAutoTable?.finalY || 50;
+      
+      doc.setFillColor(245, 245, 255);
+      doc.rect(14, finalY + 10, 268, 30, "F");
+      
+      doc.setFontSize(12);
+      doc.setTextColor(99, 102, 241);
+      doc.text("Summary", 20, finalY + 20);
+      
+      doc.setFontSize(10);
+      doc.setTextColor(0, 0, 0);
+      doc.text(`Total Area: ${formatCurrency(totalArea)} m2`, 20, finalY + 30);
+      doc.text(`Total Sales: ${formatCurrency(totalSalePrice)}`, 100, finalY + 30);
+      doc.text(`Total Down Payments: ${formatCurrency(totalDownPayment)}`, 180, finalY + 30);
+
+      // Save PDF
+      doc.save(`sales-report-${format(new Date(), "yyyy-MM-dd")}.pdf`);
+      
+      toast({ title: "تم تحميل الملف بنجاح" });
+    };
+
+    // Try to load image first
+    img.onload = generatePDF;
+    img.onerror = generatePDF;
   };
 
   return (
