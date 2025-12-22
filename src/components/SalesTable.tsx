@@ -23,8 +23,12 @@ import {
   CollapsibleContent,
   CollapsibleTrigger,
 } from "@/components/ui/collapsible";
-import { Search, Filter, X, FileSpreadsheet, ChevronLeft, ChevronRight, ChevronDown, ChevronUp } from "lucide-react";
+import { Search, Filter, X, FileSpreadsheet, ChevronLeft, ChevronRight, ChevronDown, ChevronUp, Download } from "lucide-react";
 import { SalesRow } from "@/hooks/useSalesSheetData";
+import { format } from "date-fns";
+import jsPDF from "jspdf";
+import autoTable from "jspdf-autotable";
+import { toast } from "@/hooks/use-toast";
 
 interface SalesTableProps {
   rows: SalesRow[];
@@ -97,6 +101,51 @@ export const SalesTable = ({ rows, isLoading }: SalesTableProps) => {
   const hasActiveFilters =
     searchTerm || salesPersonFilter !== "all" || paymentTypeFilter !== "all";
 
+  const exportToPDF = () => {
+    if (filteredRows.length === 0) {
+      toast({ title: "لا توجد بيانات للتصدير", variant: "destructive" });
+      return;
+    }
+
+    const doc = new jsPDF({ orientation: "landscape" });
+    
+    // Add title
+    doc.setFontSize(18);
+    doc.text("Sales Details Report", 14, 22);
+    doc.setFontSize(11);
+    doc.text(`Generated: ${format(new Date(), "yyyy-MM-dd HH:mm")}`, 14, 30);
+    doc.text(`Total Records: ${filteredRows.length}`, 14, 36);
+
+    // Prepare table data
+    const tableData = filteredRows.map((row, index) => [
+      (index + 1).toString(),
+      row.buyerName || "-",
+      row.unitNo?.toString() || "-",
+      formatCurrency(row.area),
+      formatCurrency(row.salePrice),
+      formatCurrency(row.downPayment),
+      row.paymentType || "-",
+      row.salesPerson || "-",
+      row.accountantName || "-",
+      row.category || "-",
+      row.deliveryDate || "-",
+    ]);
+
+    // Add table
+    autoTable(doc, {
+      head: [["#", "Buyer Name", "Unit No", "Area (m2)", "Sale Price", "Down Payment", "Payment Type", "Sales Person", "Accountant", "Category", "Delivery Date"]],
+      body: tableData,
+      startY: 42,
+      styles: { fontSize: 8 },
+      headStyles: { fillColor: [99, 102, 241] },
+    });
+
+    // Save PDF
+    doc.save(`sales-report-${format(new Date(), "yyyy-MM-dd")}.pdf`);
+    
+    toast({ title: "تم تحميل الملف بنجاح" });
+  };
+
   return (
     <Card>
       <Collapsible open={isOpen} onOpenChange={setIsOpen}>
@@ -110,13 +159,28 @@ export const SalesTable = ({ rows, isLoading }: SalesTableProps) => {
                   {filteredRows.length} سجل
                 </Badge>
               </CardTitle>
-              <Button variant="ghost" size="sm" className="p-1">
-                {isOpen ? (
-                  <ChevronUp className="h-5 w-5" />
-                ) : (
-                  <ChevronDown className="h-5 w-5" />
-                )}
-              </Button>
+              <div className="flex items-center gap-2">
+                <Button 
+                  variant="outline" 
+                  size="sm" 
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    exportToPDF();
+                  }}
+                  disabled={filteredRows.length === 0}
+                  className="gap-1"
+                >
+                  <Download className="h-4 w-4" />
+                  PDF
+                </Button>
+                <Button variant="ghost" size="sm" className="p-1">
+                  {isOpen ? (
+                    <ChevronUp className="h-5 w-5" />
+                  ) : (
+                    <ChevronDown className="h-5 w-5" />
+                  )}
+                </Button>
+              </div>
             </div>
           </CollapsibleTrigger>
         </CardHeader>
