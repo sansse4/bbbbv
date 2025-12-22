@@ -179,8 +179,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const getDefaultRoute = (): string => {
     if (!role) return '/login';
-    // Only admins go to main dashboard, everyone else (including assistant_managers) goes to personal dashboard
-    if (role.role === 'admin') return '/';
+    // Admins and assistant managers go to main dashboard
+    if (role.role === 'admin' || role.role === 'assistant_manager') return '/';
     return '/my-dashboard';
   };
 

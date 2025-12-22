@@ -88,7 +88,10 @@ export const useSalesSheetData = (filters?: SalesFilters) => {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  const fetchData = useCallback(async () => {
+  const fetchData = useCallback(async (retryCount = 0) => {
+    const MAX_RETRIES = 3;
+    const RETRY_DELAY = 1000;
+
     try {
       setIsLoading(true);
       setError(null);
@@ -105,10 +108,16 @@ export const useSalesSheetData = (filters?: SalesFilters) => {
         url.searchParams.append('salesPerson', filters.salesPerson);
       }
       
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 30000); // 30 second timeout
+      
       const response = await fetch(url.toString(), {
         method: 'GET',
         mode: 'cors',
+        signal: controller.signal,
       });
+      
+      clearTimeout(timeoutId);
       
       if (!response.ok) {
         throw new Error(`HTTP error! status: ${response.status}`);
@@ -146,7 +155,15 @@ export const useSalesSheetData = (filters?: SalesFilters) => {
       }
     } catch (err) {
       console.error("Error fetching sales sheet data:", err);
-      setError("فشل تحميل بيانات المبيعات");
+      
+      // Retry logic for network errors
+      if (retryCount < MAX_RETRIES && (err instanceof TypeError || (err as Error).name === 'AbortError')) {
+        console.log(`Retrying... attempt ${retryCount + 1} of ${MAX_RETRIES}`);
+        setTimeout(() => fetchData(retryCount + 1), RETRY_DELAY * (retryCount + 1));
+        return;
+      }
+      
+      setError("فشل تحميل بيانات المبيعات. يرجى المحاولة مرة أخرى.");
     } finally {
       setIsLoading(false);
     }
@@ -163,6 +180,6 @@ export const useSalesSheetData = (filters?: SalesFilters) => {
     rows: data?.rows || [],
     isLoading,
     error,
-    refetch: fetchData,
+    refetch: () => fetchData(0),
   };
 };
