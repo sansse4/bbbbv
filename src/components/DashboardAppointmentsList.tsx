@@ -7,11 +7,14 @@ import { Button } from "@/components/ui/button";
 import { Calendar as CalendarComponent } from "@/components/ui/calendar";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
-import { Calendar, Clock, User, Phone, ChevronLeft, CalendarIcon, X, ChevronDown } from "lucide-react";
+import { Calendar, Clock, User, Phone, ChevronLeft, CalendarIcon, X, ChevronDown, Download } from "lucide-react";
 import { format, isToday, isTomorrow, parseISO } from "date-fns";
 import { ar } from "date-fns/locale";
 import { useNavigate } from "react-router-dom";
 import { cn } from "@/lib/utils";
+import jsPDF from "jspdf";
+import autoTable from "jspdf-autotable";
+import { toast } from "@/hooks/use-toast";
 
 interface Appointment {
   id: string;
@@ -81,6 +84,52 @@ export function DashboardAppointmentsList() {
     setDateFilter(undefined);
   };
 
+  const getStatusLabel = (status: string) => {
+    return statusConfig[status]?.label || status;
+  };
+
+  const exportToPDF = () => {
+    if (appointments.length === 0) {
+      toast({ title: "لا توجد مواعيد للتصدير", variant: "destructive" });
+      return;
+    }
+
+    const doc = new jsPDF();
+    
+    // Add title
+    doc.setFontSize(18);
+    doc.text("Upcoming Appointments", 14, 22);
+    doc.setFontSize(11);
+    doc.text(`Generated: ${format(new Date(), "yyyy-MM-dd HH:mm")}`, 14, 30);
+
+    // Prepare table data
+    const tableData = appointments.map((apt) => [
+      apt.customer_name,
+      apt.customer_phone,
+      apt.appointment_date,
+      apt.appointment_time,
+      apt.appointment_type || "-",
+      getStatusLabel(apt.status),
+    ]);
+
+    // Add table
+    autoTable(doc, {
+      head: [["Customer Name", "Phone", "Date", "Time", "Type", "Status"]],
+      body: tableData,
+      startY: 38,
+      styles: { fontSize: 10 },
+      headStyles: { fillColor: [99, 102, 241] },
+    });
+
+    // Save PDF
+    const fileName = dateFilter 
+      ? `appointments-${format(dateFilter, "yyyy-MM-dd")}.pdf`
+      : `appointments-${format(new Date(), "yyyy-MM-dd")}.pdf`;
+    doc.save(fileName);
+    
+    toast({ title: "تم تحميل الملف بنجاح" });
+  };
+
   return (
     <Collapsible open={isOpen} onOpenChange={setIsOpen}>
       <Card>
@@ -132,6 +181,16 @@ export function DashboardAppointmentsList() {
                   <X className="h-4 w-4" />
                 </Button>
               )}
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={exportToPDF}
+                className="gap-1"
+                disabled={appointments.length === 0}
+              >
+                <Download className="h-4 w-4" />
+                PDF
+              </Button>
               <Button
                 variant="ghost"
                 size="sm"
