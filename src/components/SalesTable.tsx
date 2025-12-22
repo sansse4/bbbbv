@@ -23,12 +23,16 @@ import {
   CollapsibleContent,
   CollapsibleTrigger,
 } from "@/components/ui/collapsible";
-import { Search, Filter, X, FileSpreadsheet, ChevronLeft, ChevronRight, ChevronDown, ChevronUp, Download } from "lucide-react";
+import { Search, Filter, X, FileSpreadsheet, ChevronLeft, ChevronRight, ChevronDown, ChevronUp, Download, CalendarIcon } from "lucide-react";
 import { SalesRow } from "@/hooks/useSalesSheetData";
-import { format } from "date-fns";
+import { format, parseISO, isAfter, isBefore, isEqual } from "date-fns";
+import { ar } from "date-fns/locale";
 import jsPDF from "jspdf";
 import autoTable from "jspdf-autotable";
 import { toast } from "@/hooks/use-toast";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { Calendar } from "@/components/ui/calendar";
+import { cn } from "@/lib/utils";
 
 interface SalesTableProps {
   rows: SalesRow[];
@@ -41,8 +45,37 @@ export const SalesTable = ({ rows, isLoading }: SalesTableProps) => {
   const [searchTerm, setSearchTerm] = useState("");
   const [salesPersonFilter, setSalesPersonFilter] = useState<string>("all");
   const [paymentTypeFilter, setPaymentTypeFilter] = useState<string>("all");
+  const [dateFrom, setDateFrom] = useState<Date | undefined>(undefined);
+  const [dateTo, setDateTo] = useState<Date | undefined>(undefined);
   const [currentPage, setCurrentPage] = useState(1);
   const [isOpen, setIsOpen] = useState(false);
+
+  // Helper to parse date from various formats
+  const parseDate = (dateStr: string | undefined): Date | null => {
+    if (!dateStr) return null;
+    try {
+      // Try different date formats
+      const formats = [
+        /^(\d{4})-(\d{2})-(\d{2})$/, // YYYY-MM-DD
+        /^(\d{2})\/(\d{2})\/(\d{4})$/, // DD/MM/YYYY
+        /^(\d{2})-(\d{2})-(\d{4})$/, // DD-MM-YYYY
+      ];
+      
+      for (const regex of formats) {
+        const match = dateStr.match(regex);
+        if (match) {
+          if (regex === formats[0]) {
+            return new Date(parseInt(match[1]), parseInt(match[2]) - 1, parseInt(match[3]));
+          } else {
+            return new Date(parseInt(match[3]), parseInt(match[2]) - 1, parseInt(match[1]));
+          }
+        }
+      }
+      return null;
+    } catch {
+      return null;
+    }
+  };
 
   const formatCurrency = (value: number | string) => {
     const num = typeof value === "string" ? parseFloat(value) : value;
@@ -80,9 +113,27 @@ export const SalesTable = ({ rows, isLoading }: SalesTableProps) => {
       const matchesPaymentType =
         paymentTypeFilter === "all" || row.paymentType === paymentTypeFilter;
 
-      return matchesSearch && matchesSalesPerson && matchesPaymentType;
+      // Date filter
+      let matchesDateRange = true;
+      if (dateFrom || dateTo) {
+        const rowDate = parseDate(row.deliveryDate);
+        if (rowDate) {
+          if (dateFrom && dateTo) {
+            matchesDateRange = (isAfter(rowDate, dateFrom) || isEqual(rowDate, dateFrom)) && 
+                              (isBefore(rowDate, dateTo) || isEqual(rowDate, dateTo));
+          } else if (dateFrom) {
+            matchesDateRange = isAfter(rowDate, dateFrom) || isEqual(rowDate, dateFrom);
+          } else if (dateTo) {
+            matchesDateRange = isBefore(rowDate, dateTo) || isEqual(rowDate, dateTo);
+          }
+        } else {
+          matchesDateRange = false;
+        }
+      }
+
+      return matchesSearch && matchesSalesPerson && matchesPaymentType && matchesDateRange;
     });
-  }, [rows, searchTerm, salesPersonFilter, paymentTypeFilter]);
+  }, [rows, searchTerm, salesPersonFilter, paymentTypeFilter, dateFrom, dateTo]);
 
   // Pagination
   const totalPages = Math.ceil(filteredRows.length / ITEMS_PER_PAGE);
@@ -95,11 +146,13 @@ export const SalesTable = ({ rows, isLoading }: SalesTableProps) => {
     setSearchTerm("");
     setSalesPersonFilter("all");
     setPaymentTypeFilter("all");
+    setDateFrom(undefined);
+    setDateTo(undefined);
     setCurrentPage(1);
   };
 
   const hasActiveFilters =
-    searchTerm || salesPersonFilter !== "all" || paymentTypeFilter !== "all";
+    searchTerm || salesPersonFilter !== "all" || paymentTypeFilter !== "all" || dateFrom || dateTo;
 
   const exportToPDF = () => {
     if (filteredRows.length === 0) {
@@ -287,6 +340,64 @@ export const SalesTable = ({ rows, isLoading }: SalesTableProps) => {
                   ))}
                 </SelectContent>
               </Select>
+
+              {/* Date From Filter */}
+              <Popover>
+                <PopoverTrigger asChild>
+                  <Button
+                    variant="outline"
+                    className={cn(
+                      "w-[150px] justify-start text-right font-normal",
+                      !dateFrom && "text-muted-foreground",
+                      dateFrom && "bg-primary/10 border-primary"
+                    )}
+                  >
+                    <CalendarIcon className="ml-2 h-4 w-4" />
+                    {dateFrom ? format(dateFrom, "dd/MM/yyyy") : "من تاريخ"}
+                  </Button>
+                </PopoverTrigger>
+                <PopoverContent className="w-auto p-0" align="start">
+                  <Calendar
+                    mode="single"
+                    selected={dateFrom}
+                    onSelect={(date) => {
+                      setDateFrom(date);
+                      setCurrentPage(1);
+                    }}
+                    initialFocus
+                    className={cn("p-3 pointer-events-auto")}
+                  />
+                </PopoverContent>
+              </Popover>
+
+              {/* Date To Filter */}
+              <Popover>
+                <PopoverTrigger asChild>
+                  <Button
+                    variant="outline"
+                    className={cn(
+                      "w-[150px] justify-start text-right font-normal",
+                      !dateTo && "text-muted-foreground",
+                      dateTo && "bg-primary/10 border-primary"
+                    )}
+                  >
+                    <CalendarIcon className="ml-2 h-4 w-4" />
+                    {dateTo ? format(dateTo, "dd/MM/yyyy") : "إلى تاريخ"}
+                  </Button>
+                </PopoverTrigger>
+                <PopoverContent className="w-auto p-0" align="start">
+                  <Calendar
+                    mode="single"
+                    selected={dateTo}
+                    onSelect={(date) => {
+                      setDateTo(date);
+                      setCurrentPage(1);
+                    }}
+                    initialFocus
+                    className={cn("p-3 pointer-events-auto")}
+                  />
+                </PopoverContent>
+              </Popover>
 
               {hasActiveFilters && (
                 <Button variant="ghost" size="sm" onClick={clearFilters}>
