@@ -55,7 +55,11 @@ const DashboardSettingsContext = createContext<DashboardSettingsContextType | un
 export function DashboardSettingsProvider({ children }: { children: ReactNode }) {
   const [visibility, setVisibility] = useState<DashboardVisibility>(() => {
     const saved = localStorage.getItem("dashboardVisibility");
-    return saved ? JSON.parse(saved) : defaultVisibility;
+    if (saved) {
+      // Merge saved settings with defaults to include new fields
+      return { ...defaultVisibility, ...JSON.parse(saved) };
+    }
+    return defaultVisibility;
   });
 
   useEffect(() => {
