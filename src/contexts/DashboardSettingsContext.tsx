@@ -20,6 +20,7 @@ interface DashboardVisibility {
   showCallsList: boolean;
   showSitePlan: boolean;
   showCharts: boolean;
+  showAppointmentsList: boolean;
 }
 
 interface DashboardSettingsContextType {
@@ -46,6 +47,7 @@ const defaultVisibility: DashboardVisibility = {
   showCallsList: true,
   showSitePlan: true,
   showCharts: true,
+  showAppointmentsList: true,
 };
 
 const DashboardSettingsContext = createContext<DashboardSettingsContextType | undefined>(undefined);

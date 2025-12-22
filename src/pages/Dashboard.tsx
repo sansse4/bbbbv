@@ -6,6 +6,7 @@ import { InteractiveSitePlan } from "@/components/InteractiveSitePlan";
 import { SalesTable } from "@/components/SalesTable";
 import { CollapsibleCallsList } from "@/components/CollapsibleCallsList";
 import { CollapsibleLeadsList } from "@/components/CollapsibleLeadsList";
+import { DashboardAppointmentsList } from "@/components/DashboardAppointmentsList";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Calendar } from "@/components/ui/calendar";
@@ -381,6 +382,11 @@ const Dashboard = () => {
       {/* Sales Details Table */}
       {visibility.showSalesTable && (
         <SalesTable rows={rows} isLoading={salesLoading} />
+      )}
+
+      {/* Appointments List */}
+      {visibility.showAppointmentsList && (
+        <DashboardAppointmentsList />
       )}
 
       {/* Reception and Call Center Data - Collapsible Lists */}
