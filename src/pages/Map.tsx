@@ -22,22 +22,25 @@ export default function Map() {
   // Debounce search input for performance
   const debouncedSearch = useDebouncedValue(filters.search, 300);
 
-  const effectiveFilters = useMemo(
+  // Fetch ALL units without status filter - we'll filter after merging with Google Sheet
+  const dbFilters = useMemo(
     () => ({
-      ...filters,
       search: debouncedSearch,
+      block: filters.block,
+      // Don't filter by status at DB level - we need to merge with Google Sheet first
+      status: "all" as const,
     }),
-    [filters.status, filters.block, debouncedSearch]
+    [filters.block, debouncedSearch]
   );
 
-  const { data: units, isLoading: unitsLoading, refetch: refetchUnits } = useUnits(effectiveFilters);
+  const { data: units, isLoading: unitsLoading, refetch: refetchUnits } = useUnits(dbFilters);
   const { data: stats, isLoading: statsLoading, refetch: refetchStats } = useUnitStats();
   const { soldUnits, isLoading: sheetLoading, refetch: refetchSheet, getSoldUnitInfo } = useSoldUnitsFromSheet();
 
   const queryClient = useQueryClient();
 
   // Merge units with Google Sheet data - mark as sold if unit number exists in sheet
-  const mergedUnits = useMemo(() => {
+  const allMergedUnits = useMemo(() => {
     if (!units) return [];
     
     return units.map(unit => {
@@ -57,19 +60,25 @@ export default function Map() {
     });
   }, [units, getSoldUnitInfo]);
 
-  // Calculate stats based on Google Sheet data (use sheet as source of truth for sold)
+  // Apply status filter AFTER merging with Google Sheet data
+  const mergedUnits = useMemo(() => {
+    if (filters.status === "all") return allMergedUnits;
+    return allMergedUnits.filter(unit => unit.status === filters.status);
+  }, [allMergedUnits, filters.status]);
+
+  // Calculate stats based on ALL merged units (not filtered)
   const mergedStats = useMemo(() => {
-    if (!mergedUnits.length) return stats;
+    if (!allMergedUnits.length) return stats;
     
-    // Count from merged units (which already has Google Sheet data applied)
-    const residential = mergedUnits.filter(u => u.is_residential);
+    // Count from ALL merged units (which already has Google Sheet data applied)
+    const residential = allMergedUnits.filter(u => u.is_residential);
     const total = residential.length;
     const sold = residential.filter(u => u.status === "sold").length;
     const reserved = residential.filter(u => u.status === "reserved").length;
     const available = residential.filter(u => u.status === "available").length;
     
     return { total, available, reserved, sold };
-  }, [mergedUnits, stats]);
+  }, [allMergedUnits, stats]);
 
   const handleRefresh = useCallback(() => {
     refetchUnits();
