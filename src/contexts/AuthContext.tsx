@@ -151,7 +151,17 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const hasAccess = (path: string): boolean => {
     if (!role) return false;
-    if (role.role === 'admin' || role.role === 'assistant_manager') return true;
+    
+    // Main dashboard is ONLY for admin
+    if (path === '/') {
+      return role.role === 'admin';
+    }
+    
+    // Admin has access to everything
+    if (role.role === 'admin') return true;
+    
+    // Assistant manager has access to all except main dashboard
+    if (role.role === 'assistant_manager') return true;
 
     // Paths accessible to all authenticated users
     const publicPaths = ['/my-dashboard', '/map', '/appointments', '/employees'];
@@ -167,9 +177,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       '/analytics': 'Growth Analytics',
     };
 
-    // Main dashboard is only for admins and assistant managers
-    if (path === '/') return false;
-
     // Check if employee has access to this department
     const requiredDepartment = pathDepartmentMap[path];
     if (!requiredDepartment) return false;
@@ -179,8 +186,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const getDefaultRoute = (): string => {
     if (!role) return '/login';
-    // Admins and assistant managers go to main dashboard
-    if (role.role === 'admin' || role.role === 'assistant_manager') return '/';
+    // Only admin goes to main dashboard
+    if (role.role === 'admin') return '/';
+    // Assistant managers and employees go to my-dashboard
     return '/my-dashboard';
   };
 
