@@ -127,9 +127,19 @@ export const useSalesSheetData = (filters?: SalesFilters) => {
 
       const result = await response.json();
       
+      // Debug: Log the raw response to see exact column names
+      console.log("Sales API response for deposits:", JSON.stringify(result, null, 2));
+      
       if (result.success !== false) {
         // Map raw rows to our interface
         const rawRows: RawSalesRow[] = result.rows || result.data || [];
+        
+        // Debug: Log first row keys to see exact column names
+        if (rawRows.length > 0) {
+          console.log("First row keys:", Object.keys(rawRows[0]));
+          console.log("First row data:", rawRows[0]);
+        }
+        
         const mappedRows = rawRows.map(mapRowToInterface);
         
         // Calculate totals from rows if not provided
