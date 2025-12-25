@@ -67,10 +67,10 @@ const parseNumber = (value: number | string | undefined): number => {
 };
 
 // Map Arabic keys to English interface
-// Note: Buyer name comes from "اسم الزبون" column
+// Note: Buyer name comes from "اسم المشتري" column first, fallback to "اسم الزبون"
 const mapRowToInterface = (row: RawSalesRow, index: number): SalesRow => ({
   serial: index + 1,
-  buyerName: row["اسم الزبون"] || row["اسم المشتري"] || "",
+  buyerName: row["اسم المشتري"] || row["اسم الزبون"] || "",
   roayaCommission: row["عمولة شركة رؤية"] || 0,
   adminCommission: row["العمولة الادارية"] || 0,
   salesPerson: row["موظف المبيعات"] || "",
