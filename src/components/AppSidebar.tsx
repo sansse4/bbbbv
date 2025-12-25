@@ -6,6 +6,7 @@ import { Sidebar, SidebarContent, SidebarGroup, SidebarGroupContent, SidebarGrou
 import { useAuth } from "@/contexts/AuthContext";
 import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
+import { useIsMobile } from "@/hooks/use-mobile";
 
 const menuItems = [{
   title: "Dashboard",
@@ -65,11 +66,12 @@ const menuItems = [{
 }];
 
 export function AppSidebar() {
-  const { open, setOpen } = useSidebar();
+  const { open, setOpen, setOpenMobile } = useSidebar();
   const location = useLocation();
   const currentPath = location.pathname;
   const { role, profile, user } = useAuth();
   const [supervisedDepartments, setSupervisedDepartments] = useState<string[]>([]);
+  const isMobile = useIsMobile();
 
   useEffect(() => {
     if (user?.id && role?.role === 'assistant_manager') {
@@ -96,7 +98,9 @@ export function AppSidebar() {
   };
 
   const handleMenuClick = () => {
-    setOpen(false);
+    if (isMobile) {
+      setOpenMobile(false);
+    }
   };
 
   // Filter menu items based on role and department
