@@ -54,9 +54,9 @@ export function useSoldUnitsFromSheet() {
             salesPerson: String(row["موظف المبيعات"] || ""),
             saleDate: String(row["تاريخ الاستلام"] || ""),
             accountantName: String(row["اسم المحاسب"] || ""),
-            area: parseNumber(row["المساحة"] as string | number),
+            area: parseNumber(row["لمساحة"] as string | number), // Fixed: "لمساحة" not "المساحة"
             salePrice: parseNumber(row["سعر البيع"] as string | number),
-            category: String(row["الفئة"] || ""),
+            category: String(row["الفىة"] || ""), // Fixed: "الفىة" not "الفئة"
           });
         }
       });
