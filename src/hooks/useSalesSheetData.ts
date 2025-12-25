@@ -2,21 +2,20 @@ import { useState, useEffect, useCallback } from "react";
 
 const SALES_SHEET_URL = "https://script.google.com/macros/s/AKfycbwSMozG5H01u1uVrX4wgXWyr6CHocUuqkAofnowdqBaZSVDJkoj2rOe1g58l4gQ6TPw/exec";
 
-// Raw row from Google Sheet with Arabic keys
+// Raw row from Google Sheet with Arabic keys (exact column names from user)
 interface RawSalesRow {
-  "اسم الزبون"?: string; // Customer/buyer name column
-  "اسم المشتري"?: string; // Alternative buyer name column
+  "اسم المشتري"?: string;
   "عمولة شركة رؤية"?: number | string;
   "العمولة الادارية"?: number | string;
   "موظف المبيعات"?: string;
   "رقم الوحدة"?: number | string;
-  "سعر الحقيقي"?: number | string;
-  "المساحة"?: number | string;
+  "سعر الحقيقيا"?: number | string; // Note: typo in original sheet "الحقيقيا"
+  "لمساحة"?: number | string; // Note: "لمساحة" not "المساحة"
   "سعر البيع"?: number | string;
   "قيمة المقدمة"?: number | string;
   "طريقة الدفع"?: string;
   "اسم المحاسب"?: string;
-  "الفئة"?: string;
+  "الفىة"?: number | string; // Note: "الفىة" not "الفئة"
   "تاريخ الاستلام"?: string;
 }
 
@@ -66,22 +65,21 @@ const parseNumber = (value: number | string | undefined): number => {
   return isNaN(parsed) ? 0 : parsed;
 };
 
-// Map Arabic keys to English interface
-// Note: Buyer name comes from "اسم المشتري" column first, fallback to "اسم الزبون"
+// Map Arabic keys to English interface (using exact column names from Google Sheet)
 const mapRowToInterface = (row: RawSalesRow, index: number): SalesRow => ({
   serial: index + 1,
-  buyerName: row["اسم المشتري"] || row["اسم الزبون"] || "",
+  buyerName: row["اسم المشتري"] || "",
   roayaCommission: row["عمولة شركة رؤية"] || 0,
   adminCommission: row["العمولة الادارية"] || 0,
   salesPerson: row["موظف المبيعات"] || "",
   unitNo: row["رقم الوحدة"] || "",
-  realPrice: row["سعر الحقيقي"] || 0,
-  area: parseNumber(row["المساحة"]),
+  realPrice: row["سعر الحقيقيا"] || 0,
+  area: parseNumber(row["لمساحة"]),
   salePrice: parseNumber(row["سعر البيع"]),
   downPayment: row["قيمة المقدمة"] || 0,
   paymentType: row["طريقة الدفع"] || "",
   accountantName: row["اسم المحاسب"] || "",
-  category: row["الفئة"] || "",
+  category: String(row["الفىة"] || ""),
   deliveryDate: row["تاريخ الاستلام"] || "",
 });
 
