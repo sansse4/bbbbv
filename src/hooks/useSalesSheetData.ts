@@ -4,6 +4,7 @@ const SALES_SHEET_URL = "https://script.google.com/macros/s/AKfycbwSMozG5H01u1uV
 
 // Raw row from Google Sheet with Arabic keys
 interface RawSalesRow {
+  ""?: string; // Buyer name appears in empty key column
   "اسم المشتري"?: string;
   "عمولة شركة رؤية"?: number | string;
   "العمولة الادارية"?: number | string;
@@ -66,9 +67,10 @@ const parseNumber = (value: number | string | undefined): number => {
 };
 
 // Map Arabic keys to English interface
+// Note: Buyer name comes from empty key column "" or "اسم المشتري"
 const mapRowToInterface = (row: RawSalesRow, index: number): SalesRow => ({
   serial: index + 1,
-  buyerName: row["اسم المشتري"] || "",
+  buyerName: row[""] || row["اسم المشتري"] || "",
   roayaCommission: row["عمولة شركة رؤية"] || 0,
   adminCommission: row["العمولة الادارية"] || 0,
   salesPerson: row["موظف المبيعات"] || "",
